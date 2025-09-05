@@ -1,0 +1,163 @@
+/* Enhanced Tab Bar with Professional Design */
+.tab-bar {
+  display: flex;
+  align-items: center;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e5e7eb;
+  height: 40px;
+  padding: 0 8px;
+  gap: 4px;
+  position: relative;
+  animation: slideDown 0.3s ease-out;
+}
+
+.tab-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #6b7280, #4b5563, #9ca3af);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tab-list {
+  display: flex;
+  flex: 1;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tab-list::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  min-width: 120px;
+  max-width: 200px;
+  height: 32px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border: 1px solid #e5e7eb;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  animation: tabSlideIn 0.3s ease-out;
+}
+
+@keyframes tabSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.tab:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tab.active {
+  background-color: white;
+  border-bottom-color: white;
+  z-index: 1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: tabActivate 0.3s ease-out;
+}
+
+@keyframes tabActivate {
+  0% {
+    background-color: #f9fafb;
+  }
+  50% {
+    background-color: #f3f4f6;
+  }
+  100% {
+    background-color: #ffffff;
+  }
+}
+
+.tab-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 8px;
+  gap: 6px;
+}
+
+.tab-title {
+  font-size: 12px;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  font-weight: 500;
+}
+
+.tab-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: none;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.tab-close:hover {
+  background-color: #e5e7eb;
+  color: #374151;
+  opacity: 1;
+}
+
+.new-tab-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background-color: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.new-tab-btn:hover {
+  background-color: #e5e7eb;
+  color: #374151;
+  transform: translateY(-1px);
+}
+
+.new-tab-btn:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}

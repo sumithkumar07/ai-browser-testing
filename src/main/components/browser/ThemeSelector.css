@@ -1,0 +1,247 @@
+.theme-selector {
+  position: relative;
+  display: inline-block;
+}
+
+.theme-selector-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.theme-selector-btn:hover {
+  background: var(--border);
+  transform: translateY(-1px);
+}
+
+.theme-icon {
+  font-size: 16px;
+}
+
+.theme-name {
+  font-weight: 500;
+}
+
+.theme-arrow {
+  font-size: 10px;
+  transition: transform 0.2s ease;
+}
+
+.theme-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 320px;
+  background: var(--primary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  padding: 16px;
+  margin-top: 8px;
+  animation: themeSlideDown 0.2s ease-out;
+}
+
+@keyframes themeSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.theme-section {
+  margin-bottom: 20px;
+}
+
+.theme-section:last-child {
+  margin-bottom: 0;
+}
+
+.theme-section-title {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.theme-option:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.theme-option.active {
+  border-color: var(--accent);
+  background: var(--secondary);
+}
+
+.theme-preview {
+  width: 40px;
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.theme-accent {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.theme-text {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;
+  height: 4px;
+  border-radius: 1px;
+}
+
+.theme-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.theme-info .theme-name {
+  display: block;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.theme-description {
+  display: block;
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.theme-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: var(--accent);
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.accessibility-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.accessibility-option:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.accessibility-option.active {
+  border-color: var(--accent);
+  background: var(--secondary);
+}
+
+.accessibility-icon {
+  font-size: 16px;
+}
+
+.accessibility-text {
+  flex: 1;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.accessibility-status {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  padding: 2px 8px;
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+.theme-footer {
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.theme-tip {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .theme-dropdown {
+    width: 280px;
+    right: -20px;
+  }
+  
+  .theme-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .theme-dropdown {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* High contrast adjustments */
+[data-contrast="high"] .theme-option {
+  border-width: 3px;
+}
+
+[data-contrast="high"] .accessibility-option {
+  border-width: 3px;
+}
