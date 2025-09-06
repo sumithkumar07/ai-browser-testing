@@ -189,7 +189,7 @@ const AISidebar: React.FC<AISidebarProps> = ({
         // Execute actions if any
         if (result.actions && result.actions.length > 0) {
           for (const action of result.actions) {
-            if (action.type === 'navigate') {
+            if (action.type === 'navigate' && action.target) {
               await window.electronAPI.navigateTo(action.target)
             }
           }
