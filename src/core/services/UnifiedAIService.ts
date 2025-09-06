@@ -58,7 +58,7 @@ class UnifiedAIService {
   }
 
   /**
-   * Initialize the AI service with robust error handling
+   * Initialize the AI service with enhanced conversation management
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) {
@@ -66,12 +66,19 @@ class UnifiedAIService {
       return
     }
 
-    logger.info('Initializing Unified AI Service')
+    logger.info('Initializing Enhanced AI Service')
 
     try {
       await this.testConnectionWithRetry()
+      
+      // Initialize conversation session
+      this.currentSessionId = await this.conversationManager.startConversation({
+        currentUrl: '',
+        pageTitle: 'New Tab'
+      })
+      
       this.isInitialized = true
-      logger.info('AI Service initialized successfully')
+      logger.info('Enhanced AI Service initialized successfully', { sessionId: this.currentSessionId })
     } catch (error) {
       logger.error('AI Service initialization failed', error as Error)
       throw new Error(`AI Service initialization failed: ${(error as Error).message}`)
