@@ -41,18 +41,51 @@ const AISidebar: React.FC<AISidebarProps> = ({
       const result = await window.electronAPI.testConnection()
       if (result.success) {
         setConnectionStatus('connected')
-        addMessage(false, `🤖 Hello! I'm your AI assistant with full browser control and automation.
+        addMessage(false, `🤖 **Hello! I'm KAiro, your enhanced AI assistant with intelligent agent coordination.**
 
-I can help you with:
-• 🔍 Research tasks (find top websites, compare information)  
-• 🌐 Navigate to websites and extract content
-• 📊 Analyze web pages and create summaries
-• 🛒 Shopping research and price comparison
-• 📧 Communication (emails, forms, social media)
-• 🤖 Automation (workflows, repetitive tasks, scheduling)
-• 📝 Create organized research documents
+## 🎯 **My Enhanced Capabilities**
 
-Try: "compose professional email" or "automate this workflow"`)
+**🔍 Research Agent**
+• Comprehensive multi-source research with trend analysis
+• Creates organized research tabs with structured findings
+• Identifies authoritative sources and key insights
+
+**🌐 Navigation Agent**  
+• Smart website navigation with context awareness
+• Automatic URL detection and tab management
+• Contextual website recommendations
+
+**🛒 Shopping Agent**
+• Multi-retailer price comparison and deal finding
+• Product analysis with detailed pros/cons
+• Shopping workflow automation across sites
+
+**📧 Communication Agent**
+• Professional email composition with proper formatting
+• Smart form filling with context awareness
+• Social media content creation and optimization
+
+**🤖 Automation Agent**
+• Multi-step browser task automation
+• Workflow creation with error recovery
+• Scheduled actions and process optimization
+
+**📊 Analysis Agent**
+• Deep content analysis with sentiment insights
+• Data extraction and structured information processing
+• Actionable insights and recommendations
+
+## ✨ **What Makes Me Special**
+• **Smart Coordination**: I automatically choose the best agent(s) for your task
+• **Context Awareness**: I understand your current page and browsing context
+• **Quality Focus**: Every response is optimized for helpfulness and accuracy
+• **Action-Oriented**: I provide specific, executable steps and recommendations
+
+**Try these enhanced commands:**
+• "research trending AI developments"
+• "compose professional email about meeting"
+• "analyze this page content"
+• "automate this repetitive workflow"`)
       } else {
         setConnectionStatus('disconnected')
         addMessage(false, 'I\'m currently unable to connect to the AI service. Please check your internet connection and try again.')
