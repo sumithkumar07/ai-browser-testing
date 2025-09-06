@@ -174,7 +174,8 @@ export class PerformanceMonitor {
                   timestamp: Date.now(),
                   category: 'ui'
                 },
-                recommendation: 'Close unused tabs to improve performance'
+                recommendation: 'Close unused tabs to improve performance',
+                severity: 'low'
               })
             }
           }
