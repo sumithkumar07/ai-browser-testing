@@ -254,7 +254,7 @@ class MemoryManager {
       // Emit cleanup event
       appEvents.emit('memory:cleanup-complete', {
         cleanedTabs,
-        cleanedCache, 
+        cleanedCache,
         memoryFreed,
         timestamp: Date.now()
       })
