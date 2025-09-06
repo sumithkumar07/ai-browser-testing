@@ -83,7 +83,7 @@ const defaultSettings: UISettings = {
 
 export const useUIStore = create<UIState & UIActions>()(
   persist(
-    (set, get) => ({
+    (set, _get) => ({
       // State
       settings: defaultSettings,
       isFullscreen: false,
