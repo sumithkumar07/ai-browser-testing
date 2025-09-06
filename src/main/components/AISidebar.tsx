@@ -273,40 +273,40 @@ const AISidebar: React.FC<AISidebarProps> = ({
 
   const quickActions = [
     {
-      label: '🔍 Research trending topics',
-      action: 'research trending AI and technology topics and create summary with key insights'
+      label: '🔍 Research AI developments',
+      action: 'research latest AI and artificial intelligence developments with comprehensive analysis'
     },
     {
       label: '📊 Analyze current page',
-      action: 'analyze the content of this page and provide key insights and summary'
+      action: 'analyze the content of this page and provide detailed insights with key findings'
     },
     {
-      label: '🛒 Compare products',
-      action: 'help me compare products and find the best deals'
+      label: '🛒 Research shopping deals',
+      action: 'help me research products and find the best deals across multiple retailers'
     },
     {
-      label: '📧 Compose email',
-      action: 'help me compose a professional email with proper formatting and tone'
+      label: '📧 Compose professional email',
+      action: 'help me compose a professional email with proper formatting and business tone'
     },
     {
-      label: '🤖 Automate workflow',
-      action: 'create an automated workflow for repetitive browser tasks'
+      label: '🌐 Navigate to tech sites',
+      action: 'navigate to top technology and news websites for latest updates'
     },
     {
-      label: '📝 Fill forms automatically',
-      action: 'help me fill out web forms automatically with smart data extraction'
+      label: '🤖 Create automation workflow', 
+      action: 'create a comprehensive automation workflow for repetitive browser tasks'
     },
     {
-      label: '📅 Schedule automation',
-      action: 'set up scheduled automation for regular browser tasks'
+      label: '📝 Generate content template',
+      action: 'help me create content templates for social media and communication'
     },
     {
-      label: '🌐 Smart navigation',
-      action: 'navigate to relevant websites based on current context'
+      label: '💼 Business research',
+      action: 'research business trends and market analysis with comprehensive findings'
     },
     {
-      label: '💡 Generate insights',
-      action: 'analyze current content and generate actionable insights and recommendations'
+      label: '🎯 Smart task planning',
+      action: 'help me plan and organize complex tasks with step-by-step approach'
     }
   ]
 
