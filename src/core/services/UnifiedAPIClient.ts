@@ -242,9 +242,9 @@ class UnifiedAPIClient {
 
         // Normalize response
         const normalizedResult: APIResponse = {
-          success: result?.success ?? true,
-          data: result?.data || result,
-          error: result?.error,
+          success: (result as any)?.success ?? true,
+          data: (result as any)?.data || result,
+          error: (result as any)?.error,
           timestamp: Date.now(),
           requestId
         }
