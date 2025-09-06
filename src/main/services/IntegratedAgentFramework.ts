@@ -39,7 +39,7 @@ export class IntegratedAgentFramework {
     this.aiService = UnifiedAIService.getInstance()
     this.conversationManager = ConversationManager.getInstance()
     this.agentCoordinator = AgentCoordinator.getInstance()
-    this.memoryManager = MemoryManager.getInstance()
+    this._memoryManager = MemoryManager.getInstance()
   }
 
   static getInstance(): IntegratedAgentFramework {
