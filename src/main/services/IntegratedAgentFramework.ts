@@ -262,6 +262,14 @@ export class IntegratedAgentFramework {
     const shoppingKeywords = ['shop', 'shopping', 'buy', 'purchase', 'price', 'cost', 'product', 'compare', 'deal', 'discount', 'sale', 'cheap', 'expensive', 'review', 'rating', 'cart', 'order']
     const shoppingScore = shoppingKeywords.filter(keyword => lowerInput.includes(keyword)).length
     
+    // Communication keywords - NEW
+    const communicationKeywords = ['email', 'send', 'compose', 'write', 'message', 'contact', 'form', 'fill', 'submit', 'social', 'post', 'tweet', 'linkedin', 'facebook', 'reply', 'respond']
+    const communicationScore = communicationKeywords.filter(keyword => lowerInput.includes(keyword)).length
+    
+    // Automation keywords - NEW  
+    const automationKeywords = ['automate', 'automation', 'repeat', 'schedule', 'workflow', 'process', 'sequence', 'steps', 'batch', 'bulk', 'routine', 'script', 'macro', 'trigger']
+    const automationScore = automationKeywords.filter(keyword => lowerInput.includes(keyword)).length
+    
     // Multi-step/complex task indicators
     const complexKeywords = ['create', 'generate', 'make', 'build', 'compile', 'organize', 'multiple', 'several', 'across', 'comprehensive', 'detailed']
     const complexScore = complexKeywords.filter(keyword => lowerInput.includes(keyword)).length
