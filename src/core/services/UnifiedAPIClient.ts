@@ -201,7 +201,7 @@ class UnifiedAPIClient {
       }
 
     } catch (error) {
-      logger.error(`API call failed: ${method} - ${(error as Error).message}`, { requestId })
+      logger.error(`API call failed: ${method} - ${(error as Error).message}`)
       return {
         success: false,
         error: (error as Error).message,
