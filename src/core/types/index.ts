@@ -3,38 +3,8 @@
  * All TypeScript types and interfaces for KAiro Browser
  */
 
-// Re-export main types
-export * from '../../main/types/electron'
-
-// Import missing types
-export interface Tab {
-  id: string
-  title: string
-  url: string
-  isLoading: boolean
-  isActive: boolean
-  type: 'browser' | 'ai'
-  content?: string
-  createdBy?: 'user' | 'agent'
-}
-
-export interface AIMessage {
-  id: string
-  content: string
-  timestamp: number
-  isUser: boolean
-  isLoading?: boolean
-  agentStatus?: AgentStatus
-}
-
-export interface AgentStatus {
-  id: string
-  name: string
-  status: 'idle' | 'active' | 'completed' | 'error'
-  currentTask?: string
-  progress?: number
-  details?: string[]
-}
+// Re-export electron types (no duplication)
+export * from '../../main/types/electron.d.ts'
 
 // Core Application Types
 export interface AppState {
