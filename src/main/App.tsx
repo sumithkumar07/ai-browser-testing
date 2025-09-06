@@ -1,14 +1,21 @@
-// Phase 1: Core Layout Fix + Phase 4: Complete Integration
+// KAiro Browser Main Application Component
+// Layout Structure: LOCKED - Do not modify layout proportions or structure
 import React, { useState, useEffect } from 'react'
 import BrowserWindow from './components/BrowserWindow'
 import AISidebar from './components/AISidebar'
 import TabBar from './components/TabBar'
 import NavigationBar from './components/NavigationBar'
 import LoadingSpinner from './components/LoadingSpinner'
+import ErrorBoundary from '../core/errors/ErrorBoundary'
 import { AgentFramework } from './services/AgentFramework'
 import { BrowserController } from './services/BrowserController'
-import { Tab, BrowserEvent, AgentStatus } from './types/electron'
+import { Tab, BrowserEvent, AgentStatus } from '../core/types'
+import { createLogger } from '../core/logger/Logger'
+import { APP_CONSTANTS } from '../core/utils/Constants'
+import { appEvents } from '../core/utils/EventEmitter'
 import './styles/App.css'
+
+const logger = createLogger('App')
 
 const App: React.FC = () => {
   const [tabs, setTabs] = useState<Tab[]>([])
