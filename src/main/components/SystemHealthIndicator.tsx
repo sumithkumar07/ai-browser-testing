@@ -142,7 +142,7 @@ const SystemHealthIndicator: React.FC<SystemHealthIndicatorProps> = ({
         </div>
       )}
       
-      <style jsx>{`
+      <style>{`
         .system-health-indicator {
           position: fixed;
           z-index: 1000;
