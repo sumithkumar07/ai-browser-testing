@@ -28,6 +28,8 @@ export class IntegratedAgentFramework {
   private agents: Map<string, Agent> = new Map()
   private agentSystem: EnhancedAgentSystem
   private aiService: UnifiedAIService
+  private conversationManager: ConversationManager
+  private agentCoordinator: AgentCoordinator
   private memoryManager: MemoryManager
   private eventListeners: Map<string, Function[]> = new Map()
   private isInitialized = false
