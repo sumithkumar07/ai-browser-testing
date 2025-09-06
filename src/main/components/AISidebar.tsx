@@ -234,20 +234,28 @@ Try: "research top 5 AI websites and create summary"`)
 
   const quickActions = [
     {
-      label: '🔍 Research AI websites',
-      action: 'research top 5 AI websites and create summary'
+      label: '🔍 Research trending topics',
+      action: 'research trending AI and technology topics and create summary with key insights'
     },
     {
       label: '📊 Analyze current page',
-      action: 'analyze the content of this page'
+      action: 'analyze the content of this page and provide key insights and summary'
     },
     {
-      label: '📝 Create research notes',
-      action: 'create a new AI tab for research notes'
+      label: '🛒 Compare products',
+      action: 'help me compare products and find the best deals'
     },
     {
-      label: '🌐 Navigate to site',
-      action: 'navigate to google.com'
+      label: '📝 Research & organize',
+      action: 'research this topic across multiple sources and organize findings in an AI tab'
+    },
+    {
+      label: '🌐 Smart navigation',
+      action: 'navigate to relevant websites based on current context'
+    },
+    {
+      label: '💡 Generate insights',
+      action: 'analyze current content and generate actionable insights and recommendations'
     }
   ]
 
