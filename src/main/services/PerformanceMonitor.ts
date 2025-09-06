@@ -236,7 +236,8 @@ export class PerformanceMonitor {
           timestamp: Date.now(),
           category: 'ai'
         },
-        recommendation: 'Check network connection or try simpler queries'
+        recommendation: 'Check network connection or try simpler queries',
+        severity: 'medium'
       })
     }
   }
