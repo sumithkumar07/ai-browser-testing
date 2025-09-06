@@ -273,7 +273,10 @@ class AgentCoordinator {
 
       logger.info('Collaboration cancelled', { collaborationId })
       
-      appEvents.emit('agent:collaboration-cancelled', { collaborationId })
+      appEvents.emit('agent:collaboration-cancelled', { 
+        agentIds: collaboration.supportingAgents,
+        reason: 'Manual cancellation'
+      })
       
       return true
 
