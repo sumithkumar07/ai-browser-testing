@@ -150,7 +150,7 @@ export const useAI = (): UseAIState & UseAIActions => {
 
   const testConnection = useCallback(async (): Promise<boolean> => {
     try {
-      return await aiService.testConnection()
+      return await aiService.checkConnection()
     } catch (error) {
       console.error('Connection test failed:', error)
       return false
@@ -159,7 +159,7 @@ export const useAI = (): UseAIState & UseAIActions => {
 
   const refreshContext = useCallback(async (): Promise<void> => {
     try {
-      const context = await aiService.getAIContext()
+      const context = await aiService.getContext()
       setState(prev => ({ ...prev, context }))
     } catch (error) {
       console.error('Failed to refresh context:', error)
