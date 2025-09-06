@@ -498,7 +498,24 @@ class ShoppingAgent implements Agent {
       name: 'Product Research',
       description: 'Research products and compare prices',
       category: 'research',
-      requiredPermissions: ['web-navigation', 'content-extraction']
+      requiredPermissions: ['web-navigation', 'content-extraction'],
+      estimatedDuration: 45000
+    },
+    {
+      id: 'price-comparison',
+      name: 'Price Comparison',
+      description: 'Compare prices across multiple retailers',
+      category: 'analysis',
+      requiredPermissions: ['web-navigation', 'content-extraction'],
+      estimatedDuration: 30000
+    },
+    {
+      id: 'deal-finder',
+      name: 'Deal Finder',
+      description: 'Find deals, discounts, and best offers',
+      category: 'research',
+      requiredPermissions: ['web-navigation'],
+      estimatedDuration: 25000
     }
   ]
 
@@ -507,19 +524,60 @@ class ShoppingAgent implements Agent {
   async execute(task: string): Promise<any> {
     logger.info('Executing shopping task', { task })
     
-    const productAnalysis = await this.aiService.sendMessage(
-      `Help me with this shopping request: ${task}. Provide product recommendations and shopping advice.`
-    )
+    // Enhanced shopping task processing
+    const shoppingIntent = this.analyzeShoppingIntent(task)
+    
+    let prompt = ''
+    if (shoppingIntent.type === 'comparison') {
+      prompt = `Compare prices and features for: ${task}. Provide detailed comparison with pros/cons, pricing, and recommendations.`
+    } else if (shoppingIntent.type === 'research') {
+      prompt = `Research products for: ${task}. Find the best options with detailed analysis, ratings, and where to buy.`
+    } else if (shoppingIntent.type === 'deals') {
+      prompt = `Find the best deals and discounts for: ${task}. Include current sales, coupon codes, and money-saving tips.`
+    } else {
+      prompt = `Help me with this shopping request: ${task}. Provide comprehensive shopping advice, product recommendations, and buying guidance.`
+    }
+    
+    const productAnalysis = await this.aiService.sendMessage(prompt)
 
     if (productAnalysis.success) {
       return {
         type: 'shopping_completed',
+        intent: shoppingIntent,
         recommendations: productAnalysis.result,
+        confidence: shoppingIntent.confidence,
         timestamp: Date.now()
       }
     }
 
     throw new Error('Failed to process shopping request')
+  }
+  
+  private analyzeShoppingIntent(task: string): {
+    type: 'comparison' | 'research' | 'deals' | 'general'
+    confidence: number
+    products: string[]
+  } {
+    const lowerTask = task.toLowerCase()
+    
+    // Product extraction
+    const productWords = task.split(' ').filter(word => 
+      word.length > 3 && !['price', 'cheap', 'best', 'compare', 'buy'].includes(word.toLowerCase())
+    )
+    
+    if (lowerTask.includes('compare') || lowerTask.includes('vs') || lowerTask.includes('versus')) {
+      return { type: 'comparison', confidence: 0.9, products: productWords }
+    }
+    
+    if (lowerTask.includes('deal') || lowerTask.includes('discount') || lowerTask.includes('sale') || lowerTask.includes('cheap')) {
+      return { type: 'deals', confidence: 0.8, products: productWords }
+    }
+    
+    if (lowerTask.includes('best') || lowerTask.includes('top') || lowerTask.includes('review')) {
+      return { type: 'research', confidence: 0.8, products: productWords }
+    }
+    
+    return { type: 'general', confidence: 0.7, products: productWords }
   }
 }
 
