@@ -255,7 +255,7 @@ export interface AppEvents {
   // Conversation events
   'conversation:started': { conversationId: string; timestamp: number }
   'conversation:context-updated': { conversationId: string; context: any }
-  'conversation:message-added': { conversationId: string; message: AIMessage }
+  'conversation:message-added': { conversationId: string; message: any } // AIMessage - using any to avoid circular import
   
   // Startup events
   'startup:complete': { duration: number; timestamp: number }
