@@ -597,6 +597,117 @@ class ConversationManager {
     }
   }
 
+  // Missing methods referenced in UnifiedAIService
+  generateEnhancedSystemPrompt(sessionId: string): string {
+    try {
+      const context = this.conversations.get(sessionId)
+      if (!context) {
+        return 'You are KAiro, an intelligent AI browser assistant. Help users navigate and interact with web content.'
+      }
+
+      const recentMessages = context.conversationHistory.slice(-5)
+      const userQuestions = recentMessages.filter(m => m.isUser).map(m => m.content).join('; ')
+      
+      return `You are KAiro, an intelligent AI browser assistant with advanced conversation capabilities.
+
+CURRENT CONTEXT:
+- Page: ${context.pageTitle} (${context.currentUrl})
+- Conversation Length: ${context.conversationHistory.length} messages
+- User Intent: ${context.userIntent || 'Not determined'}
+- Recent Topics: ${userQuestions ? userQuestions.substring(0, 200) : 'New conversation'}
+
+CONVERSATION QUALITY GUIDELINES:
+- Reference current page content when relevant
+- Provide structured, actionable responses
+- Build upon previous conversation context
+- Ask clarifying questions when needed
+- Offer specific next steps and recommendations
+
+Your responses should be helpful, contextual, and focused on moving the user forward with their goals.`
+
+    } catch (error) {
+      logger.error('Failed to generate enhanced system prompt', error as Error)
+      return 'You are KAiro, an intelligent AI browser assistant.'
+    }
+  }
+
+  updateContext(sessionId: string, updates: {
+    currentUrl?: string
+    pageTitle?: string
+    pageContent?: string
+  }): Promise<void> {
+    return new Promise((resolve) => {
+      try {
+        const context = this.conversations.get(sessionId)
+        if (!context) {
+          logger.warn(`Cannot update context - session not found: ${sessionId}`)
+          resolve()
+          return
+        }
+
+        if (updates.currentUrl) context.currentUrl = updates.currentUrl
+        if (updates.pageTitle) context.pageTitle = updates.pageTitle
+        if (updates.pageContent) context.pageContent = updates.pageContent
+        
+        context.timestamp = Date.now()
+
+        appEvents.emit('conversation:context-updated', {
+          conversationId: sessionId,
+          context: updates
+        })
+
+        logger.debug('Context updated', { sessionId, updates })
+        resolve()
+
+      } catch (error) {
+        logger.error('Failed to update context', error as Error)
+        resolve()
+      }
+    })
+  }
+
+  getQualityAnalytics(): any {
+    if (this.qualityMetrics.length === 0) {
+      return {
+        totalConversations: 0,
+        averageQuality: {
+          relevanceScore: 0,
+          helpfulnessScore: 0,
+          contextAwareness: 0,
+          taskCompletion: 0,
+          userSatisfaction: 0
+        },
+        overallScore: 0,
+        recommendations: ['Start more conversations to generate analytics']
+      }
+    }
+
+    const averageQuality: ConversationQualityMetrics = {
+      relevanceScore: 0,
+      helpfulnessScore: 0,
+      contextAwareness: 0,
+      taskCompletion: 0,
+      userSatisfaction: 0
+    }
+
+    // Calculate averages
+    Object.keys(averageQuality).forEach(key => {
+      averageQuality[key as keyof ConversationQualityMetrics] = 
+        this.qualityMetrics.reduce((sum, metrics) => 
+          sum + metrics[key as keyof ConversationQualityMetrics], 0) / this.qualityMetrics.length
+    })
+
+    const overallScore = Object.values(averageQuality).reduce((sum, score) => sum + score, 0) / Object.keys(averageQuality).length
+
+    return {
+      totalConversations: this.qualityMetrics.length,
+      averageQuality,
+      overallScore,
+      trends: this.analyzeTrends(),
+      recommendations: this.generateRecommendations(averageQuality)
+    }
+  }
+
   cleanup(): void {
     try {
       // Clean up old conversations
