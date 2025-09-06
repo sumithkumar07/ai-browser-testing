@@ -30,7 +30,6 @@ class UnifiedAIService {
   private static instance: UnifiedAIService
   private isInitialized: boolean = false
   private messages: AIMessage[] = []
-  private connectionRetries: number = 0
   private lastConnectionTest: number = 0
   private operationQueue: Map<string, Promise<AIResponse>> = new Map()
   private abortControllers: Map<string, AbortController> = new Map()
