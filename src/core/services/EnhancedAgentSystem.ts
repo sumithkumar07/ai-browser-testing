@@ -185,7 +185,7 @@ class EnhancedAgentSystem {
           await this.updateTaskStatus(
             task.id,
             'running',
-            progress,
+            taskProgress,
             [`Attempt ${attempt} failed`, `Retrying in ${delay / 1000}s...`]
           )
 
