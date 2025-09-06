@@ -97,7 +97,7 @@ class ConversationManager {
     }
   }
 
-  addMessage(sessionId: string, message: AIMessage): void {
+  async addMessage(sessionId: string, message: AIMessage, qualityMetrics?: Partial<ConversationQualityMetrics>): Promise<void> {
     try {
       const context = this.conversations.get(sessionId)
       if (!context) {
@@ -115,6 +115,19 @@ class ConversationManager {
 
       // Update context
       context.timestamp = Date.now()
+
+      // Store quality metrics if provided
+      if (qualityMetrics && !message.isUser) {
+        const fullMetrics: ConversationQualityMetrics = {
+          relevanceScore: qualityMetrics.relevanceScore || 0.7,
+          helpfulnessScore: qualityMetrics.helpfulnessScore || 0.7,
+          contextAwareness: qualityMetrics.contextAwareness || 0.7,
+          taskCompletion: qualityMetrics.taskCompletion || 0.7,
+          userSatisfaction: qualityMetrics.userSatisfaction || 0.7,
+          ...qualityMetrics
+        }
+        this.qualityMetrics.push(fullMetrics)
+      }
 
       // Emit message added event
       appEvents.emit('conversation:message-added', { 
