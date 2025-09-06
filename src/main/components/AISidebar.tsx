@@ -1,12 +1,20 @@
+// Enhanced AI Sidebar with Agent Integration
 import React, { useState, useEffect, useRef } from 'react'
-import { AIMessage, AIResponse } from '../types/electron'
+import { AIMessage, AIResponse, AgentStatus } from '../types/electron'
 
 interface AISidebarProps {
   onClose: () => void
   currentUrl: string
+  onAgentTask: (task: string) => void
+  agentStatus: AgentStatus | null
 }
 
-const AISidebar: React.FC<AISidebarProps> = ({ onClose, currentUrl }) => {
+const AISidebar: React.FC<AISidebarProps> = ({ 
+  onClose, 
+  currentUrl, 
+  onAgentTask,
+  agentStatus 
+}) => {
   const [messages, setMessages] = useState<AIMessage[]>([])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -21,37 +29,91 @@ const AISidebar: React.FC<AISidebarProps> = ({ onClose, currentUrl }) => {
     scrollToBottom()
   }, [messages])
 
+  // Update messages when agent status changes
+  useEffect(() => {
+    if (agentStatus) {
+      updateAgentStatusMessage(agentStatus)
+    }
+  }, [agentStatus])
+
   const initializeAI = async () => {
     try {
       const result = await window.electronAPI.testConnection()
       if (result.success) {
         setConnectionStatus('connected')
-        // Get personalized greeting from AI
-        const greetingResponse = await window.electronAPI.sendAIMessage('Generate a personalized greeting for the user')
-        if (greetingResponse.success && greetingResponse.result) {
-          addMessage('assistant', greetingResponse.result)
-        } else {
-          addMessage('assistant', 'Hello! I\'m your AI assistant. I\'m ready to help you with browsing, research, and intelligent tasks. What would you like to do?')
-        }
+        addMessage(false, `🤖 Hello! I'm your AI assistant with full browser control.
+
+I can help you with:
+• 🔍 Research tasks (find top websites, compare information)  
+• 🌐 Navigate to websites and extract content
+• 📊 Analyze web pages and create summaries
+• 🛒 Shopping research and price comparison
+• 📝 Create organized research documents
+
+Try: "research top 5 AI websites and create summary"`)
       } else {
         setConnectionStatus('disconnected')
-        addMessage('assistant', 'I\'m currently unable to connect to the AI service. Please check your internet connection and try again.')
+        addMessage(false, 'I\'m currently unable to connect to the AI service. Please check your internet connection and try again.')
       }
     } catch (error) {
       setConnectionStatus('disconnected')
-      addMessage('assistant', 'I encountered an error while initializing. Please try refreshing the application or check your connection.')
+      addMessage(false, 'I encountered an error while initializing. Please try refreshing the application or check your connection.')
     }
   }
 
-  const addMessage = (isUser: boolean, content: string, isLoading = false) => {
+  const addMessage = (isUser: boolean, content: string, isLoading = false, agentStatus?: AgentStatus) => {
     const message: AIMessage = {
       id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       content,
       timestamp: Date.now(),
       isUser,
-      isLoading
+      isLoading,
+      agentStatus
     }
     setMessages(prev => [...prev, message])
+  }
+
+  const updateAgentStatusMessage = (status: AgentStatus) => {
+    setMessages(prevMessages => {
+      // Remove previous agent status messages
+      const filtered = prevMessages.filter(msg => !msg.agentStatus)
+      
+      // Add new agent status message
+      const statusMessage: AIMessage = {
+        id: `agent_status_${Date.now()}`,
+        content: formatAgentStatus(status),
+        timestamp: Date.now(),
+        isUser: false,
+        agentStatus: status
+      }
+      
+      return [...filtered, statusMessage]
+    })
+  }
+
+  const formatAgentStatus = (status: AgentStatus): string => {
+    const statusEmoji = {
+      idle: '⏸️',
+      active: '⏳',
+      completed: '✅',
+      error: '❌'
+    }
+
+    let message = `${statusEmoji[status.status]} **${status.name}**: ${status.status.toUpperCase()}`
+    
+    if (status.currentTask) {
+      message += `\n📋 Task: ${status.currentTask}`
+    }
+    
+    if (status.progress !== undefined) {
+      message += `\n📊 Progress: ${Math.round(status.progress)}%`
+    }
+    
+    if (status.details && status.details.length > 0) {
+      message += '\n\n**Details:**\n' + status.details.map(detail => `• ${detail}`).join('\n')
+    }
+    
+    return message
   }
 
   const scrollToBottom = () => {
@@ -72,7 +134,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ onClose, currentUrl }) => {
 
     try {
       // Add loading message
-      addMessage(false, '', true)
+      addMessage(false, '🤖 Processing your request...', true)
 
       // Send to AI service
       const result: AIResponse = await window.electronAPI.sendAIMessage(userMessage)
@@ -81,7 +143,13 @@ const AISidebar: React.FC<AISidebarProps> = ({ onClose, currentUrl }) => {
       setMessages(prev => prev.filter(msg => !msg.isLoading))
 
       if (result.success) {
-        addMessage(false, result.result || 'No response received')
+        addMessage(false, result.result || 'Task initiated successfully')
+        
+        // Execute agent task if this is a complex request
+        if (shouldExecuteAgentTask(userMessage)) {
+          addMessage(false, '🔄 Executing agent task...')
+          onAgentTask(userMessage)
+        }
         
         // Execute actions if any
         if (result.actions && result.actions.length > 0) {
@@ -92,15 +160,26 @@ const AISidebar: React.FC<AISidebarProps> = ({ onClose, currentUrl }) => {
           }
         }
       } else {
-        addMessage(false, `Error: ${result.error || 'Unknown error occurred'}`)
+        addMessage(false, `❌ Error: ${result.error || 'Unknown error occurred'}`)
       }
     } catch (error) {
       // Remove loading message
       setMessages(prev => prev.filter(msg => !msg.isLoading))
-      addMessage(false, `Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      addMessage(false, `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const shouldExecuteAgentTask = (message: string): boolean => {
+    const agentKeywords = [
+      'research', 'find', 'search', 'top', 'best', 'compare', 
+      'analyze', 'summary', 'summarize', 'extract', 'websites',
+      'create', 'generate', 'make'
+    ]
+    
+    const lowerMessage = message.toLowerCase()
+    return agentKeywords.some(keyword => lowerMessage.includes(keyword))
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -114,10 +193,58 @@ const AISidebar: React.FC<AISidebarProps> = ({ onClose, currentUrl }) => {
     })
   }
 
+  const renderMessageContent = (message: AIMessage) => {
+    if (message.isLoading) {
+      return (
+        <div className="ai-loading">
+          <span>AI is thinking</span>
+          <div className="ai-loading-dots">
+            <div className="ai-loading-dot"></div>
+            <div className="ai-loading-dot"></div>
+            <div className="ai-loading-dot"></div>
+          </div>
+        </div>
+      )
+    }
+
+    // Render markdown-like content
+    const content = message.content
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`(.*?)`/g, '<code>$1</code>')
+      .replace(/\n/g, '<br>')
+
+    return (
+      <div 
+        className="message-content"
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+    )
+  }
+
+  const quickActions = [
+    {
+      label: '🔍 Research AI websites',
+      action: 'research top 5 AI websites and create summary'
+    },
+    {
+      label: '📊 Analyze current page',
+      action: 'analyze the content of this page'
+    },
+    {
+      label: '📝 Create research notes',
+      action: 'create a new AI tab for research notes'
+    },
+    {
+      label: '🌐 Navigate to site',
+      action: 'navigate to google.com'
+    }
+  ]
+
   return (
     <div className="ai-sidebar">
       <div className="ai-sidebar-header">
-        <h3 className="ai-sidebar-title">AI Assistant</h3>
+        <h3 className="ai-sidebar-title">🤖 AI Assistant</h3>
         <button className="ai-sidebar-close" onClick={onClose}>
           ×
         </button>
@@ -126,10 +253,15 @@ const AISidebar: React.FC<AISidebarProps> = ({ onClose, currentUrl }) => {
       <div className={`ai-connection-status ${connectionStatus}`}>
         <div className="ai-connection-indicator"></div>
         <span>
-          {connectionStatus === 'connected' && 'Connected'}
+          {connectionStatus === 'connected' && 'Connected & Ready'}
           {connectionStatus === 'disconnected' && 'Disconnected'}
           {connectionStatus === 'loading' && 'Connecting...'}
         </span>
+        {agentStatus && (
+          <span className="agent-status-indicator">
+            Agent: {agentStatus.status}
+          </span>
+        )}
       </div>
 
       <div className="ai-sidebar-content">
@@ -138,21 +270,10 @@ const AISidebar: React.FC<AISidebarProps> = ({ onClose, currentUrl }) => {
             {messages.map(message => (
               <div
                 key={message.id}
-                className={`ai-message ${message.isUser ? 'user' : 'assistant'}`}
+                className={`ai-message ${message.isUser ? 'user' : 'assistant'} ${message.agentStatus ? 'agent-status' : ''}`}
               >
                 <div className="ai-message-content">
-                  {message.isLoading ? (
-                    <div className="ai-loading">
-                      <span>AI is thinking</span>
-                      <div className="ai-loading-dots">
-                        <div className="ai-loading-dot"></div>
-                        <div className="ai-loading-dot"></div>
-                        <div className="ai-loading-dot"></div>
-                      </div>
-                    </div>
-                  ) : (
-                    message.content
-                  )}
+                  {renderMessageContent(message)}
                 </div>
                 <div className="ai-message-time">
                   {formatTime(message.timestamp)}
@@ -162,13 +283,26 @@ const AISidebar: React.FC<AISidebarProps> = ({ onClose, currentUrl }) => {
             <div ref={messagesEndRef} />
           </div>
 
+          <div className="quick-actions">
+            {quickActions.map((action, index) => (
+              <button
+                key={index}
+                className="quick-action-btn"
+                onClick={() => setInputValue(action.action)}
+                disabled={isLoading}
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
+
           <div className="ai-input-container">
             <form onSubmit={handleSubmit} className="ai-input-form">
               <textarea
                 className="ai-input"
                 value={inputValue}
                 onChange={handleInputChange}
-                placeholder="Ask me anything..."
+                placeholder="Ask me anything... I can control the browser to help you research, navigate, and analyze content."
                 rows={1}
                 disabled={isLoading}
                 onKeyDown={(e) => {
@@ -183,7 +317,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ onClose, currentUrl }) => {
                 className="ai-send-button"
                 disabled={!inputValue.trim() || isLoading}
               >
-                Send
+                {isLoading ? '⏳' : '📤'}
               </button>
             </form>
           </div>
