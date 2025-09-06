@@ -30,6 +30,15 @@ const Settings: React.FC = () => {
   const { context, refreshContext } = useAI()
   const { getCurrentUrl } = useBrowser()
   
+  // Mock features data since useAdvancedFeatures was removed
+  const features = []
+  const enableFeature = async (featureId: string) => {
+    console.log('Feature enabled:', featureId)
+  }
+  const disableFeature = async (featureId: string) => {
+    console.log('Feature disabled:', featureId)
+  }
+  
   const [settings, setSettings] = useState<SettingsState>({
     aiSettings: {
       model: 'llama-3.1-70b-versatile',
