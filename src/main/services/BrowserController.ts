@@ -51,7 +51,7 @@ export class BrowserController {
       return { success: false, error: 'Failed to create AI tab' }
     } catch (error) {
       console.error('❌ Failed to create AI tab:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: (error as Error).message }
     }
   }
 
