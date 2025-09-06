@@ -563,66 +563,18 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       }
     })
 
-    // Agent Task Execution
+    // Enhanced Agent Task Execution with Smart Coordination
     ipcMain.handle('execute-agent-task', async (event, task) => {
       try {
-        console.log('🤖 Executing agent task:', task)
+        console.log('🤖 Executing enhanced agent task:', task)
         
-        // Simple task routing based on keywords
-        let result = { type: 'task_completed', message: 'Task completed successfully' }
+        // Analyze task to determine agent type and approach
+        const taskAnalysis = this.analyzeAgentTask(task)
+        const agentType = taskAnalysis.primaryAgent
         
-        if (task.toLowerCase().includes('research') && task.toLowerCase().includes('ai')) {
-          // AI Research Task
-          const websites = [
-            'https://openai.com',
-            'https://deepmind.com',
-            'https://news.mit.edu/topic/artificial-intelligence2',
-            'https://techcrunch.com/category/artificial-intelligence/',
-            'https://www.artificialintelligence-news.com'
-          ]
-          
-          // Create tabs for research
-          const tabResults = []
-          for (let i = 0; i < Math.min(websites.length, 3); i++) {
-            const website = websites[i]
-            const tabResult = await this.createTab(website)
-            if (tabResult.success) {
-              tabResults.push({ url: website, tabId: tabResult.tabId })
-            }
-          }
-          
-          // Create AI tab with research summary
-          const summaryContent = `# AI Research Summary
-Generated: ${new Date().toLocaleString()}
-
-## Research Task
-${task}
-
-## Websites Analyzed
-${tabResults.map(t => `- ${t.url}`).join('\n')}
-
-## Key Findings
-1. **OpenAI**: Latest developments in GPT models and AI safety
-2. **DeepMind**: Breakthrough research in AI capabilities and alignment
-3. **MIT Technology Review**: Academic perspective on AI trends
-
-## Next Steps
-- Review individual website content in opened tabs
-- Conduct deeper analysis on specific topics
-- Expand research to additional sources
-
-[This content is editable - add your own notes and insights]`
-
-          const aiTabResult = await this.createAITab(`AI Research - ${Date.now()}`, summaryContent)
-          
-          result = {
-            type: 'research_completed',
-            message: 'AI research completed successfully',
-            tabsCreated: tabResults.length,
-            aiTabId: aiTabResult.tabId,
-            summary: summaryContent
-          }
-        }
+        console.log('📊 Task Analysis:', taskAnalysis)
+        
+        let result = await this.executeSpecializedAgent(agentType, task, taskAnalysis)
         
         return { success: true, result: result }
         
@@ -631,6 +583,108 @@ ${tabResults.map(t => `- ${t.url}`).join('\n')}
         return { success: false, error: error.message }
       }
     })
+
+    // Add new method to the class for specialized agent execution
+    this.executeSpecializedAgent = async (agentType, task, analysis) => {
+      switch (agentType) {
+        case 'research':
+          return await this.executeResearchAgent(task, analysis)
+        case 'navigation':
+          return await this.executeNavigationAgent(task, analysis)
+        case 'shopping':
+          return await this.executeShoppingAgent(task, analysis)
+        case 'communication':
+          return await this.executeCommunicationAgent(task, analysis)
+        case 'automation':
+          return await this.executeAutomationAgent(task, analysis)
+        case 'analysis':
+          return await this.executeAnalysisAgent(task, analysis)
+        default:
+          return await this.executeGeneralAgent(task, analysis)
+      }
+    }
+
+    // Add task analysis method
+    this.analyzeAgentTask = (task) => {
+      const lowerTask = task.toLowerCase()
+      
+      // Research keywords with higher specificity
+      const researchScore = this.calculateKeywordScore(lowerTask, [
+        'research', 'find', 'search', 'investigate', 'explore', 'discover', 
+        'study', 'examine', 'top', 'best', 'list', 'sources', 'comprehensive',
+        'trending', 'latest', 'developments', 'news', 'topics'
+      ])
+      
+      // Navigation keywords
+      const navigationScore = this.calculateKeywordScore(lowerTask, [
+        'navigate', 'go to', 'visit', 'open', 'browse', 'website', 'url', 'page'
+      ])
+      
+      // Shopping keywords  
+      const shoppingScore = this.calculateKeywordScore(lowerTask, [
+        'shop', 'shopping', 'buy', 'purchase', 'price', 'cost', 'product', 
+        'compare', 'deal', 'discount', 'sale', 'cheap', 'review', 'rating'
+      ])
+      
+      // Communication keywords
+      const communicationScore = this.calculateKeywordScore(lowerTask, [
+        'email', 'compose', 'write', 'message', 'contact', 'form', 'fill', 
+        'submit', 'social', 'post', 'tweet', 'linkedin', 'send'
+      ])
+      
+      // Automation keywords
+      const automationScore = this.calculateKeywordScore(lowerTask, [
+        'automate', 'automation', 'workflow', 'schedule', 'repeat', 'batch',
+        'routine', 'process', 'sequence', 'steps'
+      ])
+      
+      // Analysis keywords
+      const analysisScore = this.calculateKeywordScore(lowerTask, [
+        'analyze', 'analysis', 'summarize', 'summary', 'extract', 'insights',
+        'review', 'evaluate', 'assess', 'interpret', 'examine'
+      ])
+
+      // Determine primary agent
+      const scores = {
+        research: researchScore,
+        navigation: navigationScore,
+        shopping: shoppingScore,
+        communication: communicationScore,
+        automation: automationScore,
+        analysis: analysisScore
+      }
+      
+      const primaryAgent = Object.keys(scores).reduce((a, b) => 
+        scores[a] > scores[b] ? a : b
+      )
+      
+      // Determine complexity and supporting agents
+      const complexity = task.length > 100 || lowerTask.includes('comprehensive') || 
+                        lowerTask.includes('detailed') ? 'high' : 
+                        lowerTask.includes('simple') || lowerTask.includes('quick') ? 'low' : 'medium'
+      
+      const supportingAgents = Object.keys(scores)
+        .filter(agent => agent !== primaryAgent && scores[agent] > 0)
+        .sort((a, b) => scores[b] - scores[a])
+        .slice(0, 2)
+
+      return {
+        primaryAgent,
+        supportingAgents,
+        complexity,
+        scores,
+        confidence: scores[primaryAgent],
+        needsMultipleAgents: supportingAgents.length > 0 && complexity === 'high'
+      }
+    }
+
+    // Add keyword scoring method
+    this.calculateKeywordScore = (text, keywords) => {
+      return keywords.reduce((score, keyword) => {
+        const count = (text.match(new RegExp(keyword, 'g')) || []).length
+        return score + count * (keyword.length > 6 ? 2 : 1) // Longer keywords get more weight
+      }, 0)
+    }
 
     // Agent Status
     ipcMain.handle('get-agent-status', async (event, agentId) => {
