@@ -125,7 +125,7 @@ export class BrowserController {
       return { success: true, tasks: allTasks }
     } catch (error) {
       console.error('❌ Failed to get agent status:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: (error as Error).message }
     }
   }
 
