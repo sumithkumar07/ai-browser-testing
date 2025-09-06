@@ -76,7 +76,7 @@ export class BrowserController {
       return { success: false, error: 'No active tab to extract content from' }
     } catch (error) {
       console.error('❌ Content extraction failed:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: (error as Error).message }
     }
   }
 
