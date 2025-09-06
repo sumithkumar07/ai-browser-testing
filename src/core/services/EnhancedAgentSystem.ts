@@ -150,11 +150,11 @@ class EnhancedAgentSystem {
         logger.debug(`Task execution attempt ${attempt}/${maxRetries}`, { taskId: task.id })
 
         // Update progress
-        const progress = Math.floor((attempt - 1) / maxRetries * 50) // Up to 50% for attempts
+        const taskProgress = Math.floor((attempt - 1) / maxRetries * 50) // Up to 50% for attempts
         await this.updateTaskStatus(
           task.id, 
           'running', 
-          progress,
+          taskProgress,
           [`Attempt ${attempt}/${maxRetries}`, 'Executing task...']
         )
 
