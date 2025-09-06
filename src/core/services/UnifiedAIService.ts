@@ -277,8 +277,7 @@ class UnifiedAIService {
 
         const result = await this.withTimeout(
           window.electronAPI.sendAIMessage(contextualPrompt),
-          timeout,
-          abortController.signal
+          timeout
         )
 
         if (result.success && result.result) {
