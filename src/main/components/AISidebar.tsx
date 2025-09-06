@@ -250,8 +250,20 @@ Try: "research top 5 AI websites and create summary"`)
       action: 'help me compare products and find the best deals'
     },
     {
-      label: '📝 Research & organize',
-      action: 'research this topic across multiple sources and organize findings in an AI tab'
+      label: '📧 Compose email',
+      action: 'help me compose a professional email with proper formatting and tone'
+    },
+    {
+      label: '🤖 Automate workflow',
+      action: 'create an automated workflow for repetitive browser tasks'
+    },
+    {
+      label: '📝 Fill forms automatically',
+      action: 'help me fill out web forms automatically with smart data extraction'
+    },
+    {
+      label: '📅 Schedule automation',
+      action: 'set up scheduled automation for regular browser tasks'
     },
     {
       label: '🌐 Smart navigation',
