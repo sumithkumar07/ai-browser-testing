@@ -294,7 +294,7 @@ class UnifiedAIService {
         throw new Error(result.error || 'Empty response from AI service')
 
       } catch (error) {
-        logger.warn(`Enhanced message attempt ${attempt} failed`, error as Error, { operationId, attempt })
+        logger.warn(`Enhanced message attempt ${attempt} failed: ${(error as Error).message}`, { operationId, attempt })
 
         if (attempt === maxRetries) {
           throw error
