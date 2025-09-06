@@ -245,7 +245,7 @@ class AgentCoordinator {
     Object.assign(collaboration.sharedContext, updates)
     
     appEvents.emit('agent:context-updated', {
-      collaborationId,
+      agentId: collaborationId,
       context: collaboration.sharedContext
     })
 
