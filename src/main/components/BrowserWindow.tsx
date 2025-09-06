@@ -1,19 +1,24 @@
+// Phase 1: Enhanced BrowserWindow with AI Tab Support
 import React, { useEffect, useState } from 'react'
 import { Tab } from '../types/electron'
+import AITabContent from './AITabContent'
 import BrowserEngine from '../services/BrowserEngine'
 
 interface BrowserWindowProps {
   activeTabId: string | null
   tabs: Tab[]
+  onCreateAITab: (title: string, content: string) => void
 }
 
 const BrowserWindow: React.FC<BrowserWindowProps> = ({
   activeTabId,
-  tabs
+  tabs,
+  onCreateAITab
 }) => {
   const [browserEngine] = useState(() => BrowserEngine.getInstance())
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
   const activeTab = tabs.find(tab => tab.id === activeTabId)
 
   useEffect(() => {
@@ -75,44 +80,10 @@ const BrowserWindow: React.FC<BrowserWindowProps> = ({
     }
   }
 
-  return (
-    <div className="browser-window">
-      {activeTab ? (
-        <div className="browser-content">
-          {/* Real BrowserView integration - no placeholders */}
-          <div className="browser-view-container">
-            {isLoading && (
-              <div className="loading-overlay">
-                <div className="loading-spinner"></div>
-                <span>Loading {activeTab.url}...</span>
-              </div>
-            )}
-            
-            {error && (
-              <div className="error-overlay">
-                <div className="error-message">
-                  <h3>⚠️ Navigation Error</h3>
-                  <p>{error}</p>
-                  <button onClick={() => handleReload()}>
-                    Retry
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* BrowserView will be attached here by Electron */}
-            <div 
-              id={`browser-view-${activeTabId}`}
-              className="browser-view"
-              style={{
-                width: '100%',
-                height: '100%',
-                position: 'relative'
-              }}
-            />
-          </div>
-        </div>
-      ) : (
+  // Phase 1: Render different content based on tab type
+  const renderTabContent = () => {
+    if (!activeTab) {
+      return (
         <div className="new-tab-container">
           <div className="new-tab-content">
             <h1>🌐 KAiro Browser</h1>
@@ -136,10 +107,72 @@ const BrowserWindow: React.FC<BrowserWindowProps> = ({
               >
                 📚 Stack Overflow
               </button>
+              <button 
+                onClick={() => onCreateAITab('Research Notes', '# Research Notes\n\nStart your research here...')}
+                className="quick-action-btn ai-tab-btn"
+              >
+                🤖 Create AI Tab
+              </button>
             </div>
           </div>
         </div>
-      )}
+      )
+    }
+
+    if (activeTab.type === 'ai') {
+      // Render AI Tab Content
+      return (
+        <AITabContent 
+          tab={activeTab}
+          onContentChange={(content) => {
+            // Save content changes
+            if (window.electronAPI.saveAITabContent) {
+              window.electronAPI.saveAITabContent(activeTab.id, content)
+            }
+          }}
+        />
+      )
+    }
+
+    // Render Browser Tab Content
+    return (
+      <div className="browser-content">
+        {isLoading && (
+          <div className="loading-overlay">
+            <div className="loading-spinner"></div>
+            <span>Loading {activeTab.url}...</span>
+          </div>
+        )}
+        
+        {error && (
+          <div className="error-overlay">
+            <div className="error-message">
+              <h3>⚠️ Navigation Error</h3>
+              <p>{error}</p>
+              <button onClick={() => handleReload()}>
+                Retry
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* BrowserView will be attached here by Electron */}
+        <div 
+          id={`browser-view-${activeTabId}`}
+          className="browser-view"
+          style={{
+            width: '100%',
+            height: '100%',
+            position: 'relative'
+          }}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="browser-window">
+      {renderTabContent()}
     </div>
   )
 }

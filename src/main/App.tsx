@@ -1,27 +1,14 @@
+// Phase 1: Core Layout Fix + Phase 4: Complete Integration
 import React, { useState, useEffect } from 'react'
 import BrowserWindow from './components/BrowserWindow'
 import AISidebar from './components/AISidebar'
 import TabBar from './components/TabBar'
 import NavigationBar from './components/NavigationBar'
 import LoadingSpinner from './components/LoadingSpinner'
+import { AgentFramework } from './services/AgentFramework'
+import { BrowserController } from './services/BrowserController'
+import { Tab, BrowserEvent, AgentStatus } from './types/electron'
 import './styles/App.css'
-
-interface Tab {
-  id: string
-  title: string
-  url: string
-  isLoading: boolean
-  isActive: boolean
-}
-
-interface BrowserEvent {
-  type: string
-  tabId?: string
-  url?: string
-  title?: string
-  loading?: boolean
-  error?: any
-}
 
 const App: React.FC = () => {
   const [tabs, setTabs] = useState<Tab[]>([])
@@ -30,6 +17,7 @@ const App: React.FC = () => {
   const [currentUrl, setCurrentUrl] = useState('')
   const [aiSidebarOpen, setAISidebarOpen] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [agentStatus, setAgentStatus] = useState<AgentStatus | null>(null)
 
   useEffect(() => {
     initializeApp()
@@ -44,16 +32,27 @@ const App: React.FC = () => {
         throw new Error('KAiro Browser requires Electron environment')
       }
 
-      // Setup event listeners
+      // Initialize Browser Controller (Phase 2)
+      const browserController = BrowserController.getInstance()
+      await browserController.initialize()
+
+      // Initialize Agent Framework (Phase 3)
+      const agentFramework = AgentFramework.getInstance()
+      await agentFramework.initialize()
+
+      // Set up event listeners
       setupEventListeners()
 
-      // Create initial tab (don't wait for it to complete)
-      createNewTab('https://www.google.com').catch(error => {
-        console.error('Failed to create initial tab:', error)
-        // Don't fail the entire app if tab creation fails
+      // Set up agent event listeners (Phase 4 Integration)
+      agentFramework.addEventListener('agent-update', (status: AgentStatus) => {
+        setAgentStatus(status)
       })
 
-      // Set loading to false immediately - don't wait for tab creation
+      // Create initial tab
+      createNewTab('https://www.google.com').catch(error => {
+        console.error('Failed to create initial tab:', error)
+      })
+
       setIsLoading(false)
     } catch (error) {
       console.error('Failed to initialize app:', error)
@@ -74,6 +73,13 @@ const App: React.FC = () => {
         createNewTab()
       }
     })
+
+    // Agent updates (Phase 4 Integration)
+    if (window.electronAPI.onAgentUpdate) {
+      window.electronAPI.onAgentUpdate((status: AgentStatus) => {
+        setAgentStatus(status)
+      })
+    }
   }
 
   const handleBrowserEvent = (event: BrowserEvent) => {
@@ -138,6 +144,27 @@ const App: React.FC = () => {
         }
         break
 
+      case 'ai-tab-created':
+        // Handle AI tab creation
+        if (event.tabId) {
+          const newTab: Tab = {
+            id: event.tabId,
+            title: event.title || 'AI Tab',
+            url: 'ai://content',
+            isLoading: false,
+            isActive: true,
+            type: 'ai',
+            content: event.content || '',
+            createdBy: 'agent'
+          }
+          
+          setTabs(prevTabs => 
+            prevTabs.map(tab => ({ ...tab, isActive: false })).concat(newTab)
+          )
+          setActiveTabId(event.tabId)
+        }
+        break
+
       case 'error':
         console.error('Browser error:', event.error)
         setError(`Browser error: ${event.error?.description || 'Unknown error'}`)
@@ -145,17 +172,20 @@ const App: React.FC = () => {
     }
   }
 
-  const createNewTab = async (url: string = 'about:blank') => {
+  const createNewTab = async (url: string = 'about:blank', type: 'browser' | 'ai' = 'browser') => {
     try {
-      const result = await window.electronAPI.createTab(url)
+      const result = await window.electronAPI.createTab(url, type)
       if (result.success) {
         if (result.tabId) {
           const newTab: Tab = {
             id: result.tabId,
-            title: 'New Tab',
+            title: type === 'ai' ? 'AI Tab' : 'New Tab',
             url: url,
             isLoading: false,
-            isActive: true
+            isActive: true,
+            type: type,
+            content: type === 'ai' ? '' : undefined,
+            createdBy: 'user'
           }
           
           setTabs(prevTabs => 
@@ -163,11 +193,39 @@ const App: React.FC = () => {
           )
           setActiveTabId(result.tabId)
         }
-        setCurrentUrl(url)
+        if (type === 'browser') {
+          setCurrentUrl(url)
+        }
       }
     } catch (error) {
       console.error('Failed to create tab:', error)
       setError('Failed to create new tab')
+    }
+  }
+
+  const createAITab = async (title: string, content: string = '') => {
+    try {
+      const result = await window.electronAPI.createAITab(title, content)
+      if (result.success) {
+        const newTab: Tab = {
+          id: result.tabId,
+          title: title,
+          url: 'ai://content',
+          isLoading: false,
+          isActive: true,
+          type: 'ai',
+          content: content,
+          createdBy: 'agent'
+        }
+        
+        setTabs(prevTabs => 
+          prevTabs.map(tab => ({ ...tab, isActive: false })).concat(newTab)
+        )
+        setActiveTabId(result.tabId)
+      }
+    } catch (error) {
+      console.error('Failed to create AI tab:', error)
+      setError('Failed to create AI tab')
     }
   }
 
@@ -194,17 +252,26 @@ const App: React.FC = () => {
 
   const switchTab = async (tabId: string) => {
     try {
-      const result = await window.electronAPI.switchTab(tabId)
-      if (result.success) {
+      const tab = tabs.find(t => t.id === tabId)
+      if (!tab) return
+
+      if (tab.type === 'browser') {
+        // Switch to browser tab
+        const result = await window.electronAPI.switchTab(tabId)
+        if (result.success) {
+          setTabs(prevTabs => 
+            prevTabs.map(tab => ({ ...tab, isActive: tab.id === tabId }))
+          )
+          setActiveTabId(tabId)
+          setCurrentUrl(tab.url)
+        }
+      } else {
+        // Switch to AI tab
         setTabs(prevTabs => 
           prevTabs.map(tab => ({ ...tab, isActive: tab.id === tabId }))
         )
         setActiveTabId(tabId)
-        
-        const tab = tabs.find(t => t.id === tabId)
-        if (tab) {
-          setCurrentUrl(tab.url)
-        }
+        setCurrentUrl('ai://content')
       }
     } catch (error) {
       console.error('Failed to switch tab:', error)
@@ -254,6 +321,22 @@ const App: React.FC = () => {
     setAISidebarOpen(!aiSidebarOpen)
   }
 
+  // Phase 4: Agent Task Execution Integration
+  const handleAgentTask = async (task: string) => {
+    try {
+      const result = await window.electronAPI.executeAgentTask(task)
+      if (result.success) {
+        console.log('✅ Agent task completed:', result)
+      } else {
+        console.error('❌ Agent task failed:', result.error)
+        setError(`Agent task failed: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('❌ Agent task execution error:', error)
+      setError('Agent task execution failed')
+    }
+  }
+
   if (isLoading) {
     return <LoadingSpinner />
   }
@@ -270,6 +353,7 @@ const App: React.FC = () => {
 
   return (
     <div className="app">
+      {/* Phase 1: Fixed Layout Structure */}
       <div className="app-header">
         <TabBar 
           tabs={tabs}
@@ -278,27 +362,36 @@ const App: React.FC = () => {
           onTabClose={closeTab}
           onNewTab={() => createNewTab()}
         />
-        <NavigationBar
-          currentUrl={currentUrl}
-          onNavigate={navigateTo}
-          onGoBack={goBack}
-          onGoForward={goForward}
-          onReload={reload}
-          onToggleAI={toggleAISidebar}
-          aiSidebarOpen={aiSidebarOpen}
-        />
+        
+        {/* Only show navigation bar for browser content */}
+        {tabs.find(t => t.id === activeTabId)?.type === 'browser' && (
+          <NavigationBar
+            currentUrl={currentUrl}
+            onNavigate={navigateTo}
+            onGoBack={goBack}
+            onGoForward={goForward}
+            onReload={reload}
+            onToggleAI={toggleAISidebar}
+            aiSidebarOpen={aiSidebarOpen}
+          />
+        )}
       </div>
       
       <div className="app-content">
+        {/* Phase 1: Browser Area (70% width) */}
         <BrowserWindow 
           activeTabId={activeTabId}
           tabs={tabs}
+          onCreateAITab={createAITab}
         />
         
+        {/* Phase 1: AI Assistant Panel (30% width) */}
         {aiSidebarOpen && (
           <AISidebar
             onClose={() => setAISidebarOpen(false)}
             currentUrl={currentUrl}
+            onAgentTask={handleAgentTask}
+            agentStatus={agentStatus}
           />
         )}
       </div>
