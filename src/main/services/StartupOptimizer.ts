@@ -18,6 +18,7 @@ export interface StartupTask {
 }
 
 export interface StartupProgress {
+  stage: string
   currentTask: string
   completedTasks: number
   totalTasks: number
