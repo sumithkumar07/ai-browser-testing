@@ -393,6 +393,10 @@ class EnhancedAgentSystem {
       return 'shopping'
     } else if (desc.includes('navigate') || desc.includes('go to') || desc.includes('visit')) {
       return 'navigation'
+    } else if (desc.includes('email') || desc.includes('compose') || desc.includes('form') || desc.includes('social')) {
+      return 'communication'
+    } else if (desc.includes('automate') || desc.includes('workflow') || desc.includes('schedule') || desc.includes('repeat')) {
+      return 'automation'
     }
     return 'general'
   }
