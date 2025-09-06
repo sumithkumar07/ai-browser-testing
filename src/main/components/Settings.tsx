@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react'
 import { useAI } from '../hooks/useAI'
 import { useBrowser } from '../hooks/useBrowser'
-import { useAdvancedFeatures } from '../hooks/useAdvancedFeatures'
 
 interface SettingsState {
   aiSettings: {
