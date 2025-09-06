@@ -41,16 +41,18 @@ const AISidebar: React.FC<AISidebarProps> = ({
       const result = await window.electronAPI.testConnection()
       if (result.success) {
         setConnectionStatus('connected')
-        addMessage(false, `🤖 Hello! I'm your AI assistant with full browser control.
+        addMessage(false, `🤖 Hello! I'm your AI assistant with full browser control and automation.
 
 I can help you with:
 • 🔍 Research tasks (find top websites, compare information)  
 • 🌐 Navigate to websites and extract content
 • 📊 Analyze web pages and create summaries
 • 🛒 Shopping research and price comparison
+• 📧 Communication (emails, forms, social media)
+• 🤖 Automation (workflows, repetitive tasks, scheduling)
 • 📝 Create organized research documents
 
-Try: "research top 5 AI websites and create summary"`)
+Try: "compose professional email" or "automate this workflow"`)
       } else {
         setConnectionStatus('disconnected')
         addMessage(false, 'I\'m currently unable to connect to the AI service. Please check your internet connection and try again.')
