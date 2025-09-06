@@ -673,7 +673,7 @@ class UnifiedAIService {
       return result.success
 
     } catch (error) {
-      logger.warn('Connection check failed', error as Error)
+      logger.warn(`Connection check failed: ${(error as Error).message}`)
       return false
     }
   }
