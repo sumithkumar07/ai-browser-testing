@@ -6,7 +6,7 @@
 import { createLogger } from '../logger/Logger'
 import { APP_CONSTANTS } from '../utils/Constants'
 import { appEvents } from '../utils/EventEmitter'
-import { AgentStatus, AgentTask, AgentAction } from '../types'
+import { AgentStatus, AgentTask } from '../types'
 import UnifiedAPIClient from './UnifiedAPIClient'
 
 const logger = createLogger('EnhancedAgentSystem')
