@@ -98,10 +98,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removeAIContentUpdateListener: () => ipcRenderer.removeAllListeners('ai-content-update'),
   removeMenuActionListener: () => ipcRenderer.removeAllListeners('menu-action'),
   
-  // AI Tab Management
-  saveAITabContent: (content) => ipcRenderer.invoke('save-ai-tab-content', content),
-  loadAITabContent: () => ipcRenderer.invoke('load-ai-tab-content'),
-  
   // Debug
   debugBrowserView: () => ipcRenderer.invoke('debug-browser-view')
 })
