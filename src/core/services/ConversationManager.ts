@@ -58,7 +58,10 @@ class ConversationManager {
 
     appEvents.on('ai:message', (data) => {
       if (this.currentSessionId) {
-        this.updateConversationContext(this.currentSessionId, data)
+        this.updateConversationContext(this.currentSessionId, { 
+          userIntent: data.message || '',
+          timestamp: Date.now()
+        })
       }
     })
 
