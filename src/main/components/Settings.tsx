@@ -29,7 +29,6 @@ interface SettingsState {
 const Settings: React.FC = () => {
   const { context, refreshContext } = useAI()
   const { getCurrentUrl } = useBrowser()
-  const { features, enableFeature, disableFeature } = useAdvancedFeatures()
   
   const [settings, setSettings] = useState<SettingsState>({
     aiSettings: {
