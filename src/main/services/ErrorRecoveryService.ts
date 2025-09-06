@@ -64,7 +64,7 @@ export class ErrorRecoveryService {
       description: 'Retry AI service calls with exponential backoff',
       condition: (error, context) => 
         context.component === 'AIService' && error.message.includes('network'),
-      execute: async (error, context) => {
+      execute: async (_error, context) => {
         const delay = Math.min(1000 * Math.pow(2, context.retryCount || 0), 10000)
         await new Promise(resolve => setTimeout(resolve, delay))
         return true
