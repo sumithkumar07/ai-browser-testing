@@ -146,7 +146,7 @@ export class ErrorRecoveryService {
         
         if (success) {
           logger.info('Recovery successful', { strategyId: strategy.id })
-          appEvents.emit('error:recovered', { strategy: strategy.id, error, context: fullContext })
+          appEvents.emit('error:recovered', { strategyId: strategy.id, error, recovery: strategy.name })
           return true
         }
       } catch (recoveryError) {
