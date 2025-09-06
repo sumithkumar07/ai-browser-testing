@@ -4,7 +4,6 @@
  */
 
 import { createLogger } from '../logger/Logger'
-import { APP_CONSTANTS } from '../utils/Constants'
 import { appEvents } from '../utils/EventEmitter'
 import { Tab } from '../types'
 
