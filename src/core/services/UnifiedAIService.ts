@@ -649,6 +649,7 @@ class UnifiedAIService {
    * Cancel all pending operations
    */
   cancelAllOperations(): void {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     for (const [operationId, controller] of this.abortControllers) {
       controller.abort()
     }
