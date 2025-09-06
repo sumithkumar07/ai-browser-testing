@@ -21,6 +21,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   analyzeContent: () => ipcRenderer.invoke('analyze-content'),
   getAIContext: () => ipcRenderer.invoke('get-ai-context'),
   testConnection: () => ipcRenderer.invoke('test-ai-connection'),
+  testAIConnection: () => ipcRenderer.invoke('test-ai-connection'),
+  
+  // Agent System
+  executeAgentTask: (task) => ipcRenderer.invoke('execute-agent-task', task),
+  getAgentStatus: (agentId) => ipcRenderer.invoke('get-agent-status', agentId),
+  
+  // AI Tab Management
+  createAITab: (title, content) => ipcRenderer.invoke('create-ai-tab', title, content),
+  saveAITabContent: (tabId, content) => ipcRenderer.invoke('save-ai-tab-content', tabId, content),
+  loadAITabContent: (tabId) => ipcRenderer.invoke('load-ai-tab-content', tabId),
   
   // Advanced Features
   analyzeImage: (imageData) => ipcRenderer.invoke('analyze-image', imageData),
