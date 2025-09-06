@@ -401,6 +401,8 @@ class UnifiedAIService {
       isActive: this.isInitialized && this.currentSessionId !== null
     }
   }
+  // Unused method - keeping for future enhancement
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async executeMessageOperation(
     message: string,
     options: AIOperationOptions,
