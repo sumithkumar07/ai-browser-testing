@@ -92,9 +92,9 @@ export class BrowserController {
         startTime: Date.now()
       })
       
-      // Import and use AgentFramework
-      const { AgentFramework } = await import('./AgentFramework')
-      const agentFramework = AgentFramework.getInstance()
+      // Import and use IntegratedAgentFramework
+      const { default: IntegratedAgentFramework } = await import('./IntegratedAgentFramework')
+      const agentFramework = IntegratedAgentFramework.getInstance()
       
       const result = await agentFramework.processUserInput(task)
       
