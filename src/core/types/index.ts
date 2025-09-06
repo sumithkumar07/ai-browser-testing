@@ -3,7 +3,7 @@
  * All TypeScript types and interfaces for KAiro Browser
  */
 
-// Re-export existing types
+// Re-export main types
 export * from '../../main/types/electron'
 
 // Core Application Types
