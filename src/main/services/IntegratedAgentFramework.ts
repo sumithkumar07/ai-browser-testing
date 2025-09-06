@@ -244,17 +244,61 @@ export class IntegratedAgentFramework {
   } {
     const lowerInput = input.toLowerCase()
     
-    if (lowerInput.includes('research') || lowerInput.includes('find') || lowerInput.includes('search')) {
-      return { intent: 'research', confidence: 0.8, entities: ['research'], agentType: 'research' }
-    } else if (lowerInput.includes('navigate') || lowerInput.includes('go to') || lowerInput.includes('visit')) {
-      return { intent: 'navigation', confidence: 0.8, entities: ['navigation'], agentType: 'navigation' }
-    } else if (lowerInput.includes('analyze') || lowerInput.includes('analysis') || lowerInput.includes('summarize')) {
-      return { intent: 'analysis', confidence: 0.8, entities: ['analysis'], agentType: 'analysis' }
-    } else if (lowerInput.includes('shop') || lowerInput.includes('buy') || lowerInput.includes('price')) {
-      return { intent: 'shopping', confidence: 0.8, entities: ['shopping'], agentType: 'shopping' }
+    // Research keywords - High priority patterns
+    const researchKeywords = ['research', 'find', 'search', 'investigate', 'explore', 'discover', 'study', 'examine', 'top', 'best', 'list', 'websites', 'sources']
+    const researchScore = researchKeywords.filter(keyword => lowerInput.includes(keyword)).length
+    
+    // Navigation keywords
+    const navigationKeywords = ['navigate', 'go to', 'visit', 'open', 'browse', 'url', 'website', 'site', 'page']
+    const navigationScore = navigationKeywords.filter(keyword => lowerInput.includes(keyword)).length
+    
+    // Analysis keywords
+    const analysisKeywords = ['analyze', 'analysis', 'summarize', 'summary', 'extract', 'insights', 'review', 'evaluate', 'assess', 'interpret']
+    const analysisScore = analysisKeywords.filter(keyword => lowerInput.includes(keyword)).length
+    
+    // Shopping keywords - Enhanced detection
+    const shoppingKeywords = ['shop', 'shopping', 'buy', 'purchase', 'price', 'cost', 'product', 'compare', 'deal', 'discount', 'sale', 'cheap', 'expensive', 'review', 'rating', 'cart', 'order']
+    const shoppingScore = shoppingKeywords.filter(keyword => lowerInput.includes(keyword)).length
+    
+    // Multi-step/complex task indicators
+    const complexKeywords = ['create', 'generate', 'make', 'build', 'compile', 'organize', 'multiple', 'several', 'across', 'comprehensive', 'detailed']
+    const complexScore = complexKeywords.filter(keyword => lowerInput.includes(keyword)).length
+    
+    // Calculate scores
+    const scores = {
+      research: researchScore + (complexScore * 0.5),
+      navigation: navigationScore,
+      analysis: analysisScore + (complexScore * 0.3),
+      shopping: shoppingScore
     }
     
-    return { intent: 'general', confidence: 0.6, entities: [], agentType: 'research' }
+    // Complex query detection (>50 characters or multiple sentences)
+    const isComplexQuery = input.length > 50 || input.includes('.') || input.includes('?') || complexScore > 0
+    
+    // Determine best agent based on scores
+    const maxScore = Math.max(...Object.values(scores))
+    const bestAgent = Object.keys(scores).find(key => scores[key] === maxScore)
+    
+    // Confidence calculation
+    let confidence = 0.6 // Base confidence
+    if (maxScore >= 2) confidence = 0.8
+    if (maxScore >= 3) confidence = 0.9
+    if (isComplexQuery) confidence += 0.1
+    
+    // Extract entities based on detected keywords
+    const entities = []
+    if (scores.research > 0) entities.push('research')
+    if (scores.navigation > 0) entities.push('navigation') 
+    if (scores.analysis > 0) entities.push('analysis')
+    if (scores.shopping > 0) entities.push('shopping')
+    if (isComplexQuery) entities.push('complex')
+    
+    return {
+      intent: bestAgent || 'research',
+      confidence: Math.min(confidence, 1.0),
+      entities,
+      agentType: bestAgent || 'research'
+    }
   }
 
   /**
