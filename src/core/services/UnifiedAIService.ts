@@ -98,7 +98,6 @@ class UnifiedAIService {
         )
         
         if ((result as any).success) {
-          this.connectionRetries = 0
           this.lastConnectionTest = Date.now()
           return
         }
