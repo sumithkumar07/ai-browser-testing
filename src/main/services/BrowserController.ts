@@ -109,7 +109,7 @@ export class BrowserController {
       return { success: true, taskId, result }
     } catch (error) {
       console.error('❌ Agent task execution failed:', error)
-      return { success: false, error: error.message }
+      return { success: false, error: (error as Error).message }
     }
   }
 
