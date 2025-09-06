@@ -97,7 +97,7 @@ export class IntegratedAgentFramework {
         ? await this.conversationManager.analyzeUserIntent(session.sessionId, input)
         : null
 
-      const needsCoordination = intentAnalysis?.suggestedAgents.length > 1 || 
+      const needsCoordination = (intentAnalysis?.suggestedAgents && intentAnalysis.suggestedAgents.length > 1) || 
                                this.isComplexTask(input)
 
       if (needsCoordination && session.sessionId) {
