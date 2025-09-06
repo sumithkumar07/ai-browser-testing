@@ -1,6 +1,6 @@
 // AI Tab Content Display Component
 import React, { useState, useEffect, useRef } from 'react'
-import { Tab, AITabContent as AITabContentType } from '../types/electron'
+import { Tab } from '../types/electron'
 
 interface AITabContentProps {
   tab: Tab
