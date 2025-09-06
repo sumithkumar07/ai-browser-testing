@@ -295,6 +295,7 @@ export class StartupOptimizer {
 
   private emitProgress(currentTask: string): void {
     const progress: StartupProgress = {
+      stage: 'startup',
       currentTask,
       completedTasks: this.completedTasks.size,
       totalTasks: this.tasks.size,
