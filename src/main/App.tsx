@@ -33,38 +33,46 @@ const App: React.FC = () => {
   const initializeApp = async () => {
     try {
       setIsLoading(true)
+      logger.info('Initializing KAiro Browser Application')
       
       // Check if we're in Electron environment
       if (!window.electronAPI) {
         throw new Error('KAiro Browser requires Electron environment')
       }
 
-      // Initialize Browser Controller (Phase 2)
+      // Initialize Browser Controller
+      logger.debug('Initializing Browser Controller')
       const browserController = BrowserController.getInstance()
       await browserController.initialize()
 
-      // Initialize Agent Framework (Phase 3)
+      // Initialize Agent Framework
+      logger.debug('Initializing Agent Framework')
       const agentFramework = AgentFramework.getInstance()
       await agentFramework.initialize()
 
       // Set up event listeners
       setupEventListeners()
 
-      // Set up agent event listeners (Phase 4 Integration)
+      // Set up agent event listeners
       agentFramework.addEventListener('agent-update', (status: AgentStatus) => {
+        logger.debug('Agent status update received', status)
         setAgentStatus(status)
       })
 
       // Create initial tab
-      createNewTab('https://www.google.com').catch(error => {
-        console.error('Failed to create initial tab:', error)
-      })
+      await createNewTab(APP_CONSTANTS.BROWSER.DEFAULT_URL)
 
+      // Emit app initialized event
+      appEvents.emit('app:initialized', { timestamp: Date.now() })
+      
       setIsLoading(false)
+      logger.info('KAiro Browser initialized successfully')
     } catch (error) {
-      console.error('Failed to initialize app:', error)
-      setError(error instanceof Error ? error.message : 'Unknown error')
+      const errorMessage = error instanceof Error ? error.message : 'Unknown initialization error'
+      logger.error('Failed to initialize app', error as Error)
+      setError(errorMessage)
       setIsLoading(false)
+      appEvents.emit('app:error', { error: error as Error, context: 'initialization' })
     }
   }
 
