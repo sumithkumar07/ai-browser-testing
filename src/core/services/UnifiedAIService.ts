@@ -45,7 +45,10 @@ class UnifiedAIService {
     maxHistoryLength: 100
   }
 
-  private constructor() {}
+  private constructor() {
+    this.conversationManager = ConversationManager.getInstance()
+    this.agentCoordinator = AgentCoordinator.getInstance()
+  }
 
   static getInstance(): UnifiedAIService {
     if (!UnifiedAIService.instance) {
