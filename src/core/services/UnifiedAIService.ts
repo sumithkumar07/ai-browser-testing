@@ -34,6 +34,9 @@ class UnifiedAIService {
   private lastConnectionTest: number = 0
   private operationQueue: Map<string, Promise<AIResponse>> = new Map()
   private abortControllers: Map<string, AbortController> = new Map()
+  private conversationManager: ConversationManager
+  private agentCoordinator: AgentCoordinator
+  private currentSessionId: string | null = null
 
   private config: AIServiceConfig = {
     maxRetries: 3,
