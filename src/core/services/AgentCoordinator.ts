@@ -374,7 +374,7 @@ class AgentCoordinator {
   }
 
   private async generateWorkflowSteps(
-    task: string,
+    _task: string,
     analysis: any
   ): Promise<WorkflowStep[]> {
     const steps: WorkflowStep[] = []
