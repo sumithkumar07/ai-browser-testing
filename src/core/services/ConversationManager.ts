@@ -68,8 +68,9 @@ class ConversationManager {
     })
   }
 
-  async startConversation(sessionId: string, initialContext: Partial<ConversationContext>): Promise<void> {
+  async startConversation(initialContext: Partial<ConversationContext>): Promise<string> {
     try {
+      const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
       logger.info(`Starting conversation session: ${sessionId}`)
       
       const context: ConversationContext = {
@@ -89,6 +90,7 @@ class ConversationManager {
       // Emit conversation started event
       appEvents.emit('conversation:started', { conversationId: sessionId, timestamp: Date.now() })
       
+      return sessionId
     } catch (error) {
       logger.error('Failed to start conversation', error as Error)
       throw error
