@@ -1114,6 +1114,17 @@ ${tabResults.map(t => `- ${t.url}`).join('\n')}
       }
       this.browserViews.clear()
       
+      // Clear AI tabs data
+      if (this.aiTabs) {
+        this.aiTabs.clear()
+        console.log('🧹 Cleared AI tabs data')
+      }
+      
+      // Reset counters and state
+      this.tabCounter = 0
+      this.activeTabId = null
+      this.isInitialized = false
+      
       console.log('✅ KAiro Browser Manager cleanup complete')
       
     } catch (error) {
