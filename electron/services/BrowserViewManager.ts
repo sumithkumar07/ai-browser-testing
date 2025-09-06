@@ -1,293 +1,322 @@
 // electron/services/BrowserViewManager.ts
-import { BrowserView, WebContents } from 'electron'
+import { BrowserView, BrowserWindow } from 'electron'
 
-export interface TabInfo {
+export interface BrowserTab {
   id: string
-  title: string
+  browserView: BrowserView
   url: string
+  title: string
   isLoading: boolean
   canGoBack: boolean
   canGoForward: boolean
-  favicon?: string
-}
-
-export interface BrowserViewResult {
-  success: boolean
-  tabId?: string
-  error?: string
+  createdAt: number
 }
 
 export class BrowserViewManager {
-  private browserViews: Map<string, BrowserView> = new Map()
+  private static instance: BrowserViewManager
+  private mainWindow: BrowserWindow | null = null
+  private tabs: Map<string, BrowserTab> = new Map()
   private activeTabId: string | null = null
-  private isInitialized: boolean = false
-  private tabInfo: Map<string, TabInfo> = new Map()
+  private tabCounter: number = 0
 
-  constructor() {
-    this.browserViews = new Map()
-    this.activeTabId = null
-    this.isInitialized = false
-    this.tabInfo = new Map()
-  }
+  private constructor() {}
 
-  async initialize(): Promise<void> {
-    try {
-      console.log('🌐 Initializing BrowserView Manager...')
-      this.isInitialized = true
-      console.log('✅ BrowserView Manager initialized')
-    } catch (error) {
-      console.error('❌ Failed to initialize BrowserView Manager:', error)
-      throw error
+  static getInstance(): BrowserViewManager {
+    if (!BrowserViewManager.instance) {
+      BrowserViewManager.instance = new BrowserViewManager()
     }
+    return BrowserViewManager.instance
   }
 
-  async createBrowserView(tabId: string, url: string): Promise<BrowserViewResult> {
-    try {
-      console.log(`🌐 Creating BrowserView for tab: ${tabId}`)
-      
-      const browserView = new BrowserView({
-        webPreferences: {
-          nodeIntegration: false,
-          contextIsolation: true,
-          webSecurity: true,
-          preload: require('path').join(__dirname, '../preload/preload.js')
-        }
-      })
+  setMainWindow(mainWindow: BrowserWindow): void {
+    this.mainWindow = mainWindow
+    
+    // Handle window resize to update BrowserView bounds
+    mainWindow.on('resize', () => {
+      this.updateActiveBrowserViewBounds()
+    })
+  }
 
-      this.browserViews.set(tabId, browserView)
-      
-      // Initialize tab info
-      this.tabInfo.set(tabId, {
-        id: tabId,
-        title: 'New Tab',
-        url: url,
-        isLoading: true,
-        canGoBack: false,
-        canGoForward: false
-      })
-      
-      // Navigate to URL
+  async createTab(url: string = 'about:blank'): Promise<BrowserTab> {
+    if (!this.mainWindow) {
+      throw new Error('Main window not set')
+    }
+
+    const tabId = `tab_${++this.tabCounter}_${Date.now()}`
+    
+    // Create BrowserView
+    const browserView = new BrowserView({
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        webSecurity: true,
+        allowRunningInsecureContent: false,
+        experimentalFeatures: false
+      }
+    })
+
+    // Create tab object
+    const tab: BrowserTab = {
+      id: tabId,
+      browserView,
+      url,
+      title: 'New Tab',
+      isLoading: false,
+      canGoBack: false,
+      canGoForward: false,
+      createdAt: Date.now()
+    }
+
+    // Store tab
+    this.tabs.set(tabId, tab)
+
+    // Set up event listeners
+    this.setupBrowserViewListeners(tab)
+
+    // Load URL
+    if (url !== 'about:blank') {
       await browserView.webContents.loadURL(url)
-      
-      // Setup event listeners
-      this.setupBrowserViewEvents(tabId, browserView.webContents)
-      
-      console.log(`✅ BrowserView created for tab: ${tabId}`)
-      return { success: true, tabId }
-      
-    } catch (error) {
-      console.error(`❌ Failed to create BrowserView for tab ${tabId}:`, error)
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
     }
+
+    // Set as active tab
+    this.setActiveTab(tabId)
+
+    console.log(`✅ Tab created: ${tabId}`)
+    return tab
   }
 
-  async destroyBrowserView(tabId: string): Promise<BrowserViewResult> {
-    try {
-      console.log(`🗑️ Destroying BrowserView for tab: ${tabId}`)
-      
-      const browserView = this.browserViews.get(tabId)
-      if (browserView) {
-        browserView.webContents.destroy()
-        this.browserViews.delete(tabId)
-        this.tabInfo.delete(tabId)
-        
-        if (this.activeTabId === tabId) {
-          this.activeTabId = null
-        }
-        
-        console.log(`✅ BrowserView destroyed for tab: ${tabId}`)
-        return { success: true, tabId }
-      } else {
-        console.log(`⚠️ BrowserView not found for tab: ${tabId}`)
-        return { success: false, error: 'BrowserView not found' }
-      }
-      
-    } catch (error) {
-      console.error(`❌ Failed to destroy BrowserView for tab ${tabId}:`, error)
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+  async closeTab(tabId: string): Promise<boolean> {
+    const tab = this.tabs.get(tabId)
+    if (!tab) {
+      return false
     }
-  }
 
-  async switchToTab(tabId: string, mainWindow: any): Promise<BrowserViewResult> {
-    try {
-      console.log(`🔄 Switching to tab: ${tabId}`)
-      
-      const browserView = this.browserViews.get(tabId)
-      if (browserView) {
-        mainWindow.setBrowserView(browserView)
-        this.activeTabId = tabId
-        
-        // Resize browser view to fit window
-        const bounds = mainWindow.getBounds()
-        browserView.setBounds({
-          x: 0,
-          y: 80, // Account for tab bar and navigation
-          width: bounds.width,
-          height: bounds.height - 80
-        })
-        
-        console.log(`✅ Switched to tab: ${tabId}`)
-        return { success: true, tabId }
-      } else {
-        console.log(`⚠️ BrowserView not found for tab: ${tabId}`)
-        return { success: false, error: 'BrowserView not found' }
-      }
-      
-    } catch (error) {
-      console.error(`❌ Failed to switch to tab ${tabId}:`, error)
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    // Remove from main window if active
+    if (tabId === this.activeTabId) {
+      this.mainWindow?.setBrowserView(null)
+      this.activeTabId = null
     }
+
+    // Destroy BrowserView
+    tab.browserView.webContents.destroy()
+    
+    // Remove from tabs
+    this.tabs.delete(tabId)
+
+    console.log(`✅ Tab closed: ${tabId}`)
+    return true
   }
 
-  async navigateToUrl(tabId: string, url: string): Promise<BrowserViewResult> {
-    try {
-      console.log(`🌐 Navigating tab ${tabId} to: ${url}`)
-      
-      const browserView = this.browserViews.get(tabId)
-      if (browserView) {
-        await browserView.webContents.loadURL(url)
-        
-        // Update tab info
-        const tabInfo = this.tabInfo.get(tabId)
-        if (tabInfo) {
-          tabInfo.url = url
-          tabInfo.isLoading = true
-          this.tabInfo.set(tabId, tabInfo)
-        }
-        
-        console.log(`✅ Navigated tab ${tabId} to: ${url}`)
-        return { success: true, tabId }
-      } else {
-        console.log(`⚠️ BrowserView not found for tab: ${tabId}`)
-        return { success: false, error: 'BrowserView not found' }
-      }
-      
-    } catch (error) {
-      console.error(`❌ Failed to navigate tab ${tabId} to ${url}:`, error)
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+  setActiveTab(tabId: string): boolean {
+    const tab = this.tabs.get(tabId)
+    if (!tab || !this.mainWindow) {
+      return false
     }
+
+    // Set BrowserView
+    this.mainWindow.setBrowserView(tab.browserView)
+    this.activeTabId = tabId
+
+    // Update bounds
+    this.updateBrowserViewBounds(tab.browserView)
+
+    console.log(`✅ Active tab set: ${tabId}`)
+    return true
   }
 
-  async goBack(tabId: string): Promise<BrowserViewResult> {
-    try {
-      const browserView = this.browserViews.get(tabId)
-      if (browserView && browserView.webContents.canGoBack()) {
-        browserView.webContents.goBack()
-        return { success: true, tabId }
-      }
-      return { success: false, error: 'Cannot go back' }
-    } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+  getTab(tabId: string): BrowserTab | undefined {
+    return this.tabs.get(tabId)
+  }
+
+  getActiveTab(): BrowserTab | null {
+    if (!this.activeTabId) {
+      return null
     }
+    return this.tabs.get(this.activeTabId) || null
   }
 
-  async goForward(tabId: string): Promise<BrowserViewResult> {
-    try {
-      const browserView = this.browserViews.get(tabId)
-      if (browserView && browserView.webContents.canGoForward()) {
-        browserView.webContents.goForward()
-        return { success: true, tabId }
-      }
-      return { success: false, error: 'Cannot go forward' }
-    } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
-    }
-  }
-
-  async reload(tabId: string): Promise<BrowserViewResult> {
-    try {
-      const browserView = this.browserViews.get(tabId)
-      if (browserView) {
-        browserView.webContents.reload()
-        return { success: true, tabId }
-      }
-      return { success: false, error: 'BrowserView not found' }
-    } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
-    }
-  }
-
-  getTabInfo(tabId: string): TabInfo | null {
-    return this.tabInfo.get(tabId) || null
-  }
-
-  getAllTabs(): TabInfo[] {
-    return Array.from(this.tabInfo.values())
-  }
-
-  getActiveTabId(): string | null {
-    return this.activeTabId
-  }
-
-  private setupBrowserViewEvents(tabId: string, webContents: WebContents): void {
-    webContents.on('did-start-loading', () => {
-      const tabInfo = this.tabInfo.get(tabId)
-      if (tabInfo) {
-        tabInfo.isLoading = true
-        this.tabInfo.set(tabId, tabInfo)
-      }
-    })
-
-    webContents.on('did-finish-load', () => {
-      const tabInfo = this.tabInfo.get(tabId)
-      if (tabInfo) {
-        tabInfo.isLoading = false
-        tabInfo.title = webContents.getTitle()
-        tabInfo.url = webContents.getURL()
-        tabInfo.canGoBack = webContents.canGoBack()
-        tabInfo.canGoForward = webContents.canGoForward()
-        this.tabInfo.set(tabId, tabInfo)
-      }
-    })
-
-    webContents.on('page-title-updated', (event, title) => {
-      const tabInfo = this.tabInfo.get(tabId)
-      if (tabInfo) {
-        tabInfo.title = title
-        this.tabInfo.set(tabId, tabInfo)
-      }
-    })
-
-    webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
-      console.error(`❌ Failed to load page for tab ${tabId}:`, errorDescription)
-      const tabInfo = this.tabInfo.get(tabId)
-      if (tabInfo) {
-        tabInfo.isLoading = false
-        this.tabInfo.set(tabId, tabInfo)
-      }
-    })
-  }
-
-  // Public utility methods
-  isReady(): boolean {
-    return this.isInitialized
+  getAllTabs(): BrowserTab[] {
+    return Array.from(this.tabs.values())
   }
 
   getTabCount(): number {
-    return this.browserViews.size
+    return this.tabs.size
   }
 
-  hasTab(tabId: string): boolean {
-    return this.browserViews.has(tabId)
+  private setupBrowserViewListeners(tab: BrowserTab): void {
+    const { browserView, id } = tab
+
+    // Navigation events
+    browserView.webContents.on('did-start-loading', () => {
+      tab.isLoading = true
+      this.emitTabEvent('loading-started', id, { loading: true })
+    })
+
+    browserView.webContents.on('did-finish-load', () => {
+      tab.isLoading = false
+      tab.canGoBack = browserView.webContents.canGoBack()
+      tab.canGoForward = browserView.webContents.canGoForward()
+      this.emitTabEvent('loading-finished', id, { loading: false })
+    })
+
+    browserView.webContents.on('did-navigate', (event, url) => {
+      tab.url = url
+      tab.canGoBack = browserView.webContents.canGoBack()
+      tab.canGoForward = browserView.webContents.canGoForward()
+      this.emitTabEvent('navigation', id, { url })
+    })
+
+    browserView.webContents.on('page-title-updated', (event, title) => {
+      tab.title = title
+      this.emitTabEvent('title-updated', id, { title })
+    })
+
+    browserView.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+      tab.isLoading = false
+      this.emitTabEvent('navigation-error', id, { 
+        error: { code: errorCode, description: errorDescription, url: validatedURL }
+      })
+    })
+
+    // Context menu
+    browserView.webContents.on('context-menu', (event, params) => {
+      // Handle context menu
+      this.emitTabEvent('context-menu', id, { params })
+    })
   }
 
-  cleanup(): void {
-    console.log('🧹 Cleaning up BrowserView Manager...')
-    
-    for (const [tabId, browserView] of this.browserViews) {
-      try {
-        browserView.webContents.destroy()
-      } catch (error) {
-        console.error(`❌ Failed to destroy BrowserView for tab ${tabId}:`, error)
+  private updateBrowserViewBounds(browserView: BrowserView): void {
+    if (!this.mainWindow) return
+
+    const bounds = this.mainWindow.getBounds()
+    const headerHeight = 100 // Tab bar + Navigation bar
+    const sidebarWidth = Math.floor(bounds.width * 0.3) // 30% for AI sidebar
+    const browserWidth = bounds.width - sidebarWidth
+
+    browserView.setBounds({
+      x: 0,
+      y: headerHeight,
+      width: browserWidth,
+      height: bounds.height - headerHeight
+    })
+  }
+
+  private updateActiveBrowserViewBounds(): void {
+    if (this.activeTabId) {
+      const tab = this.tabs.get(this.activeTabId)
+      if (tab) {
+        this.updateBrowserViewBounds(tab.browserView)
       }
     }
-    
-    this.browserViews.clear()
-    this.tabInfo.clear()
+  }
+
+  private emitTabEvent(eventType: string, tabId: string, data: any): void {
+    if (this.mainWindow) {
+      this.mainWindow.webContents.send('browser-event', {
+        type: eventType,
+        tabId,
+        ...data
+      })
+    }
+  }
+
+  // Navigation methods
+  async navigateTo(url: string, tabId?: string): Promise<boolean> {
+    const targetTabId = tabId || this.activeTabId
+    if (!targetTabId) return false
+
+    const tab = this.tabs.get(targetTabId)
+    if (!tab) return false
+
+    try {
+      await tab.browserView.webContents.loadURL(url)
+      return true
+    } catch (error) {
+      console.error('Navigation failed:', error)
+      return false
+    }
+  }
+
+  goBack(tabId?: string): boolean {
+    const targetTabId = tabId || this.activeTabId
+    if (!targetTabId) return false
+
+    const tab = this.tabs.get(targetTabId)
+    if (!tab || !tab.browserView.webContents.canGoBack()) {
+      return false
+    }
+
+    tab.browserView.webContents.goBack()
+    return true
+  }
+
+  goForward(tabId?: string): boolean {
+    const targetTabId = tabId || this.activeTabId
+    if (!targetTabId) return false
+
+    const tab = this.tabs.get(targetTabId)
+    if (!tab || !tab.browserView.webContents.canGoForward()) {
+      return false
+    }
+
+    tab.browserView.webContents.goForward()
+    return true
+  }
+
+  reload(tabId?: string): boolean {
+    const targetTabId = tabId || this.activeTabId
+    if (!targetTabId) return false
+
+    const tab = this.tabs.get(targetTabId)
+    if (!tab) return false
+
+    tab.browserView.webContents.reload()
+    return true
+  }
+
+  // Utility methods
+  getCurrentUrl(tabId?: string): string {
+    const targetTabId = tabId || this.activeTabId
+    if (!targetTabId) return ''
+
+    const tab = this.tabs.get(targetTabId)
+    return tab ? tab.browserView.webContents.getURL() : ''
+  }
+
+  getPageTitle(tabId?: string): string {
+    const targetTabId = tabId || this.activeTabId
+    if (!targetTabId) return 'New Tab'
+
+    const tab = this.tabs.get(targetTabId)
+    return tab ? tab.browserView.webContents.getTitle() : 'New Tab'
+  }
+
+  async executeScript(script: string, tabId?: string): Promise<any> {
+    const targetTabId = tabId || this.activeTabId
+    if (!targetTabId) return null
+
+    const tab = this.tabs.get(targetTabId)
+    if (!tab) return null
+
+    try {
+      return await tab.browserView.webContents.executeJavaScript(script)
+    } catch (error) {
+      console.error('Script execution failed:', error)
+      return null
+    }
+  }
+
+  // Cleanup
+  destroy(): void {
+    for (const tab of this.tabs.values()) {
+      try {
+        tab.browserView.webContents.destroy()
+      } catch (error) {
+        console.error('Error destroying BrowserView:', error)
+      }
+    }
+    this.tabs.clear()
     this.activeTabId = null
-    this.isInitialized = false
-    
-    console.log('✅ BrowserView Manager cleanup complete')
   }
 }
 

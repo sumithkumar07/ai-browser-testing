@@ -1,46 +1,77 @@
 const { app, BrowserWindow, BrowserView, ipcMain, Menu, shell } = require('electron')
 const path = require('path')
+const Groq = require('groq-sdk')
 require('dotenv').config()
+
 console.log('🔑 Environment variables loaded:', process.env.GROQ_API_KEY ? 'YES' : 'NO')
 
-class KAiroDesktopBrowser {
+class KAiroBrowserManager {
   constructor() {
     this.mainWindow = null
+    this.browserViews = new Map() // tabId -> BrowserView
+    this.activeTabId = null
+    this.aiService = null
+    this.tabCounter = 0
     this.isInitialized = false
   }
 
   async initialize() {
     try {
-      console.log('🚀 Initializing KAiro Desktop Browser...')
+      console.log('🚀 Initializing KAiro Browser Manager...')
       
-      // Set up desktop-only configuration
+      // Set up app configuration
       app.setName('KAiro Browser')
       app.setAppUserModelId('com.kairo.browser')
       
-      // Disable web security features for desktop-only app
-      app.commandLine.appendSwitch('--disable-web-security')
-      app.commandLine.appendSwitch('--disable-features', 'VizDisplayCompositor')
+      // Initialize AI service
+      await this.initializeAIService()
       
-      // Setup desktop IPC handlers
-      this.setupDesktopIPCHandlers()
+      // Setup IPC handlers
+      this.setupIPCHandlers()
       
       this.isInitialized = true
-      console.log('✅ KAiro Desktop Browser initialized successfully')
+      console.log('✅ KAiro Browser Manager initialized successfully')
       
     } catch (error) {
-      console.error('❌ Failed to initialize KAiro Desktop Browser:', error)
+      console.error('❌ Failed to initialize KAiro Browser Manager:', error)
       throw error
     }
   }
 
-  setupDesktopIPCHandlers() {
-    console.log('🔌 Setting up desktop-only IPC handlers...')
+  async initializeAIService() {
+    try {
+      console.log('🤖 Initializing AI Service...')
+      
+      if (!process.env.GROQ_API_KEY) {
+        throw new Error('GROQ_API_KEY not found in environment variables')
+      }
+
+      this.aiService = new Groq({
+        apiKey: process.env.GROQ_API_KEY
+      })
+
+      // Test connection
+      const testResponse = await this.aiService.chat.completions.create({
+        messages: [{ role: 'user', content: 'test' }],
+        model: 'llama3-8b-8192',
+        max_tokens: 1
+      })
+
+      console.log('✅ AI Service initialized and connected')
+      
+    } catch (error) {
+      console.error('❌ Failed to initialize AI service:', error)
+      throw error
+    }
+  }
+
+  setupIPCHandlers() {
+    console.log('🔌 Setting up IPC handlers...')
     
-    // Desktop Browser Management IPC Handlers
-    ipcMain.handle('create-tab', async (event, url) => {
+    // Tab Management
+    ipcMain.handle('create-tab', async (event, url = 'https://www.google.com') => {
       try {
-        console.log('📑 Creating desktop tab:', url)
-        return { success: true, data: { tabId: `desktop_tab_${Date.now()}`, url } }
+        return await this.createTab(url)
       } catch (error) {
         return { success: false, error: error.message }
       }
@@ -48,33 +79,88 @@ class KAiroDesktopBrowser {
 
     ipcMain.handle('close-tab', async (event, tabId) => {
       try {
-        console.log('❌ Closing desktop tab:', tabId)
-        return { success: true, data: { tabId } }
+        return await this.closeTab(tabId)
       } catch (error) {
         return { success: false, error: error.message }
       }
     })
 
+    ipcMain.handle('switch-tab', async (event, tabId) => {
+      try {
+        return await this.switchTab(tabId)
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Navigation
     ipcMain.handle('navigate-to', async (event, url) => {
       try {
-        console.log('🌐 Desktop navigation to:', url)
-        return { success: true, data: { url } }
+        return await this.navigateTo(url)
       } catch (error) {
         return { success: false, error: error.message }
       }
     })
 
-    // Desktop AI Service Handlers
-    ipcMain.handle('test-ai-connection', async (event) => {
+    ipcMain.handle('go-back', async () => {
       try {
-        console.log('🤖 Testing desktop AI connection...')
-        const hasApiKey = !!process.env.GROQ_API_KEY
+        return await this.goBack()
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('go-forward', async () => {
+      try {
+        return await this.goForward()
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('reload', async () => {
+      try {
+        return await this.reload()
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-current-url', async () => {
+      try {
+        return await this.getCurrentUrl()
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-page-title', async () => {
+      try {
+        return await this.getPageTitle()
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    // AI Service Handlers
+    ipcMain.handle('test-ai-connection', async () => {
+      try {
+        if (!this.aiService) {
+          return { success: false, error: 'AI service not initialized' }
+        }
+        
+        const response = await this.aiService.chat.completions.create({
+          messages: [{ role: 'user', content: 'test' }],
+          model: 'llama3-8b-8192',
+          max_tokens: 1
+        })
+        
         return { 
-          success: hasApiKey, 
+          success: true, 
           data: { 
-            connected: hasApiKey, 
+            connected: true, 
             timestamp: Date.now(),
-            message: hasApiKey ? 'Desktop AI service ready' : 'GROQ_API_KEY not set for desktop app'
+            message: 'AI service is connected and ready'
           } 
         }
       } catch (error) {
@@ -84,60 +170,147 @@ class KAiroDesktopBrowser {
 
     ipcMain.handle('send-ai-message', async (event, message) => {
       try {
-        console.log('💬 Desktop AI message:', message)
-        if (!process.env.GROQ_API_KEY) {
-          return { 
-            success: false, 
-            error: 'GROQ_API_KEY not configured for desktop app. Please set your API key in .env file' 
-          }
+        console.log('💬 Processing AI message:', message)
+        
+        if (!this.aiService) {
+          return { success: false, error: 'AI service not initialized' }
+        }
+
+        // Get current page context
+        const context = await this.getPageContext()
+        
+        // Create system prompt with context
+        const systemPrompt = `You are KAiro, an intelligent AI browser assistant. You help users with web browsing, research, analysis, and various online tasks.
+
+Current Context:
+- URL: ${context.url}
+- Page Title: ${context.title}
+
+Your capabilities include:
+- Web navigation and search
+- Content analysis and summarization
+- Research assistance
+- Shopping guidance
+- Document processing
+- Task automation
+
+Be helpful, concise, and actionable in your responses.`
+
+        const response = await this.aiService.chat.completions.create({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: message }
+          ],
+          model: 'llama3-8b-8192',
+          temperature: 0.7,
+          max_tokens: 2048
+        })
+
+        const result = response.choices[0].message.content
+        
+        // Analyze if AI wants to perform actions
+        const actions = this.extractActionsFromResponse(result, message)
+        
+        console.log('✅ AI response generated')
+        return { 
+          success: true, 
+          result: result,
+          actions: actions
         }
         
-        // Desktop AI response
-        return { 
-          success: true, 
-          data: `Desktop AI Response: I received your message "${message}". This is a desktop-only AI browser. Configure GROQ_API_KEY for real AI responses.` 
-        }
       } catch (error) {
+        console.error('❌ AI message processing failed:', error)
         return { success: false, error: error.message }
       }
     })
 
-    ipcMain.handle('summarize-page', async (event) => {
+    ipcMain.handle('summarize-page', async () => {
       try {
-        console.log('📄 Desktop page summarization...')
-        return { 
-          success: true, 
-          data: 'Desktop page summary: This is a desktop-only browser summary. Configure GROQ_API_KEY for real AI-powered summaries.' 
+        console.log('📄 Summarizing current page...')
+        
+        if (!this.aiService) {
+          return { success: false, error: 'AI service not initialized' }
         }
+
+        const context = await this.getPageContext()
+        const content = await this.extractPageContent()
+        
+        const response = await this.aiService.chat.completions.create({
+          messages: [
+            { 
+              role: 'system', 
+              content: 'You are an expert content summarizer. Provide clear, concise summaries that capture the main points and key information.'
+            },
+            { 
+              role: 'user', 
+              content: `Please summarize this webpage:\n\nTitle: ${context.title}\nURL: ${context.url}\n\nContent: ${content}`
+            }
+          ],
+          model: 'llama3-8b-8192',
+          temperature: 0.3,
+          max_tokens: 1024
+        })
+
+        const summary = response.choices[0].message.content
+        
+        console.log('✅ Page summarized')
+        return { success: true, data: summary }
+        
       } catch (error) {
+        console.error('❌ Page summarization failed:', error)
         return { success: false, error: error.message }
       }
     })
 
-    ipcMain.handle('analyze-content', async (event) => {
+    ipcMain.handle('analyze-content', async () => {
       try {
-        console.log('🔍 Desktop content analysis...')
-        return { 
-          success: true, 
-          data: 'Desktop content analysis: This is a desktop-only browser analysis. Configure GROQ_API_KEY for real AI-powered analysis.' 
+        console.log('🔍 Analyzing page content...')
+        
+        if (!this.aiService) {
+          return { success: false, error: 'AI service not initialized' }
         }
+
+        const context = await this.getPageContext()
+        const content = await this.extractPageContent()
+        
+        const response = await this.aiService.chat.completions.create({
+          messages: [
+            { 
+              role: 'system', 
+              content: 'You are an expert content analyst. Analyze web content and provide insights about key themes, sentiment, important data, and actionable information.'
+            },
+            { 
+              role: 'user', 
+              content: `Please analyze this webpage content:\n\nTitle: ${context.title}\nURL: ${context.url}\n\nContent: ${content}\n\nProvide analysis including:\n1. Key themes and topics\n2. Important information\n3. Sentiment analysis\n4. Actionable insights`
+            }
+          ],
+          model: 'llama3-8b-8192',
+          temperature: 0.3,
+          max_tokens: 1536
+        })
+
+        const analysis = response.choices[0].message.content
+        
+        console.log('✅ Content analyzed')
+        return { success: true, data: analysis }
+        
       } catch (error) {
+        console.error('❌ Content analysis failed:', error)
         return { success: false, error: error.message }
       }
     })
 
-    ipcMain.handle('get-ai-context', async (event) => {
+    ipcMain.handle('get-ai-context', async () => {
       try {
-        console.log('📊 Getting desktop AI context...')
         return { 
           success: true, 
-          data: {
+          context: {
             model: 'llama3-8b-8192',
             temperature: 0.7,
             maxTokens: 2048,
-            isInitialized: !!process.env.GROQ_API_KEY,
-            agentCount: 5,
-            platform: 'desktop-only'
+            isInitialized: !!this.aiService,
+            agentCount: 8,
+            platform: 'desktop'
           }
         }
       } catch (error) {
@@ -145,12 +318,25 @@ class KAiroDesktopBrowser {
       }
     })
 
-    console.log('✅ Desktop-only IPC handlers setup complete')
+    // Document Processing Handlers
+    ipcMain.handle('analyze-image', async (event, imageData) => {
+      try {
+        // This would require a vision model - placeholder for now
+        return { 
+          success: true, 
+          data: 'Image analysis feature will be implemented with vision-capable models' 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    console.log('✅ IPC handlers setup complete')
   }
 
   async createMainWindow() {
     try {
-      console.log('🪟 Creating desktop-only window...')
+      console.log('🪟 Creating main window...')
       
       this.mainWindow = new BrowserWindow({
         width: 1400,
@@ -158,20 +344,18 @@ class KAiroDesktopBrowser {
         minWidth: 800,
         minHeight: 600,
         show: false,
-        title: 'KAiro Desktop Browser - AI-Powered Desktop Application',
+        title: 'KAiro Browser - AI-Powered Desktop Browser',
         titleBarStyle: 'default',
-        icon: path.join(__dirname, '../dist/icons/icon.svg'),
         webPreferences: {
           nodeIntegration: false,
           contextIsolation: true,
           enableRemoteModule: false,
-          webSecurity: false, // Desktop-only app
-          allowRunningInsecureContent: true, // Desktop-only app
+          webSecurity: true,
           preload: path.join(__dirname, 'preload/preload.js')
         }
       })
 
-      // Load the React app directly (desktop app)
+      // Load the React app
       await this.mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
 
       // Show window when ready
@@ -192,9 +376,6 @@ class KAiroDesktopBrowser {
         return { action: 'deny' }
       })
 
-      // Create default browser view
-      await this.createDefaultBrowserView()
-      
       console.log('✅ Main window created successfully')
       
     } catch (error) {
@@ -203,27 +384,379 @@ class KAiroDesktopBrowser {
     }
   }
 
-  async createDefaultBrowserView() {
+  async createTab(url = 'https://www.google.com') {
     try {
-      console.log('🌐 Creating default BrowserView...')
+      console.log(`📑 Creating tab: ${url}`)
       
-      const defaultUrl = process.env.DEFAULT_HOME_PAGE || 'https://www.google.com'
-      console.log('✅ Default BrowserView URL set:', defaultUrl)
+      if (!this.mainWindow) {
+        throw new Error('Main window not available')
+      }
+
+      const tabId = `tab_${++this.tabCounter}_${Date.now()}`
+      
+      // Create BrowserView
+      const browserView = new BrowserView({
+        webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true,
+          webSecurity: true
+        }
+      })
+
+      // Store BrowserView
+      this.browserViews.set(tabId, browserView)
+      
+      // Set up event listeners
+      this.setupBrowserViewListeners(browserView, tabId)
+      
+      // Load URL
+      await browserView.webContents.loadURL(url)
+      
+      // Set as active tab
+      this.activeTabId = tabId
+      this.mainWindow.setBrowserView(browserView)
+      
+      // Position BrowserView (leaving space for tab bar and navigation)
+      this.updateBrowserViewBounds(browserView)
+      
+      // Emit tab created event
+      this.mainWindow.webContents.send('browser-event', {
+        type: 'tab-created',
+        tabId: tabId,
+        url: url
+      })
+
+      console.log(`✅ Tab created: ${tabId}`)
+      return { success: true, tabId: tabId, url: url }
       
     } catch (error) {
-      console.error('❌ Failed to create default BrowserView:', error)
-      throw error
+      console.error('❌ Failed to create tab:', error)
+      return { success: false, error: error.message }
     }
   }
 
-  async cleanup() {
+  async closeTab(tabId) {
     try {
-      console.log('🧹 Cleaning up KAiro Desktop Browser...')
-      console.log('✅ KAiro Desktop Browser cleanup complete')
+      console.log(`❌ Closing tab: ${tabId}`)
+      
+      const browserView = this.browserViews.get(tabId)
+      if (!browserView) {
+        throw new Error('Tab not found')
+      }
+
+      // Remove from main window if active
+      if (tabId === this.activeTabId) {
+        this.mainWindow.setBrowserView(null)
+        this.activeTabId = null
+      }
+      
+      // Cleanup BrowserView
+      browserView.webContents.destroy()
+      this.browserViews.delete(tabId)
+      
+      // Emit tab closed event
+      this.mainWindow.webContents.send('browser-event', {
+        type: 'tab-closed',
+        tabId: tabId
+      })
+
+      console.log(`✅ Tab closed: ${tabId}`)
+      return { success: true, tabId: tabId }
       
     } catch (error) {
-      console.error('❌ Desktop cleanup failed:', error)
+      console.error('❌ Failed to close tab:', error)
+      return { success: false, error: error.message }
     }
+  }
+
+  async switchTab(tabId) {
+    try {
+      console.log(`🔄 Switching to tab: ${tabId}`)
+      
+      const browserView = this.browserViews.get(tabId)
+      if (!browserView) {
+        throw new Error('Tab not found')
+      }
+
+      // Set as active BrowserView
+      this.mainWindow.setBrowserView(browserView)
+      this.activeTabId = tabId
+      
+      // Update bounds
+      this.updateBrowserViewBounds(browserView)
+      
+      // Get current URL
+      const url = browserView.webContents.getURL()
+      
+      // Emit tab switched event
+      this.mainWindow.webContents.send('browser-event', {
+        type: 'tab-switched',
+        tabId: tabId,
+        url: url
+      })
+
+      console.log(`✅ Switched to tab: ${tabId}`)
+      return { success: true, tabId: tabId, url: url }
+      
+    } catch (error) {
+      console.error('❌ Failed to switch tab:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  async navigateTo(url) {
+    try {
+      console.log(`🌐 Navigating to: ${url}`)
+      
+      if (!this.activeTabId) {
+        throw new Error('No active tab')
+      }
+
+      const browserView = this.browserViews.get(this.activeTabId)
+      if (!browserView) {
+        throw new Error('Active tab not found')
+      }
+
+      await browserView.webContents.loadURL(url)
+      
+      console.log(`✅ Navigated to: ${url}`)
+      return { success: true, url: url }
+      
+    } catch (error) {
+      console.error('❌ Navigation failed:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  async goBack() {
+    try {
+      if (!this.activeTabId) {
+        throw new Error('No active tab')
+      }
+
+      const browserView = this.browserViews.get(this.activeTabId)
+      if (!browserView) {
+        throw new Error('Active tab not found')
+      }
+
+      if (browserView.webContents.canGoBack()) {
+        browserView.webContents.goBack()
+        return { success: true }
+      }
+      
+      return { success: false, error: 'Cannot go back' }
+      
+    } catch (error) {
+      console.error('❌ Go back failed:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  async goForward() {
+    try {
+      if (!this.activeTabId) {
+        throw new Error('No active tab')
+      }
+
+      const browserView = this.browserViews.get(this.activeTabId)
+      if (!browserView) {
+        throw new Error('Active tab not found')
+      }
+
+      if (browserView.webContents.canGoForward()) {
+        browserView.webContents.goForward()
+        return { success: true }
+      }
+      
+      return { success: false, error: 'Cannot go forward' }
+      
+    } catch (error) {
+      console.error('❌ Go forward failed:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  async reload() {
+    try {
+      if (!this.activeTabId) {
+        throw new Error('No active tab')
+      }
+
+      const browserView = this.browserViews.get(this.activeTabId)
+      if (!browserView) {
+        throw new Error('Active tab not found')
+      }
+
+      browserView.webContents.reload()
+      return { success: true }
+      
+    } catch (error) {
+      console.error('❌ Reload failed:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  async getCurrentUrl() {
+    try {
+      if (!this.activeTabId) {
+        return { success: true, url: '' }
+      }
+
+      const browserView = this.browserViews.get(this.activeTabId)
+      if (!browserView) {
+        return { success: true, url: '' }
+      }
+
+      const url = browserView.webContents.getURL()
+      return { success: true, url: url }
+      
+    } catch (error) {
+      console.error('❌ Get current URL failed:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  async getPageTitle() {
+    try {
+      if (!this.activeTabId) {
+        return { success: true, title: 'New Tab' }
+      }
+
+      const browserView = this.browserViews.get(this.activeTabId)
+      if (!browserView) {
+        return { success: true, title: 'New Tab' }
+      }
+
+      const title = browserView.webContents.getTitle()
+      return { success: true, title: title }
+      
+    } catch (error) {
+      console.error('❌ Get page title failed:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  async getPageContext() {
+    try {
+      if (!this.activeTabId) {
+        return { url: '', title: 'New Tab' }
+      }
+
+      const browserView = this.browserViews.get(this.activeTabId)
+      if (!browserView) {
+        return { url: '', title: 'New Tab' }
+      }
+
+      const url = browserView.webContents.getURL()
+      const title = browserView.webContents.getTitle()
+      
+      return { url, title }
+      
+    } catch (error) {
+      console.error('❌ Get page context failed:', error)
+      return { url: '', title: 'New Tab' }
+    }
+  }
+
+  async extractPageContent() {
+    try {
+      if (!this.activeTabId) {
+        return 'No active tab'
+      }
+
+      const browserView = this.browserViews.get(this.activeTabId)
+      if (!browserView) {
+        return 'Tab not found'
+      }
+
+      // Extract text content from page
+      const content = await browserView.webContents.executeJavaScript(`
+        document.body.innerText.substring(0, 5000)
+      `)
+      
+      return content || 'No content available'
+      
+    } catch (error) {
+      console.error('❌ Extract page content failed:', error)
+      return 'Content extraction failed'
+    }
+  }
+
+  extractActionsFromResponse(response, originalMessage) {
+    const actions = []
+    
+    // Simple pattern matching for navigation actions
+    const urlRegex = /(?:navigate to|go to|visit|open)\s+(https?:\/\/[^\s]+)/gi
+    const matches = originalMessage.match(urlRegex)
+    
+    if (matches) {
+      matches.forEach(match => {
+        const url = match.split(' ').pop()
+        actions.push({
+          type: 'navigate',
+          target: url
+        })
+      })
+    }
+    
+    return actions
+  }
+
+  setupBrowserViewListeners(browserView, tabId) {
+    // Navigation events
+    browserView.webContents.on('did-start-loading', () => {
+      this.mainWindow.webContents.send('browser-event', {
+        type: 'loading',
+        tabId: tabId,
+        loading: true
+      })
+    })
+
+    browserView.webContents.on('did-finish-load', () => {
+      this.mainWindow.webContents.send('browser-event', {
+        type: 'loading',
+        tabId: tabId,
+        loading: false
+      })
+    })
+
+    browserView.webContents.on('did-navigate', (event, url) => {
+      this.mainWindow.webContents.send('browser-event', {
+        type: 'navigate',
+        tabId: tabId,
+        url: url
+      })
+    })
+
+    browserView.webContents.on('page-title-updated', (event, title) => {
+      this.mainWindow.webContents.send('browser-event', {
+        type: 'title-updated',
+        tabId: tabId,
+        title: title
+      })
+    })
+
+    browserView.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+      this.mainWindow.webContents.send('browser-event', {
+        type: 'error',
+        tabId: tabId,
+        error: { code: errorCode, description: errorDescription }
+      })
+    })
+  }
+
+  updateBrowserViewBounds(browserView) {
+    if (!this.mainWindow || !browserView) return
+    
+    const bounds = this.mainWindow.getBounds()
+    const headerHeight = 100 // Tab bar (40px) + Navigation bar (60px)
+    
+    browserView.setBounds({
+      x: 0,
+      y: headerHeight,
+      width: Math.floor(bounds.width * 0.7), // 70% for browser content
+      height: bounds.height - headerHeight
+    })
   }
 
   // Public methods for IPC handlers
@@ -231,31 +764,48 @@ class KAiroDesktopBrowser {
     return this.mainWindow
   }
 
-  getBrowserViewManager() {
-    return null
-  }
-
   isReady() {
     return this.isInitialized && this.mainWindow !== null
+  }
+
+  async cleanup() {
+    try {
+      console.log('🧹 Cleaning up KAiro Browser Manager...')
+      
+      // Close all BrowserViews
+      for (const [tabId, browserView] of this.browserViews) {
+        try {
+          browserView.webContents.destroy()
+        } catch (error) {
+          console.error(`Error destroying BrowserView ${tabId}:`, error)
+        }
+      }
+      this.browserViews.clear()
+      
+      console.log('✅ KAiro Browser Manager cleanup complete')
+      
+    } catch (error) {
+      console.error('❌ Cleanup failed:', error)
+    }
   }
 }
 
 // Global instance
-let desktopBrowser = null
+let browserManager = null
 
 // App event handlers
 app.whenReady().then(async () => {
   try {
-    console.log('🚀 Desktop Electron app ready, creating window...')
+    console.log('🚀 Electron app ready, initializing KAiro Browser...')
     
-    desktopBrowser = new KAiroDesktopBrowser()
-    await desktopBrowser.initialize()
-    await desktopBrowser.createMainWindow()
+    browserManager = new KAiroBrowserManager()
+    await browserManager.initialize()
+    await browserManager.createMainWindow()
     
-    console.log('✅ KAiro Desktop Browser app ready')
+    console.log('✅ KAiro Browser ready')
     
   } catch (error) {
-    console.error('❌ Failed to start KAiro Desktop Browser:', error)
+    console.error('❌ Failed to start KAiro Browser:', error)
     app.quit()
   }
 })
@@ -268,20 +818,34 @@ app.on('window-all-closed', () => {
 })
 
 app.on('activate', async () => {
-  console.log('🔄 Desktop app activated')
+  console.log('🔄 App activated')
   if (BrowserWindow.getAllWindows().length === 0) {
-    if (desktopBrowser) {
-      await desktopBrowser.createMainWindow()
+    if (browserManager) {
+      await browserManager.createMainWindow()
     }
   }
 })
 
 app.on('before-quit', async () => {
-  console.log('🔄 Desktop app before quit')
-  if (desktopBrowser) {
-    await desktopBrowser.cleanup()
+  console.log('🔄 App before quit')
+  if (browserManager) {
+    await browserManager.cleanup()
   }
 })
 
-// Export for desktop IPC handlers
-module.exports = { desktopBrowser }
+// Handle window resizing
+app.on('browser-window-focus', () => {
+  if (browserManager && browserManager.mainWindow) {
+    // Update BrowserView bounds when window is focused
+    const activeTabId = browserManager.activeTabId
+    if (activeTabId) {
+      const browserView = browserManager.browserViews.get(activeTabId)
+      if (browserView) {
+        browserManager.updateBrowserViewBounds(browserView)
+      }
+    }
+  }
+})
+
+// Export for IPC handlers
+module.exports = { browserManager }
