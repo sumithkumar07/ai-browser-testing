@@ -329,7 +329,7 @@ class EnhancedAgentSystem {
     const timeoutId = this.taskTimeouts.get(taskId)
     if (timeoutId) {
       clearTimeout(timeoutId)
-      this.taskTimeouts.delete(timeoutId)
+      this.taskTimeouts.delete(taskId)
     }
 
     // Update final status
