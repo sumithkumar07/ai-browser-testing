@@ -183,6 +183,7 @@ class UnifiedAIService {
         // Add AI response to conversation with quality metrics
         if (result.success && this.currentSessionId) {
           await this.conversationManager.addMessage(this.currentSessionId, {
+            id: `ai_${operationId}`,
             content: result.result || 'Task completed',
             timestamp: Date.now(),
             isUser: false
