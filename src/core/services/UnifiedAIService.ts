@@ -79,7 +79,7 @@ class UnifiedAIService {
         logger.debug(`Testing AI connection (attempt ${attempt}/${maxRetries})`)
         
         const result = await this.withTimeout(
-          window.electronAPI.testConnection(),
+          window.electronAPI.testAIConnection(),
           5000
         )
         
