@@ -396,23 +396,58 @@ class NavigationAgent implements Agent {
       name: 'Web Navigation',
       description: 'Navigate to websites and perform actions',
       category: 'automation',
-      requiredPermissions: ['web-navigation']
+      requiredPermissions: ['web-navigation'],
+      estimatedDuration: 5000
     }
   ]
 
   async execute(task: string): Promise<any> {
     logger.info('Executing navigation task', { task })
     
-    // Extract URL from task
-    const urlMatch = task.match(/(?:go to|visit|navigate to|open)\s+((?:https?:\/\/)?[^\s]+)/i)
-    const url = urlMatch ? urlMatch[1] : null
-
+    // Enhanced URL extraction with better patterns
+    const urlPatterns = [
+      /(?:go to|visit|navigate to|open|browse)\s+((?:https?:\/\/)?[^\s]+)/i,
+      /(?:website|site|url):\s*((?:https?:\/\/)?[^\s]+)/i,
+      /((?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(?:\/[^\s]*)?)/i
+    ]
+    
+    let url = null
+    for (const pattern of urlPatterns) {
+      const match = task.match(pattern)
+      if (match) {
+        url = match[1] || match[0]
+        break
+      }
+    }
+    
+    // Smart URL processing
     if (url) {
+      // Clean up the URL
+      url = url.replace(/[^\w\-\.\/\:]/g, '')
+      
+      // Add protocol if missing
+      if (!url.startsWith('http')) {
+        url = `https://${url}`
+      }
+      
       return {
         type: 'navigation',
         action: 'navigate',
-        target: url.startsWith('http') ? url : `https://${url}`,
-        timestamp: Date.now()
+        target: url,
+        timestamp: Date.now(),
+        confidence: 0.9
+      }
+    }
+    
+    // Fallback: try to extract domain names
+    const domainMatch = task.match(/([a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.(?:com|org|net|edu|gov|io|co|ai))/i)
+    if (domainMatch) {
+      return {
+        type: 'navigation',
+        action: 'navigate', 
+        target: `https://${domainMatch[0]}`,
+        timestamp: Date.now(),
+        confidence: 0.7
       }
     }
 
