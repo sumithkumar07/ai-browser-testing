@@ -167,7 +167,7 @@ export class BrowserController {
         const result = await window.electronAPI.createTab(url, 'browser')
         results.push({ success: true, url, tabId: result.tabId })
       } catch (error) {
-        results.push({ success: false, url, error: error.message })
+        results.push({ success: false, url, error: (error as Error).message })
       }
     }
     
