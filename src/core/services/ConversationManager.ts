@@ -5,7 +5,7 @@
 
 import { createLogger } from '../logger/Logger'
 import { appEvents } from '../utils/EventEmitter'
-import { AIMessage, AIResponse } from '../types'
+import { AIMessage } from '../types'
 
 const logger = createLogger('ConversationManager')
 
@@ -26,6 +26,7 @@ export interface ConversationQualityMetrics {
   contextAwareness: number
   taskCompletion: number
   userSatisfaction: number
+  [key: string]: number // Allow dynamic indexing
 }
 
 class ConversationManager {
@@ -48,247 +49,227 @@ class ConversationManager {
     return ConversationManager.instance
   }
 
-  /**
-   * Initialize a new conversation session
-   */
-  async startConversation(initialContext: Partial<ConversationContext>): Promise<string> {
-    const sessionId = `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    
-    const context: ConversationContext = {
-      currentUrl: initialContext.currentUrl || '',
-      pageTitle: initialContext.pageTitle || 'New Tab',
-      pageContent: initialContext.pageContent || '',
-      userIntent: 'general',
-      conversationHistory: [],
-      sessionId,
-      timestamp: Date.now(),
-      agentContext: {}
-    }
-
-    this.conversations.set(sessionId, context)
-    this.currentSessionId = sessionId
-    
-    // Store context in memory for quick access
-    this.contextMemory.set('current_session', sessionId)
-    this.contextMemory.set(`session_${sessionId}_context`, context)
-
-    logger.info('New conversation started', { sessionId, url: context.currentUrl })
-    
-    appEvents.emit('conversation:started', { sessionId, context })
-    
-    return sessionId
-  }
-
-  /**
-   * Update conversation context with new information
-   */
-  async updateContext(sessionId: string, updates: Partial<ConversationContext>): Promise<void> {
-    const context = this.conversations.get(sessionId)
-    if (!context) {
-      logger.warn('Conversation context not found', { sessionId })
-      return
-    }
-
-    // Update context with new information
-    Object.assign(context, updates, { timestamp: Date.now() })
-    
-    // Update memory cache
-    this.contextMemory.set(`session_${sessionId}_context`, context)
-    
-    logger.debug('Conversation context updated', { sessionId, updates })
-    
-    appEvents.emit('conversation:context-updated', { sessionId, context })
-  }
-
-  /**
-   * Add message to conversation with enhanced context
-   */
-  async addMessage(
-    sessionId: string, 
-    message: Omit<AIMessage, 'id'>, 
-    quality?: Partial<ConversationQualityMetrics>
-  ): Promise<void> {
-    const context = this.conversations.get(sessionId)
-    if (!context) {
-      logger.warn('Cannot add message - conversation not found', { sessionId })
-      return
-    }
-
-    const aiMessage: AIMessage = {
-      id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      ...message
-    }
-
-    // Add to conversation history
-    context.conversationHistory.push(aiMessage)
-    
-    // Maintain history size limit
-    if (context.conversationHistory.length > this.maxHistoryLength) {
-      context.conversationHistory = context.conversationHistory.slice(-this.maxHistoryLength)
-    }
-
-    // Update timestamp
-    context.timestamp = Date.now()
-    
-    // Store quality metrics if provided
-    if (quality && !message.isUser) {
-      this.qualityMetrics.push({
-        relevanceScore: quality.relevanceScore || 0.8,
-        helpfulnessScore: quality.helpfulnessScore || 0.8,
-        contextAwareness: quality.contextAwareness || 0.8,
-        taskCompletion: quality.taskCompletion || 0.5,
-        userSatisfaction: quality.userSatisfaction || 0.8
-      })
-    }
-
-    logger.debug('Message added to conversation', { 
-      sessionId, 
-      messageId: aiMessage.id, 
-      isUser: message.isUser 
+  private setupEventListeners(): void {
+    // Listen for conversation events
+    appEvents.on('conversation:started', (data) => {
+      logger.info('Conversation started', data)
+      this.initializeConversation(data.conversationId)
     })
 
-    appEvents.emit('conversation:message-added', { sessionId, message: aiMessage })
+    appEvents.on('ai:message', (data) => {
+      if (this.currentSessionId) {
+        this.updateConversationContext(this.currentSessionId, data)
+      }
+    })
+
+    appEvents.on('conversation:context-updated', (data) => {
+      logger.debug('Conversation context updated', data)
+      this.updateContextMemory(data.conversationId, data.context)
+    })
   }
 
-  /**
-   * Generate enhanced system prompt with full context
-   */
-  generateEnhancedSystemPrompt(sessionId: string): string {
-    const context = this.conversations.get(sessionId)
-    if (!context) {
-      return this.getDefaultSystemPrompt()
-    }
+  async startConversation(sessionId: string, initialContext: Partial<ConversationContext>): Promise<void> {
+    try {
+      logger.info(`Starting conversation session: ${sessionId}`)
+      
+      const context: ConversationContext = {
+        currentUrl: initialContext.currentUrl || '',
+        pageTitle: initialContext.pageTitle || '',
+        pageContent: initialContext.pageContent,
+        userIntent: '',
+        conversationHistory: [],
+        sessionId,
+        timestamp: Date.now(),
+        agentContext: initialContext.agentContext || {}
+      }
 
-    const recentHistory = context.conversationHistory.slice(-10)
-    const userMessages = recentHistory.filter(m => m.isUser).slice(-3)
-    const assistantMessages = recentHistory.filter(m => !m.isUser).slice(-3)
-    
-    // Analyze conversation patterns
-    const conversationTone = this.analyzeConversationTone(recentHistory)
-    const userExpertiseLevel = this.estimateUserExpertise(userMessages)
-    const taskComplexity = this.estimateTaskComplexity(userMessages)
+      this.conversations.set(sessionId, context)
+      this.currentSessionId = sessionId
 
-    return `You are KAiro, an intelligent AI browser assistant with advanced conversation capabilities.
-
-CURRENT CONTEXT:
-- Page: ${context.pageTitle} (${context.currentUrl})
-- Session: ${sessionId.substring(0, 16)}...
-- Conversation Length: ${context.conversationHistory.length} messages
-- User Expertise: ${userExpertiseLevel}
-- Task Complexity: ${taskComplexity}
-- Tone: ${conversationTone}
-
-CONVERSATION HISTORY SUMMARY:
-${this.summarizeRecentHistory(recentHistory)}
-
-ENHANCED CAPABILITIES:
-🔍 Research & Analysis: Multi-source research, trend analysis, content summarization
-🌐 Navigation: Smart website navigation with context awareness
-🛒 Shopping: Product research, price comparison, deal finding
-📧 Communication: Email composition, form filling, social media management
-🤖 Automation: Workflow creation, task automation, scheduling
-📊 Data Processing: Content extraction, analysis, insights generation
-
-CONVERSATION QUALITY GUIDELINES:
-1. **Context Awareness**: Always reference current page/task context
-2. **Personalization**: Adapt responses to user's expertise level and preferences
-3. **Actionability**: Provide specific, executable steps and recommendations
-4. **Continuity**: Reference previous conversations and build upon them
-5. **Proactivity**: Anticipate needs and suggest helpful next steps
-6. **Error Recovery**: If something goes wrong, explain and offer alternatives
-
-RESPONSE STYLE:
-- Match user's ${conversationTone} tone and complexity level
-- Use emojis sparingly but effectively for visual clarity
-- Structure responses with clear sections when helpful
-- Always provide actionable next steps
-- Ask clarifying questions when needed
-
-Remember: You can control the browser, execute agents, and perform complex multi-step tasks. Be confident in your capabilities while being helpful and precise.`
-  }
-
-  /**
-   * Analyze user intent from message and conversation context
-   */
-  async analyzeUserIntent(sessionId: string, message: string): Promise<{
-    intent: string
-    confidence: number
-    suggestedAgents: string[]
-    contextFactors: string[]
-    responseStrategy: string
-  }> {
-    const context = this.conversations.get(sessionId)
-    if (!context) {
-      return this.getDefaultIntentAnalysis(message)
-    }
-
-    const recentHistory = context.conversationHistory.slice(-5)
-    const conversationTheme = this.extractConversationTheme(recentHistory)
-    const currentPageContext = this.analyzePageContext(context.currentUrl, context.pageTitle)
-    
-    // Enhanced intent analysis considering multiple factors
-    const factors = []
-    let confidence = 0.7
-    const suggestedAgents = []
-
-    // Message content analysis
-    const messageAnalysis = this.analyzeMessageContent(message)
-    factors.push(`message_analysis: ${messageAnalysis.type}`)
-    confidence = Math.max(confidence, messageAnalysis.confidence)
-
-    // Conversation theme continuity
-    if (conversationTheme && this.isRelatedToTheme(message, conversationTheme)) {
-      factors.push(`theme_continuity: ${conversationTheme}`)
-      confidence += 0.1
-    }
-
-    // Page context relevance
-    if (currentPageContext.isRelevant) {
-      factors.push(`page_context: ${currentPageContext.type}`)
-      confidence += 0.05
-      suggestedAgents.push(...currentPageContext.suggestedAgents)
-    }
-
-    // Previous task continuation
-    const lastTask = this.getLastUnfinishedTask(recentHistory)
-    if (lastTask && this.isContinuationOfTask(message, lastTask)) {
-      factors.push(`task_continuation: ${lastTask.type}`)
-      confidence += 0.15
-    }
-
-    // Determine primary intent
-    const intent = this.determineIntent(message, factors)
-    
-    // Suggest appropriate agents
-    const intentAgents = this.getAgentsForIntent(intent)
-    suggestedAgents.push(...intentAgents)
-
-    // Response strategy
-    const responseStrategy = this.determineResponseStrategy(intent, confidence, factors)
-
-    return {
-      intent,
-      confidence: Math.min(confidence, 1.0),
-      suggestedAgents: [...new Set(suggestedAgents)],
-      contextFactors: factors,
-      responseStrategy
+      // Emit conversation started event
+      appEvents.emit('conversation:started', { conversationId: sessionId, timestamp: Date.now() })
+      
+    } catch (error) {
+      logger.error('Failed to start conversation', error as Error)
+      throw error
     }
   }
 
-  /**
-   * Get conversation quality analytics
-   */
-  getQualityAnalytics(): {
-    averageQuality: ConversationQualityMetrics
-    conversationCount: number
-    totalMessages: number
-    topIssues: string[]
-    suggestions: string[]
-  } {
-    const conversations = Array.from(this.conversations.values())
-    const totalMessages = conversations.reduce((sum, conv) => sum + conv.conversationHistory.length, 0)
-    
-    // Calculate average quality metrics
+  addMessage(sessionId: string, message: AIMessage): void {
+    try {
+      const context = this.conversations.get(sessionId)
+      if (!context) {
+        logger.warn(`Conversation context not found for session: ${sessionId}`)
+        return
+      }
+
+      // Add message to history
+      context.conversationHistory.push(message)
+      
+      // Trim history if too long
+      if (context.conversationHistory.length > this.maxHistoryLength) {
+        context.conversationHistory = context.conversationHistory.slice(-this.maxHistoryLength)
+      }
+
+      // Update context
+      context.timestamp = Date.now()
+
+      // Emit message added event
+      appEvents.emit('conversation:message-added', { 
+        conversationId: sessionId, 
+        message 
+      })
+
+      logger.debug(`Added message to conversation ${sessionId}`, { 
+        messageId: message.id, 
+        historyLength: context.conversationHistory.length 
+      })
+
+    } catch (error) {
+      logger.error('Failed to add message to conversation', error as Error)
+    }
+  }
+
+  getConversationContext(sessionId: string): ConversationContext | null {
+    return this.conversations.get(sessionId) || null
+  }
+
+  updateConversationContext(sessionId: string, updates: Partial<ConversationContext>): void {
+    try {
+      const context = this.conversations.get(sessionId)
+      if (!context) {
+        logger.warn(`Conversation context not found for session: ${sessionId}`)
+        return
+      }
+
+      // Merge updates
+      Object.assign(context, updates)
+      context.timestamp = Date.now()
+
+      logger.debug(`Updated conversation context for session: ${sessionId}`)
+
+    } catch (error) {
+      logger.error('Failed to update conversation context', error as Error)
+    }
+  }
+
+  private initializeConversation(conversationId: string): void {
+    // Implementation for conversation initialization
+    logger.debug(`Initializing conversation: ${conversationId}`)
+  }
+
+  private updateContextMemory(conversationId: string, context: any): void {
+    this.contextMemory.set(conversationId, context)
+    logger.debug(`Updated context memory for conversation: ${conversationId}`)
+  }
+
+  analyzeConversationQuality(sessionId: string): Promise<ConversationQualityMetrics> {
+    return new Promise((resolve) => {
+      try {
+        const context = this.conversations.get(sessionId)
+        if (!context) {
+          throw new Error(`Conversation not found: ${sessionId}`)
+        }
+
+        const userMessages = context.conversationHistory.filter(m => m.isUser)
+        const assistantMessages = context.conversationHistory.filter(m => !m.isUser)
+
+        // Basic quality metrics calculation
+        const metrics: ConversationQualityMetrics = {
+          relevanceScore: this.calculateRelevanceScore(context),
+          helpfulnessScore: this.calculateHelpfulnessScore(assistantMessages),
+          contextAwareness: this.calculateContextAwareness(context),
+          taskCompletion: this.calculateTaskCompletion(context),
+          userSatisfaction: this.calculateUserSatisfaction(userMessages)
+        }
+
+        this.qualityMetrics.push(metrics)
+
+        logger.debug(`Analyzed conversation quality for session: ${sessionId}`, metrics)
+        resolve(metrics)
+
+      } catch (error) {
+        logger.error('Failed to analyze conversation quality', error as Error)
+        resolve({
+          relevanceScore: 0.5,
+          helpfulnessScore: 0.5,
+          contextAwareness: 0.5,
+          taskCompletion: 0.5,
+          userSatisfaction: 0.5
+        })
+      }
+    })
+  }
+
+  private calculateRelevanceScore(context: ConversationContext): number {
+    // Simple relevance scoring based on context awareness
+    if (!context.currentUrl || context.conversationHistory.length === 0) {
+      return 0.3
+    }
+
+    // Check if AI responses reference current page or context
+    const relevantResponses = context.conversationHistory
+      .filter(m => !m.isUser)
+      .filter(m => m.content.toLowerCase().includes(context.pageTitle.toLowerCase()) ||
+                   m.content.toLowerCase().includes('current page') ||
+                   m.content.toLowerCase().includes('this page'))
+
+    return Math.min(relevantResponses.length / Math.max(context.conversationHistory.length / 2, 1), 1.0)
+  }
+
+  private calculateHelpfulnessScore(assistantMessages: AIMessage[]): number {
+    if (assistantMessages.length === 0) return 0.0
+
+    // Score based on message length and structure (longer, structured responses = more helpful)
+    const avgLength = assistantMessages.reduce((sum, m) => sum + m.content.length, 0) / assistantMessages.length
+    const structuredMessages = assistantMessages.filter(m => 
+      m.content.includes('•') || m.content.includes('-') || m.content.includes('1.') || m.content.includes('**')
+    )
+
+    const lengthScore = Math.min(avgLength / 200, 1.0) * 0.6
+    const structureScore = (structuredMessages.length / assistantMessages.length) * 0.4
+
+    return lengthScore + structureScore
+  }
+
+  private calculateContextAwareness(context: ConversationContext): number {
+    if (!context.pageContent && !context.currentUrl) return 0.2
+
+    const hasPageContext = !!context.pageContent
+    const hasUrlContext = !!context.currentUrl
+    const hasAgentContext = !!context.agentContext && Object.keys(context.agentContext).length > 0
+
+    let score = 0
+    if (hasPageContext) score += 0.4
+    if (hasUrlContext) score += 0.3
+    if (hasAgentContext) score += 0.3
+
+    return score
+  }
+
+  private calculateTaskCompletion(context: ConversationContext): number {
+    // Simple heuristic: if conversation has both user questions and AI responses
+    const userMessages = context.conversationHistory.filter(m => m.isUser)
+    const aiMessages = context.conversationHistory.filter(m => !m.isUser)
+
+    if (userMessages.length === 0 || aiMessages.length === 0) return 0.0
+
+    // Check for completion indicators
+    const completionIndicators = ['completed', 'done', 'finished', 'ready', 'success']
+    const hasCompletionIndicators = aiMessages.some(m => 
+      completionIndicators.some(indicator => m.content.toLowerCase().includes(indicator))
+    )
+
+    return hasCompletionIndicators ? 0.8 : 0.5
+  }
+
+  private calculateUserSatisfaction(_userMessages: AIMessage[]): number {
+    // Placeholder - in real implementation would analyze user feedback
+    return 0.7
+  }
+
+  getQualityReport(): object {
+    const totalConversations = this.qualityMetrics.length
     const averageQuality: ConversationQualityMetrics = {
       relevanceScore: 0,
       helpfulnessScore: 0,
@@ -299,8 +280,8 @@ Remember: You can control the browser, execute agents, and perform complex multi
 
     if (this.qualityMetrics.length > 0) {
       Object.keys(averageQuality).forEach(key => {
-        averageQuality[key] = this.qualityMetrics.reduce((sum, metrics) => 
-          sum + metrics[key], 0) / this.qualityMetrics.length
+        averageQuality[key as keyof ConversationQualityMetrics] = this.qualityMetrics.reduce((sum, metrics) => 
+          sum + metrics[key as keyof ConversationQualityMetrics], 0) / this.qualityMetrics.length
       })
     }
 
@@ -318,269 +299,179 @@ Remember: You can control the browser, execute agents, and perform complex multi
       suggestions.push('Better agent coordination and task follow-through')
     }
 
+    if (averageQuality.relevanceScore < 0.6) {
+      topIssues.push('Low relevance to user context')
+      suggestions.push('Enhance contextual understanding and response relevance')
+    }
+
     return {
-      averageQuality,
-      conversationCount: conversations.length,
-      totalMessages,
-      topIssues,
-      suggestions
+      summary: {
+        totalConversations,
+        averageQuality,
+        overallScore: Object.values(averageQuality).reduce((sum, score) => sum + score, 0) / Object.keys(averageQuality).length
+      },
+      insights: {
+        topIssues,
+        suggestions,
+        trends: this.analyzeTrends()
+      },
+      recommendations: this.generateRecommendations(averageQuality)
     }
   }
 
-  /**
-   * Clean up old conversations and optimize memory
-   */
-  async cleanup(): Promise<void> {
-    const now = Date.now()
-    const expiredSessions = []
-
-    for (const [sessionId, context] of this.conversations) {
-      if (now - context.timestamp > this.contextTimeoutMs) {
-        expiredSessions.push(sessionId)
-      }
-    }
-
-    // Remove expired sessions
-    expiredSessions.forEach(sessionId => {
-      this.conversations.delete(sessionId)
-      this.contextMemory.delete(`session_${sessionId}_context`)
-    })
-
-    // Limit quality metrics history
-    if (this.qualityMetrics.length > 1000) {
-      this.qualityMetrics = this.qualityMetrics.slice(-500)
-    }
-
-    logger.info('Conversation cleanup completed', { 
-      expiredSessions: expiredSessions.length,
-      activeConversations: this.conversations.size 
-    })
-  }
-
-  // Private helper methods
-  private getDefaultSystemPrompt(): string {
-    return `You are KAiro, an intelligent AI browser assistant. Be helpful, accurate, and actionable in your responses.`
-  }
-
-  private getDefaultIntentAnalysis(message: string) {
-    return {
-      intent: 'general',
-      confidence: 0.5,
-      suggestedAgents: ['research-agent'],
-      contextFactors: ['no_context'],
-      responseStrategy: 'standard'
-    }
-  }
-
-  private analyzeConversationTone(history: AIMessage[]): string {
-    if (history.length === 0) return 'professional'
+  private analyzeTrends(): string[] {
+    const trends = []
     
-    const userMessages = history.filter(m => m.isUser).slice(-3)
-    const avgLength = userMessages.reduce((sum, m) => sum + m.content.length, 0) / userMessages.length
-    
-    if (avgLength > 100) return 'detailed'
-    if (avgLength < 30) return 'casual'
-    return 'professional'
-  }
-
-  private estimateUserExpertise(userMessages: AIMessage[]): string {
-    if (userMessages.length === 0) return 'beginner'
-    
-    const technicalTerms = ['api', 'algorithm', 'framework', 'architecture', 'deployment', 'optimization']
-    const technicalCount = userMessages.reduce((count, msg) => {
-      return count + technicalTerms.filter(term => 
-        msg.content.toLowerCase().includes(term)
-      ).length
-    }, 0)
-    
-    if (technicalCount > 3) return 'expert'
-    if (technicalCount > 1) return 'intermediate'
-    return 'beginner'
-  }
-
-  private estimateTaskComplexity(userMessages: AIMessage[]): string {
-    if (userMessages.length === 0) return 'simple'
-    
-    const complexityIndicators = ['multiple', 'complex', 'comprehensive', 'detailed', 'across', 'integrate']
-    const complexityCount = userMessages.reduce((count, msg) => {
-      return count + complexityIndicators.filter(indicator => 
-        msg.content.toLowerCase().includes(indicator)
-      ).length
-    }, 0)
-    
-    if (complexityCount > 2) return 'complex'
-    if (complexityCount > 0) return 'moderate'
-    return 'simple'
-  }
-
-  private summarizeRecentHistory(history: AIMessage[]): string {
-    if (history.length === 0) return 'No previous conversation'
-    
-    const recentUserMessages = history.filter(m => m.isUser).slice(-2)
-    const recentAiMessages = history.filter(m => !m.isUser).slice(-2)
-    
-    let summary = ''
-    if (recentUserMessages.length > 0) {
-      summary += `Recent user requests: ${recentUserMessages.map(m => m.content.substring(0, 50)).join('; ')}`
-    }
-    if (recentAiMessages.length > 0) {
-      summary += `\nRecent AI assistance: ${recentAiMessages.map(m => m.content.substring(0, 50)).join('; ')}`
-    }
-    
-    return summary || 'Conversation just started'
-  }
-
-  private analyzeMessageContent(message: string) {
-    const keywords = {
-      research: ['research', 'find', 'search', 'investigate', 'analyze'],
-      automation: ['automate', 'workflow', 'schedule', 'repeat', 'batch'],
-      communication: ['email', 'compose', 'form', 'social', 'contact'],
-      shopping: ['buy', 'price', 'product', 'compare', 'shop'],
-      navigation: ['go to', 'visit', 'navigate', 'open', 'browse']
-    }
-    
-    const lowerMessage = message.toLowerCase()
-    let bestMatch = { type: 'general', confidence: 0.5 }
-    
-    for (const [type, words] of Object.entries(keywords)) {
-      const matches = words.filter(word => lowerMessage.includes(word)).length
-      const confidence = Math.min(0.9, 0.5 + (matches * 0.15))
+    if (this.qualityMetrics.length >= 5) {
+      const recent = this.qualityMetrics.slice(-5)
+      const older = this.qualityMetrics.slice(0, -5)
       
-      if (confidence > bestMatch.confidence) {
-        bestMatch = { type, confidence }
+      if (older.length > 0) {
+        const recentAvg = recent.reduce((sum, m) => sum + m.relevanceScore, 0) / recent.length
+        const olderAvg = older.reduce((sum, m) => sum + m.relevanceScore, 0) / older.length
+        
+        if (recentAvg > olderAvg + 0.1) {
+          trends.push('Improving relevance over time')
+        } else if (recentAvg < olderAvg - 0.1) {
+          trends.push('Declining relevance trend')
+        }
       }
     }
-    
-    return bestMatch
+
+    return trends
   }
 
-  private analyzePageContext(url: string, title: string) {
-    const context = { isRelevant: false, type: 'general', suggestedAgents: [] }
-    
-    if (url.includes('amazon') || url.includes('ebay') || url.includes('shop')) {
-      context.isRelevant = true
-      context.type = 'shopping'
-      context.suggestedAgents.push('shopping-agent')
-    } else if (url.includes('research') || url.includes('wiki') || url.includes('scholar')) {
-      context.isRelevant = true
-      context.type = 'research'
-      context.suggestedAgents.push('research-agent')
-    } else if (url.includes('social') || url.includes('twitter') || url.includes('linkedin')) {
-      context.isRelevant = true
-      context.type = 'social'
-      context.suggestedAgents.push('communication-agent')
+  private generateRecommendations(quality: ConversationQualityMetrics): string[] {
+    const recommendations = []
+
+    if (quality.contextAwareness < 0.7) {
+      recommendations.push('Implement better page content extraction')
+      recommendations.push('Enhance context sharing between agents')
     }
-    
-    return context
+
+    if (quality.helpfulnessScore < 0.6) {
+      recommendations.push('Provide more structured and detailed responses')
+      recommendations.push('Include actionable steps and next actions')
+    }
+
+    if (quality.taskCompletion < 0.6) {
+      recommendations.push('Improve agent task coordination')
+      recommendations.push('Add task progress tracking and completion confirmation')
+    }
+
+    return recommendations
   }
 
-  private extractConversationTheme(history: AIMessage[]): string | null {
-    if (history.length < 3) return null
-    
-    const userMessages = history.filter(m => m.isUser)
-    const combinedText = userMessages.map(m => m.content).join(' ').toLowerCase()
-    
-    const themes = {
-      research: ['research', 'find', 'study', 'investigate'],
-      shopping: ['buy', 'price', 'product', 'purchase'],
-      automation: ['automate', 'workflow', 'schedule', 'process'],
-      communication: ['email', 'message', 'contact', 'social']
+  // Intent Analysis
+  analyzeUserIntent(message: string): string {
+    const intentPatterns: Record<string, string[]> = {
+      research: ['research', 'find', 'search', 'investigate', 'explore', 'discover'],
+      shopping: ['buy', 'purchase', 'price', 'compare', 'shop', 'product'],
+      automation: ['automate', 'repeat', 'schedule', 'workflow', 'process'],
+      communication: ['email', 'message', 'contact', 'send', 'write', 'compose']
     }
+
+    const lowerMessage = message.toLowerCase()
     
-    for (const [theme, keywords] of Object.entries(themes)) {
-      if (keywords.some(keyword => combinedText.includes(keyword))) {
-        return theme
+    for (const [intent, keywords] of Object.entries(intentPatterns)) {
+      if (keywords.some(keyword => lowerMessage.includes(keyword))) {
+        return intent
       }
     }
-    
-    return null
-  }
 
-  private isRelatedToTheme(message: string, theme: string): boolean {
-    const themeKeywords = {
-      research: ['more', 'additional', 'also', 'further', 'deeper'],
-      shopping: ['another', 'different', 'alternative', 'similar'],
-      automation: ['next', 'then', 'also', 'additionally'],
-      communication: ['reply', 'response', 'follow-up', 'send']
-    }
-    
-    const keywords = themeKeywords[theme] || []
-    return keywords.some(keyword => message.toLowerCase().includes(keyword))
-  }
-
-  private getLastUnfinishedTask(history: AIMessage[]) {
-    // Simple implementation - could be enhanced
-    const aiMessages = history.filter(m => !m.isUser).slice(-3)
-    const lastMessage = aiMessages[aiMessages.length - 1]
-    
-    if (lastMessage && lastMessage.content.includes('I can help')) {
-      return { type: 'assistance_offered', content: lastMessage.content }
-    }
-    
-    return null
-  }
-
-  private isContinuationOfTask(message: string, task: any): boolean {
-    const continuationWords = ['yes', 'continue', 'proceed', 'next', 'go ahead']
-    return continuationWords.some(word => message.toLowerCase().includes(word))
-  }
-
-  private determineIntent(message: string, factors: string[]): string {
-    // Enhanced intent determination based on multiple factors
-    const factorTypes = factors.map(f => f.split(':')[0])
-    
-    if (factorTypes.includes('message_analysis')) {
-      const analysisType = factors.find(f => f.startsWith('message_analysis:'))?.split(':')[1]
-      if (analysisType && analysisType !== 'general') {
-        return analysisType
-      }
-    }
-    
-    if (factorTypes.includes('theme_continuity')) {
-      return factors.find(f => f.startsWith('theme_continuity:'))?.split(':')[1] || 'general'
-    }
-    
     return 'general'
   }
 
-  private getAgentsForIntent(intent: string): string[] {
-    const agentMap = {
-      research: ['research-agent', 'analysis-agent'],
-      automation: ['automation-agent'],
-      communication: ['communication-agent'],
-      shopping: ['shopping-agent'],
-      navigation: ['navigation-agent'],
-      general: ['research-agent']
-    }
+  // Smart Context Building
+  buildSmartContext(sessionId: string): Promise<object> {
+    return new Promise(async (resolve) => {
+      try {
+        const context = this.conversations.get(sessionId)
+        if (!context) {
+          resolve({})
+          return
+        }
+
+        const smartContext = {
+          session: {
+            id: sessionId,
+            duration: Date.now() - context.timestamp,
+            messageCount: context.conversationHistory.length
+          },
+          page: {
+            url: context.currentUrl,
+            title: context.pageTitle,
+            hasContent: !!context.pageContent
+          },
+          conversation: {
+            intent: this.analyzeUserIntent(context.conversationHistory.map(m => m.content).join(' ')),
+            topics: this.extractTopics(context.conversationHistory),
+            lastUserMessage: context.conversationHistory.filter(m => m.isUser).slice(-1)[0]?.content || ''
+          },
+          agent: context.agentContext || {}
+        }
+
+        resolve(smartContext)
+
+      } catch (error) {
+        logger.error('Failed to build smart context', error as Error)
+        resolve({})
+      }
+    })
+  }
+
+  private extractTopics(messages: AIMessage[]): string[] {
+    // Simple topic extraction - in production would use NLP
+    const text = messages.map(m => m.content).join(' ').toLowerCase()
+    const commonTopics = ['ai', 'research', 'shopping', 'browser', 'automation', 'analysis']
     
-    return agentMap[intent] || ['research-agent']
+    return commonTopics.filter(topic => text.includes(topic))
   }
 
-  private determineResponseStrategy(intent: string, confidence: number, factors: string[]): string {
-    if (confidence > 0.8) return 'confident'
-    if (confidence < 0.6) return 'clarifying'
-    if (factors.includes('task_continuation')) return 'continuing'
-    return 'standard'
+  // Event handlers for app events
+  handlePageLoad(data: { tabId: string; url: string; title: string }): void {
+    if (this.currentSessionId) {
+      this.updateConversationContext(this.currentSessionId, {
+        currentUrl: data.url,
+        pageTitle: data.title
+      })
+    }
+
+    appEvents.emit('page:loaded', { 
+      tabId: data.tabId, 
+      url: data.url, 
+      title: data.title 
+    })
   }
 
-  private setupEventListeners(): void {
-    // Listen for app events to update context
-    appEvents.on('tab:switched', (data) => {
-      if (this.currentSessionId) {
-        this.updateContext(this.currentSessionId, {
-          currentUrl: data.url || '',
-          pageTitle: data.title || 'New Tab'
-        })
-      }
-    })
+  handleContentUpdate(data: { content: string }): void {
+    if (this.currentSessionId) {
+      this.updateConversationContext(this.currentSessionId, {
+        pageContent: data.content
+      })
+    }
+  }
 
-    appEvents.on('page:loaded', (data) => {
-      if (this.currentSessionId) {
-        this.updateContext(this.currentSessionId, {
-          pageContent: data.content?.substring(0, 2000) || ''
-        })
+  cleanup(): void {
+    try {
+      // Clean up old conversations
+      const cutoff = Date.now() - this.contextTimeoutMs
+      
+      for (const [sessionId, context] of this.conversations) {
+        if (context.timestamp < cutoff) {
+          this.conversations.delete(sessionId)
+          logger.debug(`Cleaned up old conversation: ${sessionId}`)
+        }
       }
-    })
+
+      // Clean up context memory
+      this.contextMemory.clear()
+
+      logger.info('Conversation manager cleanup completed')
+
+    } catch (error) {
+      logger.error('Failed to cleanup conversation manager', error as Error)
+    }
   }
 }
 
