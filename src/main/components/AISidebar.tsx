@@ -183,6 +183,10 @@ Try: "research top 5 AI websites and create summary"`)
       'create', 'generate', 'make', 'build', 'compile', 'organize',
       // Navigation keywords
       'navigate', 'go to', 'visit', 'open', 'browse',
+      // Communication keywords - NEW
+      'email', 'send', 'compose', 'write', 'message', 'contact', 'form', 'fill', 'submit', 'social', 'post', 'tweet',
+      // Automation keywords - NEW
+      'automate', 'automation', 'repeat', 'schedule', 'workflow', 'process', 'sequence', 'steps', 'batch', 'routine',
       // Multi-step keywords
       'websites', 'multiple', 'several', 'list of', 'across'
     ]
