@@ -340,7 +340,7 @@ export class IntegratedAgentFramework {
     
     // Determine best agent based on scores
     const maxScore = Math.max(...Object.values(scores))
-    const bestAgent = Object.keys(scores).find(key => scores[key] === maxScore)
+    const bestAgent = Object.keys(scores).find(key => scores[key as keyof typeof scores] === maxScore)
     
     // Confidence calculation
     let confidence = 0.6 // Base confidence
