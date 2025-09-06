@@ -169,7 +169,7 @@ class EnhancedAgentSystem {
 
       } catch (error) {
         lastError = error as Error
-        logger.warn(`Task attempt ${attempt} failed`, lastError, { taskId: task.id })
+        logger.warn(`Task attempt ${attempt} failed`, lastError, { taskId: task.id, attempt })
 
         // Update metadata
         if (task.metadata) {
