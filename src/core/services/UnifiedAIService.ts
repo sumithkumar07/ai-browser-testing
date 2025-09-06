@@ -267,9 +267,6 @@ class UnifiedAIService {
     const abortController = new AbortController()
     this.abortControllers.set(operationId, abortController)
 
-    // Generate enhanced system prompt with conversation context
-    const systemPrompt = this.conversationManager.generateEnhancedSystemPrompt(this.currentSessionId!)
-
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         logger.debug(`Sending enhanced message attempt ${attempt}/${maxRetries}`, { operationId })
