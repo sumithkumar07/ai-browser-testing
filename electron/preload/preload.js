@@ -59,6 +59,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getVersion: () => ipcRenderer.invoke('get-version'),
   getPlatform: () => ipcRenderer.invoke('get-platform'),
   
+  // Data Storage Methods
+  getData: (key) => ipcRenderer.invoke('get-data', key),
+  saveData: (key, data) => ipcRenderer.invoke('save-data', key, data),
+  
+  // Keyboard Shortcuts
+  registerShortcuts: (shortcuts) => ipcRenderer.invoke('register-shortcuts', shortcuts),
+  
   // Dev Tools
   openDevTools: () => ipcRenderer.invoke('open-dev-tools'),
   closeDevTools: () => ipcRenderer.invoke('close-dev-tools'),
