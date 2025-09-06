@@ -561,6 +561,82 @@ class UnifiedAIService {
   }
 
   /**
+   * Generate AI response with streaming support
+   */
+  async generateResponse(message: string, context?: any, onProgress?: (chunk: string) => void): Promise<{
+    success: boolean
+    result?: string 
+    error?: string
+    usage?: any
+    metadata?: any
+  }> {
+    const operationId = `gen_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    
+    try {
+      logger.info('Generating AI response', { operationId, length: message.length })
+
+      if (!this.isInitialized) {
+        throw new Error('AI Service not initialized')
+      }
+
+      // Validate input
+      validateAIMessage(message)
+
+      // Create contextual message with provided context
+      let contextualMessage = message
+      if (context) {
+        contextualMessage = `Context: ${JSON.stringify(context)}\n\nMessage: ${message}`
+      }
+
+      // Execute with streaming support if callback provided
+      if (onProgress) {
+        // For streaming, we'll need to implement streaming support in the electron API
+        // For now, we'll fall back to regular response and call onProgress once
+        const result = await this.withTimeout(
+          window.electronAPI.sendAIMessage(contextualMessage),
+          this.config.timeout
+        )
+
+        if (result.success && result.result) {
+          onProgress(result.result)
+          return {
+            success: true,
+            result: result.result,
+            usage: result.usage,
+            metadata: result.metadata
+          }
+        } else {
+          throw new Error(result.error || 'Failed to generate response')
+        }
+      } else {
+        // Regular non-streaming response
+        const result = await this.withTimeout(
+          window.electronAPI.sendAIMessage(contextualMessage),
+          this.config.timeout
+        )
+
+        if (result.success && result.result) {
+          return {
+            success: true,
+            result: result.result,
+            usage: result.usage,
+            metadata: result.metadata
+          }
+        } else {
+          throw new Error(result.error || 'Failed to generate response')
+        }
+      }
+
+    } catch (error) {
+      logger.error('Failed to generate AI response', error as Error, { operationId })
+      return {
+        success: false,
+        error: (error as Error).message
+      }
+    }
+  }
+
+  /**
    * Cancel operation by ID
    */
   cancelOperation(operationId: string): boolean {
