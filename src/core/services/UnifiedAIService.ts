@@ -212,8 +212,199 @@ class UnifiedAIService {
   }
 
   /**
-   * Execute message operation with retry and timeout
+   * Execute coordinated multi-agent task
    */
+  private async executeCoordinatedTask(
+    message: string,
+    intentAnalysis: any,
+    options: AIOperationOptions,
+    operationId: string
+  ): Promise<AIResponse> {
+    try {
+      logger.info('Executing coordinated task', { operationId, agents: intentAnalysis.suggestedAgents })
+      
+      const result = await this.agentCoordinator.orchestrateTask(
+        message,
+        this.currentSessionId!,
+        {
+          priority: options.priority,
+          timeoutMs: options.timeout
+        }
+      )
+
+      if (result.success) {
+        return {
+          success: true,
+          result: `Task coordinated successfully across ${intentAnalysis.suggestedAgents.length} agents. Collaboration ID: ${result.collaborationId}`,
+          actions: []
+        }
+      } else {
+        throw new Error(result.error || 'Coordination failed')
+      }
+
+    } catch (error) {
+      logger.error('Coordinated task execution failed', error as Error, { operationId })
+      return {
+        success: false,
+        error: (error as Error).message
+      }
+    }
+  }
+
+  /**
+   * Execute enhanced single-agent task with conversation context
+   */
+  private async executeEnhancedMessage(
+    message: string,
+    intentAnalysis: any,
+    options: AIOperationOptions,
+    operationId: string
+  ): Promise<AIResponse> {
+    const maxRetries = options.retries ?? this.config.maxRetries
+    const timeout = options.timeout ?? this.config.timeout
+
+    // Create abort controller for cancellation
+    const abortController = new AbortController()
+    this.abortControllers.set(operationId, abortController)
+
+    // Generate enhanced system prompt with conversation context
+    const systemPrompt = this.conversationManager.generateEnhancedSystemPrompt(this.currentSessionId!)
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        logger.debug(`Sending enhanced message attempt ${attempt}/${maxRetries}`, { operationId })
+
+        // Create contextual prompt
+        const contextualPrompt = this.createContextualPrompt(message, intentAnalysis)
+
+        const result = await this.withTimeout(
+          window.electronAPI.sendAIMessage(contextualPrompt),
+          timeout,
+          abortController.signal
+        )
+
+        if (result.success && result.result) {
+          // Post-process the response for quality
+          const enhancedResult = await this.enhanceResponse(result.result, intentAnalysis, message)
+          
+          logger.info('Enhanced AI message processed successfully', { operationId, attempt })
+          return {
+            success: true,
+            result: enhancedResult,
+            actions: result.actions || []
+          }
+        }
+
+        throw new Error(result.error || 'Empty response from AI service')
+
+      } catch (error) {
+        logger.warn(`Enhanced message attempt ${attempt} failed`, error as Error, { operationId })
+
+        if (attempt === maxRetries) {
+          throw error
+        }
+
+        // Check if operation was cancelled
+        if (abortController.signal.aborted) {
+          throw new Error('Operation cancelled')
+        }
+
+        // Exponential backoff
+        await this.delay(this.config.retryDelay * Math.pow(2, attempt - 1))
+      }
+    }
+
+    throw new Error('All retry attempts failed')
+  }
+
+  /**
+   * Create contextual prompt with conversation history and intent
+   */
+  private createContextualPrompt(message: string, intentAnalysis: any): string {
+    let prompt = message
+
+    // Add intent context
+    if (intentAnalysis.intent !== 'general') {
+      prompt = `[INTENT: ${intentAnalysis.intent.toUpperCase()}] ${prompt}`
+    }
+
+    // Add suggested approach based on response strategy
+    if (intentAnalysis.responseStrategy === 'clarifying') {
+      prompt += '\n\nNote: Please ask clarifying questions if the request is unclear.'
+    } else if (intentAnalysis.responseStrategy === 'continuing') {
+      prompt += '\n\nNote: This appears to be a continuation of a previous task.'
+    }
+
+    // Add context factors
+    if (intentAnalysis.contextFactors.length > 0) {
+      prompt += `\n\nContext factors: ${intentAnalysis.contextFactors.join(', ')}`
+    }
+
+    return prompt
+  }
+
+  /**
+   * Enhance AI response based on intent and context
+   */
+  private async enhanceResponse(response: string, intentAnalysis: any, originalMessage: string): Promise<string> {
+    // Add helpful suggestions based on intent
+    let enhanced = response
+
+    if (intentAnalysis.intent === 'research' && !response.includes('sources')) {
+      enhanced += '\n\n💡 **Tip**: I can help you navigate to relevant sources or create research tabs for deeper investigation.'
+    }
+
+    if (intentAnalysis.intent === 'shopping' && !response.includes('compare')) {
+      enhanced += '\n\n🛒 **Tip**: I can help compare prices across multiple sites or track price changes.'
+    }
+
+    if (intentAnalysis.intent === 'automation' && !response.includes('workflow')) {
+      enhanced += '\n\n🤖 **Tip**: I can create automated workflows for repetitive tasks like this.'
+    }
+
+    if (intentAnalysis.intent === 'communication' && !response.includes('format')) {
+      enhanced += '\n\n📧 **Tip**: I can help format and send emails or fill out forms automatically.'
+    }
+
+    // Add proactive suggestions for follow-up actions
+    if (intentAnalysis.confidence > 0.8) {
+      enhanced += '\n\n**What would you like to do next?**\n• Ask follow-up questions\n• Execute the suggested actions\n• Get more detailed information'
+    }
+
+    return enhanced
+  }
+
+  /**
+   * Update conversation context when page changes
+   */
+  async updatePageContext(url: string, title: string, content?: string): Promise<void> {
+    if (this.currentSessionId) {
+      await this.conversationManager.updateContext(this.currentSessionId, {
+        currentUrl: url,
+        pageTitle: title,
+        pageContent: content
+      })
+      
+      logger.debug('Page context updated', { url, title, sessionId: this.currentSessionId })
+    }
+  }
+
+  /**
+   * Get conversation quality metrics
+   */
+  getConversationQuality(): any {
+    return this.conversationManager.getQualityAnalytics()
+  }
+
+  /**
+   * Get current session information
+   */
+  getCurrentSession(): { sessionId: string | null; isActive: boolean } {
+    return {
+      sessionId: this.currentSessionId,
+      isActive: this.isInitialized && this.currentSessionId !== null
+    }
+  }
   private async executeMessageOperation(
     message: string,
     options: AIOperationOptions,
