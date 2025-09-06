@@ -377,8 +377,32 @@ class ConversationManager {
     return recommendations
   }
 
-  // Intent Analysis
-  analyzeUserIntent(message: string): string {
+  // Intent Analysis - overloaded methods
+  analyzeUserIntent(message: string): string
+  analyzeUserIntent(sessionId: string, message: string): Promise<{
+    intent: string
+    confidence: number
+    suggestedAgents: string[]
+    responseStrategy: string
+    contextFactors: string[]
+  }>
+  analyzeUserIntent(sessionIdOrMessage: string, message?: string): string | Promise<{
+    intent: string
+    confidence: number
+    suggestedAgents: string[]
+    responseStrategy: string
+    contextFactors: string[]
+  }> {
+    // If only one parameter, it's the simple string version
+    if (message === undefined) {
+      return this.analyzeUserIntentSimple(sessionIdOrMessage)
+    }
+    
+    // Two parameters: sessionId and message - return enhanced analysis
+    return this.analyzeUserIntentEnhanced(sessionIdOrMessage, message)
+  }
+
+  private analyzeUserIntentSimple(message: string): string {
     const intentPatterns: Record<string, string[]> = {
       research: ['research', 'find', 'search', 'investigate', 'explore', 'discover'],
       shopping: ['buy', 'purchase', 'price', 'compare', 'shop', 'product'],
@@ -395,6 +419,112 @@ class ConversationManager {
     }
 
     return 'general'
+  }
+
+  private async analyzeUserIntentEnhanced(sessionId: string, message: string): Promise<{
+    intent: string
+    confidence: number
+    suggestedAgents: string[]
+    responseStrategy: string
+    contextFactors: string[]
+  }> {
+    try {
+      const context = this.conversations.get(sessionId)
+      const lowerMessage = message.toLowerCase()
+      
+      // Analyze intent with context
+      const intentPatterns: Record<string, { keywords: string[], agents: string[] }> = {
+        research: { 
+          keywords: ['research', 'find', 'search', 'investigate', 'explore', 'discover'], 
+          agents: ['research-agent'] 
+        },
+        shopping: { 
+          keywords: ['buy', 'purchase', 'price', 'compare', 'shop', 'product'], 
+          agents: ['shopping-agent'] 
+        },
+        automation: { 
+          keywords: ['automate', 'repeat', 'schedule', 'workflow', 'process'], 
+          agents: ['automation-agent'] 
+        },
+        communication: { 
+          keywords: ['email', 'message', 'contact', 'send', 'write', 'compose'], 
+          agents: ['communication-agent'] 
+        },
+        analysis: { 
+          keywords: ['analyze', 'summarize', 'extract', 'insights'], 
+          agents: ['analysis-agent'] 
+        },
+        navigation: { 
+          keywords: ['navigate', 'go to', 'visit', 'open', 'browse'], 
+          agents: ['navigation-agent'] 
+        }
+      }
+
+      let bestIntent = 'general'
+      let maxScore = 0
+      let suggestedAgents: string[] = []
+
+      // Score each intent
+      for (const [intent, config] of Object.entries(intentPatterns)) {
+        const score = config.keywords.filter(keyword => lowerMessage.includes(keyword)).length
+        if (score > maxScore) {
+          maxScore = score
+          bestIntent = intent
+          suggestedAgents = [...config.agents]
+        }
+      }
+
+      // Multi-agent detection
+      if (lowerMessage.includes('comprehensive') || lowerMessage.includes('detailed')) {
+        suggestedAgents.push('analysis-agent')
+      }
+      
+      if (lowerMessage.includes('multiple') || lowerMessage.includes('compare')) {
+        if (!suggestedAgents.includes('research-agent')) {
+          suggestedAgents.push('research-agent')
+        }
+      }
+
+      // Context factors
+      const contextFactors = []
+      if (context) {
+        if (context.currentUrl) contextFactors.push('current_page')
+        if (context.conversationHistory.length > 0) contextFactors.push('conversation_history')
+        if (context.agentContext && Object.keys(context.agentContext).length > 0) {
+          contextFactors.push('agent_context')
+        }
+      }
+
+      // Response strategy
+      let responseStrategy = 'direct'
+      if (message.includes('?') && !lowerMessage.includes('how') && !lowerMessage.includes('what')) {
+        responseStrategy = 'clarifying'
+      } else if (context && context.conversationHistory.length > 2) {
+        responseStrategy = 'continuing'
+      } else if (suggestedAgents.length > 1) {
+        responseStrategy = 'complex'
+      }
+
+      const confidence = Math.min(maxScore * 0.2 + (contextFactors.length * 0.1) + 0.3, 1.0)
+
+      return {
+        intent: bestIntent,
+        confidence,
+        suggestedAgents: [...new Set(suggestedAgents)], // Remove duplicates
+        responseStrategy,
+        contextFactors
+      }
+
+    } catch (error) {
+      logger.error('Enhanced intent analysis failed', error as Error)
+      return {
+        intent: 'general',
+        confidence: 0.5,
+        suggestedAgents: ['research-agent'],
+        responseStrategy: 'direct',
+        contextFactors: []
+      }
+    }
   }
 
   // Smart Context Building
