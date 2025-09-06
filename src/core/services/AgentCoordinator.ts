@@ -511,8 +511,8 @@ class AgentCoordinator {
       })
 
       appEvents.emit('agent:collaboration-completed', {
-        collaborationId: collaboration.id,
-        results: collaboration.results
+        agentIds: collaboration.supportingAgents,
+        result: collaboration.results
       })
 
       return { success: true }
