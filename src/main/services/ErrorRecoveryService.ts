@@ -97,7 +97,7 @@ export class ErrorRecoveryService {
       description: 'Recreate failed tabs',
       condition: (error, context) => 
         context.component === 'TabManager' && error.message.includes('tab'),
-      execute: async (_error, context) => {
+      execute: async (_error, _context) => {
         if (window.electronAPI) {
           await window.electronAPI.createTab('https://www.google.com')
           return true
