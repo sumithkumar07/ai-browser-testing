@@ -13,6 +13,7 @@ class KAiroBrowserManager {
     this.aiService = null
     this.tabCounter = 0
     this.isInitialized = false
+    this.aiTabs = new Map() // Store AI tab data
   }
 
   async initialize() {
