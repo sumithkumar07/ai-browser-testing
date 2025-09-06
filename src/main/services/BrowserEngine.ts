@@ -200,7 +200,7 @@ export class BrowserEngine {
     }
   }
 
-  async navigateTo(url: string, options: NavigationOptions = {}): Promise<boolean> {
+  async navigateTo(url: string, _options: NavigationOptions = {}): Promise<boolean> {
     try {
       console.log(`🌐 Navigating to: ${url}`)
       
