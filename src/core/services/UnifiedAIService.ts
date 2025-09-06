@@ -598,9 +598,7 @@ class UnifiedAIService {
           onProgress(result.result)
           return {
             success: true,
-            result: result.result,
-            usage: result.usage,
-            metadata: result.metadata
+            result: result.result
           }
         } else {
           throw new Error(result.error || 'Failed to generate response')
