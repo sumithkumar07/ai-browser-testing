@@ -94,17 +94,17 @@ class UnifiedAIService {
         logger.debug(`Testing AI connection (attempt ${attempt}/${maxRetries})`)
         
         const result = await this.withTimeout(
-          window.electronAPI.testAIConnection(),
+          window.electronAPI.testConnection(),
           5000
         )
         
-        if (result.success) {
+        if ((result as any).success) {
           this.connectionRetries = 0
           this.lastConnectionTest = Date.now()
           return
         }
         
-        throw new Error(result.error || 'Connection test failed')
+        throw new Error((result as any).error || 'Connection test failed')
       } catch (error) {
         logger.warn(`Connection test attempt ${attempt} failed`, error as Error)
         
