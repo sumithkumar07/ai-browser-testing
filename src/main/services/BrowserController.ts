@@ -55,7 +55,7 @@ export class BrowserController {
     }
   }
 
-  async extractPageContent(tabId?: string): Promise<any> {
+  async extractPageContent(_tabId?: string): Promise<any> {
     try {
       // Use Electron API to extract content from current or specific tab
       const result = await window.electronAPI.getCurrentUrl()
