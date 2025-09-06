@@ -966,25 +966,146 @@ ${tabResults.map(t => `- ${t.url}`).join('\n')}
     }
   }
 
-  async getPageContext() {
+  async getEnhancedPageContext() {
     try {
       if (!this.activeTabId) {
-        return { url: '', title: 'New Tab' }
+        return { 
+          url: '', 
+          title: 'New Tab',
+          pageType: 'blank',
+          contentSummary: 'No active tab',
+          extractedText: '',
+          lastAction: 'application_start'
+        }
       }
 
       const browserView = this.browserViews.get(this.activeTabId)
       if (!browserView) {
-        return { url: '', title: 'New Tab' }
+        return { 
+          url: '', 
+          title: 'New Tab',
+          pageType: 'blank',
+          contentSummary: 'Tab not found',
+          extractedText: '',
+          lastAction: 'tab_error'
+        }
       }
 
       const url = browserView.webContents.getURL()
       const title = browserView.webContents.getTitle()
       
-      return { url, title }
+      // Determine page type from URL
+      let pageType = 'general'
+      if (url.includes('amazon') || url.includes('ebay') || url.includes('shop')) {
+        pageType = 'shopping'
+      } else if (url.includes('github') || url.includes('stackoverflow') || url.includes('docs')) {
+        pageType = 'development'
+      } else if (url.includes('news') || url.includes('blog') || url.includes('article')) {
+        pageType = 'news'
+      } else if (url.includes('social') || url.includes('twitter') || url.includes('linkedin')) {
+        pageType = 'social'
+      } else if (url.includes('search') || url.includes('google') || url.includes('bing')) {
+        pageType = 'search'
+      }
+
+      // Extract enhanced content
+      const extractedData = await browserView.webContents.executeJavaScript(`
+        (() => {
+          try {
+            // Extract text content
+            const textContent = document.body.innerText.substring(0, 3000)
+            
+            // Extract headings
+            const headings = Array.from(document.querySelectorAll('h1, h2, h3'))
+              .map(h => h.innerText.trim())
+              .filter(text => text.length > 0)
+              .slice(0, 10)
+            
+            // Extract links
+            const links = Array.from(document.querySelectorAll('a[href]'))
+              .map(a => ({ text: a.innerText.trim(), href: a.href }))
+              .filter(link => link.text.length > 0 && link.text.length < 100)
+              .slice(0, 15)
+            
+            // Extract forms
+            const forms = Array.from(document.querySelectorAll('form'))
+              .map(form => ({
+                action: form.action,
+                method: form.method,
+                inputs: Array.from(form.querySelectorAll('input, select, textarea'))
+                  .map(input => ({
+                    type: input.type || input.tagName.toLowerCase(),
+                    name: input.name,
+                    placeholder: input.placeholder
+                  }))
+              }))
+              .slice(0, 5)
+            
+            // Extract meta information
+            const metaDescription = document.querySelector('meta[name="description"]')?.content || ''
+            const metaKeywords = document.querySelector('meta[name="keywords"]')?.content || ''
+            
+            return {
+              textContent,
+              headings,
+              links,
+              forms,
+              metaDescription,
+              metaKeywords,
+              hasImages: document.images.length > 0,
+              hasVideos: document.querySelectorAll('video, iframe[src*="youtube"], iframe[src*="vimeo"]').length > 0
+            }
+          } catch (error) {
+            return {
+              textContent: document.body.innerText.substring(0, 1000) || 'Content extraction failed',
+              headings: [],
+              links: [],
+              forms: [],
+              metaDescription: '',
+              metaKeywords: '',
+              hasImages: false,
+              hasVideos: false,
+              error: error.message
+            }
+          }
+        })()
+      `)
+
+      // Create content summary
+      let contentSummary = 'Page loaded'
+      if (extractedData.headings.length > 0) {
+        contentSummary = `Main topics: ${extractedData.headings.slice(0, 3).join(', ')}`
+      } else if (extractedData.metaDescription) {
+        contentSummary = extractedData.metaDescription.substring(0, 150)
+      } else if (extractedData.textContent) {
+        contentSummary = extractedData.textContent.substring(0, 200)
+      }
+
+      return { 
+        url, 
+        title,
+        pageType,
+        contentSummary,
+        extractedText: extractedData.textContent,
+        headings: extractedData.headings,
+        links: extractedData.links,
+        forms: extractedData.forms,
+        metaDescription: extractedData.metaDescription,
+        hasImages: extractedData.hasImages,
+        hasVideos: extractedData.hasVideos,
+        lastAction: 'content_extracted'
+      }
       
     } catch (error) {
-      console.error('❌ Get page context failed:', error)
-      return { url: '', title: 'New Tab' }
+      console.error('❌ Enhanced page context extraction failed:', error)
+      return { 
+        url: '', 
+        title: 'New Tab',
+        pageType: 'error',
+        contentSummary: 'Context extraction failed',
+        extractedText: '',
+        lastAction: 'extraction_error'
+      }
     }
   }
 
