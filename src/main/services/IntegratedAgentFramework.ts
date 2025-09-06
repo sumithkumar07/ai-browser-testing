@@ -60,6 +60,8 @@ export class IntegratedAgentFramework {
       this.registerAgent(new NavigationAgent())
       this.registerAgent(new AnalysisAgent(this.aiService))
       this.registerAgent(new ShoppingAgent(this.aiService))
+      this.registerAgent(new CommunicationAgent(this.aiService))
+      this.registerAgent(new AutomationAgent(this.aiService))
 
       // Set up event listeners
       this.setupEventListeners()
