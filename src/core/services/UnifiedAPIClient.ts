@@ -299,7 +299,7 @@ class UnifiedAPIClient {
         }
       })
     } catch (error) {
-      logger.error('Batch API call failed', error as Error)
+      logger.error(`Batch API call failed: ${(error as Error).message}`)
       throw error
     }
   }
