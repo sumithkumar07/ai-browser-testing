@@ -135,7 +135,8 @@ export class PerformanceMonitor {
               timestamp: Date.now(),
               category: 'memory'
             },
-            recommendation: 'Consider closing unused tabs or restarting the application'
+            recommendation: 'Consider closing unused tabs or restarting the application',
+            severity: 'medium'
           })
         }
       }
