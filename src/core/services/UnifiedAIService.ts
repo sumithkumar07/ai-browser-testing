@@ -528,7 +528,7 @@ class UnifiedAIService {
    */
   async executeAgentTask(
     task: string,
-    onProgress?: (status: AgentStatus) => void
+    _onProgress?: (status: AgentStatus) => void
   ): Promise<AIResponse> {
     const taskId = `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     
