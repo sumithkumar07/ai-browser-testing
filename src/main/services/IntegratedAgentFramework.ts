@@ -361,6 +361,22 @@ class ResearchAgent implements Agent {
       category: 'research',
       requiredPermissions: ['web-navigation', 'content-extraction'],
       estimatedDuration: 30000
+    },
+    {
+      id: 'multi-source-research',
+      name: 'Multi-Source Research',
+      description: 'Comprehensive research across multiple authoritative sources',
+      category: 'research',
+      requiredPermissions: ['web-navigation', 'content-extraction'],
+      estimatedDuration: 60000
+    },
+    {
+      id: 'trend-analysis',
+      name: 'Trend Analysis',
+      description: 'Analyze trends and developments in specific topics',
+      category: 'analysis',
+      requiredPermissions: ['web-navigation', 'content-extraction'],
+      estimatedDuration: 45000
     }
   ]
 
@@ -369,20 +385,99 @@ class ResearchAgent implements Agent {
   async execute(task: string): Promise<any> {
     logger.info('Executing research task', { task })
     
-    // Use AI service to generate research strategy
-    const strategy = await this.aiService.sendMessage(
-      `Create a research strategy for: ${task}. List 3-5 specific websites to visit and what to look for.`
-    )
+    // Enhanced research strategy with complexity detection
+    const complexity = this.assessComplexity(task)
+    
+    let prompt = ''
+    if (complexity.level === 'comprehensive') {
+      prompt = `Create a comprehensive research strategy for: ${task}. This is a complex topic requiring:
+      1. 5-7 authoritative sources to investigate
+      2. Key research questions to address
+      3. Multiple perspectives to explore
+      4. Current trends and developments
+      5. Practical applications and implications
+      Provide detailed research plan with specific sources and methodology.`
+    } else if (complexity.level === 'detailed') {
+      prompt = `Create a detailed research strategy for: ${task}. Include:
+      1. 3-5 reliable sources to check
+      2. Key information to gather
+      3. Important aspects to investigate
+      4. Recent developments
+      Provide structured research approach.`
+    } else {
+      prompt = `Create a research strategy for: ${task}. List 3-4 specific websites to visit and what to look for. Focus on getting accurate, up-to-date information.`
+    }
+    
+    const strategy = await this.aiService.sendMessage(prompt)
 
     if (strategy.success) {
       return {
         type: 'research_completed',
         strategy: strategy.result,
+        complexity: complexity,
+        estimatedDuration: complexity.estimatedTime,
         timestamp: Date.now()
       }
     }
 
     throw new Error('Failed to generate research strategy')
+  }
+  
+  private assessComplexity(task: string): {
+    level: 'basic' | 'detailed' | 'comprehensive'
+    estimatedTime: number
+    factors: string[]
+  } {
+    const complexityIndicators = {
+      comprehensive: ['comprehensive', 'detailed', 'in-depth', 'thorough', 'complete', 'extensive', 'analysis', 'trends', 'developments', 'multiple', 'across', 'compare'],
+      detailed: ['research', 'find', 'investigate', 'explore', 'study', 'examine', 'top', 'best', 'latest', 'current'],
+      basic: ['what', 'how', 'when', 'where', 'simple', 'quick', 'basic']
+    }
+    
+    const lowerTask = task.toLowerCase()
+    const factors = []
+    
+    let comprehensiveScore = 0
+    let detailedScore = 0
+    let basicScore = 0
+    
+    for (const indicator of complexityIndicators.comprehensive) {
+      if (lowerTask.includes(indicator)) {
+        comprehensiveScore++
+        factors.push(`comprehensive: ${indicator}`)
+      }
+    }
+    
+    for (const indicator of complexityIndicators.detailed) {
+      if (lowerTask.includes(indicator)) {
+        detailedScore++
+        factors.push(`detailed: ${indicator}`)
+      }
+    }
+    
+    for (const indicator of complexityIndicators.basic) {
+      if (lowerTask.includes(indicator)) {
+        basicScore++
+        factors.push(`basic: ${indicator}`)
+      }
+    }
+    
+    // Length-based complexity
+    if (task.length > 100) comprehensiveScore++
+    if (task.length > 50) detailedScore++
+    
+    // Multiple sentences indicate complexity
+    if (task.includes('.') || task.includes('?') || task.includes('!')) {
+      comprehensiveScore++
+    }
+    
+    if (comprehensiveScore >= 2) {
+      return { level: 'comprehensive', estimatedTime: 60000, factors }
+    } else if (detailedScore >= 1 || comprehensiveScore >= 1) {
+      return { level: 'detailed', estimatedTime: 30000, factors }
+    } else {
+      return { level: 'basic', estimatedTime: 15000, factors }
+    }
   }
 }
 
