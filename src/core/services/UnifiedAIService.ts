@@ -104,7 +104,7 @@ class UnifiedAIService {
         
         throw new Error((result as any).error || 'Connection test failed')
       } catch (error) {
-        logger.warn(`Connection test attempt ${attempt} failed`, error as Error)
+        logger.warn(`Connection test attempt ${attempt} failed: ${(error as Error).message}`)
         
         if (attempt === maxRetries) {
           throw error
