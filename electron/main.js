@@ -1654,6 +1654,410 @@ Based on your task, consider if you need:
       aiTabId: aiTabResult.tabId
     }
   }
+  // Helper methods for agent execution
+  getResearchWebsites(task) {
+    const lowerTask = task.toLowerCase()
+    
+    if (lowerTask.includes('ai') || lowerTask.includes('artificial intelligence')) {
+      return [
+        'https://openai.com',
+        'https://deepmind.com', 
+        'https://www.anthropic.com',
+        'https://research.google/teams/brain/',
+        'https://news.mit.edu/topic/artificial-intelligence2'
+      ]
+    } else if (lowerTask.includes('tech') || lowerTask.includes('technology')) {
+      return [
+        'https://techcrunch.com',
+        'https://www.theverge.com',
+        'https://arstechnica.com',
+        'https://news.ycombinator.com',
+        'https://www.wired.com/category/business/'
+      ]
+    } else if (lowerTask.includes('business') || lowerTask.includes('startup')) {
+      return [
+        'https://techcrunch.com',
+        'https://www.bloomberg.com',
+        'https://www.forbes.com',
+        'https://hbr.org',
+        'https://fortune.com'
+      ]
+    } else if (lowerTask.includes('science') || lowerTask.includes('research')) {
+      return [
+        'https://www.nature.com',
+        'https://science.sciencemag.org',
+        'https://www.scientificamerican.com',
+        'https://news.mit.edu',
+        'https://phys.org'
+      ]
+    } else {
+      // General research sites
+      return [
+        'https://scholar.google.com',
+        'https://www.wikipedia.org',
+        'https://www.reddit.com',
+        'https://news.google.com',
+        'https://www.bbc.com/news'
+      ]
+    }
+  }
+
+  extractUrls(text) {
+    const urlRegex = /(https?:\/\/[^\s]+)/g
+    const matches = text.match(urlRegex) || []
+    
+    // Also look for common domain patterns
+    const domainRegex = /(?:go to|visit|open|navigate to)\s+([a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.(?:com|org|net|edu|gov|io|co|ai))/gi
+    const domainMatches = [...text.matchAll(domainRegex)]
+    
+    const domains = domainMatches.map(match => `https://${match[1]}`)
+    
+    return [...matches, ...domains]
+  }
+
+  suggestWebsites(task) {
+    const lowerTask = task.toLowerCase()
+    
+    if (lowerTask.includes('shop') || lowerTask.includes('buy')) {
+      return [
+        { name: 'Amazon', url: 'https://amazon.com' },
+        { name: 'eBay', url: 'https://ebay.com' },
+        { name: 'Walmart', url: 'https://walmart.com' }
+      ]
+    } else if (lowerTask.includes('news')) {
+      return [
+        { name: 'Google News', url: 'https://news.google.com' },
+        { name: 'BBC News', url: 'https://www.bbc.com/news' },
+        { name: 'Reuters', url: 'https://www.reuters.com' }
+      ]
+    } else if (lowerTask.includes('social')) {
+      return [
+        { name: 'Twitter', url: 'https://twitter.com' },
+        { name: 'LinkedIn', url: 'https://linkedin.com' },
+        { name: 'Facebook', url: 'https://facebook.com' }
+      ]
+    } else {
+      return [
+        { name: 'Google', url: 'https://google.com' },
+        { name: 'Wikipedia', url: 'https://wikipedia.org' },
+        { name: 'YouTube', url: 'https://youtube.com' }
+      ]
+    }
+  }
+
+  getWebsiteName(url) {
+    try {
+      const domain = new URL(url).hostname.replace('www.', '')
+      return domain.split('.')[0].charAt(0).toUpperCase() + domain.split('.')[0].slice(1)
+    } catch {
+      return url
+    }
+  }
+
+  getTitleFromTask(task) {
+    const words = task.split(' ').slice(0, 4)
+    let title = words.join(' ')
+    if (title.length > 30) {
+      title = title.substring(0, 30) + '...'
+    }
+    return title
+  }
+
+  generateResearchSummary(task, tabResults, analysis) {
+    return `# Research Summary: ${this.getTitleFromTask(task)}
+Generated: ${new Date().toLocaleString()}
+
+## Research Objective
+${task}
+
+## Research Strategy
+**Agent Analysis**: ${analysis.primaryAgent} agent with ${analysis.confidence.toFixed(1)} confidence
+**Complexity**: ${analysis.complexity}
+**Supporting Agents**: ${analysis.supportingAgents.join(', ') || 'None'}
+
+## Sources Accessed
+${tabResults.map((t, i) => `${i + 1}. **${t.name}**: [${t.url}](${t.url})`).join('\n')}
+
+## Research Framework
+### 1. Information Gathering
+- [ ] Review each opened source for relevant information
+- [ ] Take notes on key findings and insights
+- [ ] Identify additional sources if needed
+
+### 2. Analysis & Synthesis
+- [ ] Compare information across sources
+- [ ] Identify common themes and patterns
+- [ ] Note conflicting information or perspectives
+
+### 3. Insights & Conclusions
+- [ ] Summarize key findings
+- [ ] Draw actionable conclusions
+- [ ] Identify areas for further investigation
+
+## Key Research Areas
+Based on your query, focus on:
+- Current trends and developments
+- Expert opinions and analysis
+- Statistical data and evidence
+- Practical applications and implications
+
+## Next Steps
+1. **Deep Dive**: Explore each opened tab thoroughly
+2. **Cross-Reference**: Compare findings across sources
+3. **Document**: Add your findings to this summary
+4. **Expand**: Identify additional research needs
+
+## Research Notes
+[Add your findings, insights, and conclusions here as you review the sources]
+
+---
+*This research framework was generated by KAiro's Research Agent to help you conduct thorough and systematic research.*`
+  }
+
+  determineCommunicationType(task) {
+    const lowerTask = task.toLowerCase()
+    
+    if (lowerTask.includes('email')) return 'email'
+    if (lowerTask.includes('form')) return 'form'
+    if (lowerTask.includes('social') || lowerTask.includes('post') || lowerTask.includes('tweet')) return 'social'
+    return 'general'
+  }
+
+  generateEmailTemplate(task) {
+    const isBusinessEmail = task.toLowerCase().includes('professional') || task.toLowerCase().includes('business')
+    
+    return `# Email Composition Template
+Generated: ${new Date().toLocaleString()}
+
+## Email Request
+${task}
+
+## Email Template
+
+**Subject**: [Clear, specific subject line]
+
+**To**: [Recipient email]
+**CC**: [Additional recipients if needed]
+**BCC**: [Hidden recipients if needed]
+
+---
+
+${isBusinessEmail ? 'Dear [Recipient Name],' : 'Hi [Recipient Name],'}
+
+**Opening**: [Brief, friendly opening that establishes context]
+
+**Main Content**: 
+[Core message broken into clear paragraphs]
+
+- Point 1: [First main point]
+- Point 2: [Second main point]  
+- Point 3: [Third main point if needed]
+
+**Call to Action**: [What you want the recipient to do]
+
+**Closing**: [Polite closing that maintains relationship]
+
+${isBusinessEmail ? 'Best regards,' : 'Thanks,'}
+[Your Name]
+[Your Title if applicable]
+[Contact Information]
+
+---
+
+## Email Best Practices
+✅ **Subject Line**: Make it specific and actionable
+✅ **Opening**: Personalize and provide context
+✅ **Structure**: Use paragraphs and bullet points for clarity
+✅ **Tone**: Match the relationship and purpose
+✅ **Length**: Keep it concise but complete
+✅ **Proofread**: Check for errors before sending
+
+## Customization Notes
+[Modify the template above based on your specific needs and relationship with the recipient]`
+  }
+
+  generateFormGuide(task) {
+    return `# Form Filling Guide
+Generated: ${new Date().toLocaleString()}
+
+## Form Task
+${task}
+
+## Smart Form Filling Strategy
+
+### 1. Preparation Phase
+- [ ] **Gather Information**: Collect all required data beforehand
+- [ ] **Read Instructions**: Review form requirements and guidelines
+- [ ] **Check Requirements**: Note mandatory fields and formats
+- [ ] **Save Progress**: Look for save/draft options
+
+### 2. Common Form Fields & Tips
+
+**Personal Information**
+- Full Name: Use legal name as it appears on ID
+- Email: Use a professional email address
+- Phone: Include country/area code
+- Address: Use standardized format
+
+**Professional Information**
+- Job Title: Use current or most recent position
+- Company: Include full company name
+- Experience: Be accurate with dates and descriptions
+
+**Technical Fields**
+- Dates: Use required format (MM/DD/YYYY, etc.)
+- Numbers: Remove formatting unless specified
+- File Uploads: Check size and format requirements
+
+### 3. Form Validation Tips
+- **Required Fields**: Look for asterisks (*) or red indicators
+- **Format Validation**: Follow examples provided
+- **Character Limits**: Stay within specified limits
+- **Error Messages**: Read and address all validation errors
+
+### 4. Before Submitting
+- [ ] Review all entries for accuracy
+- [ ] Check spelling and grammar
+- [ ] Verify contact information
+- [ ] Ensure all required fields are completed
+- [ ] Save a copy if possible
+
+## Form-Specific Notes
+[Add specific information about the form you're filling out]
+
+## Troubleshooting
+- **Form Not Saving**: Try different browser or disable ad blockers
+- **Validation Errors**: Double-check format requirements
+- **Page Not Loading**: Clear cache or try incognito mode
+- **File Upload Issues**: Check file size and format restrictions`
+  }
+
+  generateSocialContent(task) {
+    return `# Social Media Content Template
+Generated: ${new Date().toLocaleString()}
+
+## Content Request
+${task}
+
+## Platform-Specific Templates
+
+### Twitter/X Post
+**Character Limit**: 280 characters
+
+\`\`\`
+[Engaging opening hook] 
+
+[Main message in 1-2 sentences]
+
+[Call to action or question]
+
+[Relevant hashtags] #hashtag1 #hashtag2
+\`\`\`
+
+### LinkedIn Post
+**Professional Tone**
+
+\`\`\`
+[Professional insight or question]
+
+[Detailed explanation with value]
+
+Key takeaways:
+• Point 1
+• Point 2  
+• Point 3
+
+What are your thoughts? [Engagement question]
+
+#Industry #Professional #Hashtags
+\`\`\`
+
+### Facebook/General Social
+**Casual & Engaging**
+
+\`\`\`
+[Relatable opening]
+
+[Story or experience]
+
+[Question or call to action to encourage comments]
+
+[Relevant hashtags and tags]
+\`\`\`
+
+## Content Best Practices
+✅ **Hook**: Start with attention-grabbing content
+✅ **Value**: Provide information, entertainment, or insight
+✅ **Engagement**: Include questions or calls to action
+✅ **Hashtags**: Use relevant, researched hashtags
+✅ **Timing**: Post when your audience is most active
+✅ **Visuals**: Include images or videos when possible
+
+## Content Calendar Ideas
+- **Monday**: Motivational content
+- **Tuesday**: Tips and tutorials
+- **Wednesday**: Behind-the-scenes
+- **Thursday**: Thought leadership
+- **Friday**: Fun and engaging content
+
+## Notes & Ideas
+[Brainstorm additional content ideas and variations here]`
+  }
+
+  generateGeneralCommunication(task) {
+    return `# Communication Template
+Generated: ${new Date().toLocaleString()}
+
+## Communication Request
+${task}
+
+## General Communication Framework
+
+### 1. Purpose & Objectives
+**Primary Goal**: [What do you want to achieve?]
+**Target Audience**: [Who are you communicating with?]
+**Key Message**: [What's the main point?]
+
+### 2. Message Structure
+**Opening**: [How will you start?]
+- Greeting and context
+- Purpose statement
+- Connection to audience
+
+**Body**: [What's the core content?]
+- Main points (3 maximum)
+- Supporting details
+- Evidence or examples
+
+**Closing**: [How will you end?]
+- Summary of key points
+- Call to action
+- Next steps
+
+### 3. Tone & Style Guide
+**Professional**: Formal language, proper grammar, respectful tone
+**Casual**: Conversational, friendly, approachable
+**Persuasive**: Compelling arguments, benefits-focused, action-oriented
+**Informative**: Clear, factual, well-organized
+
+### 4. Communication Checklist
+- [ ] Clear and concise message
+- [ ] Appropriate tone for audience
+- [ ] Proper grammar and spelling
+- [ ] Logical flow and structure
+- [ ] Call to action included
+- [ ] Contact information provided
+
+## Template Customization
+[Modify the framework above based on your specific communication needs]
+
+## Follow-up Strategy
+- **Timing**: When to follow up
+- **Method**: Email, phone, in-person
+- **Content**: What to include in follow-up
+- **Tracking**: How to measure success`
+  }
+
   getMainWindow() {
     return this.mainWindow
   }
