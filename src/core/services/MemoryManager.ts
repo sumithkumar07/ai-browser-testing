@@ -369,9 +369,9 @@ class MemoryManager {
   private async cleanupBrowserMemory(): Promise<void> {
     try {
       // Call Electron API to cleanup browser memory if available
-      if (window.electronAPI?.cleanupMemory) {
-        await window.electronAPI.cleanupMemory()
-      }
+      // Note: cleanupMemory is not currently implemented in electronAPI
+      // This is a placeholder for future browser memory cleanup functionality
+      logger.debug('Browser memory cleanup requested (not implemented)')
     } catch (error) {
       logger.warn('Browser memory cleanup failed', error as Error)
     }
