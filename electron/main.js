@@ -740,9 +740,15 @@ ${tabResults.map(t => `- ${t.url}`).join('\n')}
         this.activeTabId = null
       }
       
-      // Cleanup BrowserView
+      // Cleanup BrowserView resources
       browserView.webContents.destroy()
       this.browserViews.delete(tabId)
+      
+      // Clean up AI tab data if exists
+      if (this.aiTabs && this.aiTabs.has(tabId)) {
+        this.aiTabs.delete(tabId)
+        console.log(`🧹 Cleaned up AI tab data: ${tabId}`)
+      }
       
       // Emit tab closed event
       this.mainWindow.webContents.send('browser-event', {
@@ -750,7 +756,7 @@ ${tabResults.map(t => `- ${t.url}`).join('\n')}
         tabId: tabId
       })
 
-      console.log(`✅ Tab closed: ${tabId}`)
+      console.log(`✅ Tab closed and cleaned up: ${tabId}`)
       return { success: true, tabId: tabId }
       
     } catch (error) {
