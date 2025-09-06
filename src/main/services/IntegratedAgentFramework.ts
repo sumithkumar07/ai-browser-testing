@@ -204,10 +204,10 @@ export class IntegratedAgentFramework {
       
       Respond with JSON format:
       {
-        "intent": "research|navigation|analysis|shopping|general",
+        "intent": "research|navigation|analysis|shopping|communication|automation|general",
         "confidence": 0.0-1.0,
         "entities": ["key", "entities"],
-        "agentType": "research|navigation|analysis|shopping"
+        "agentType": "research|navigation|analysis|shopping|communication|automation"
       }`
 
       const response = await this.aiService.sendMessage(prompt)
