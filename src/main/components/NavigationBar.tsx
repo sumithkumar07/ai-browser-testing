@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 interface NavigationBarProps {
   currentUrl: string
@@ -21,13 +21,36 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
 }) => {
   const [urlInput, setUrlInput] = useState(currentUrl)
 
+  // Update input when currentUrl changes
+  useEffect(() => {
+    setUrlInput(currentUrl)
+  }, [currentUrl])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onNavigate(urlInput)
+    let url = urlInput.trim()
+    
+    // Add protocol if missing
+    if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+      // Check if it looks like a URL
+      if (url.includes('.') && !url.includes(' ')) {
+        url = 'https://' + url
+      } else {
+        // Treat as search query
+        url = `https://www.google.com/search?q=${encodeURIComponent(url)}`
+      }
+    }
+    
+    onNavigate(url)
   }
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUrlInput(e.target.value)
+  }
+
+  const formatDisplayUrl = (url: string) => {
+    if (!url) return ''
+    return url.replace(/^https?:\/\//, '').replace(/\/$/, '')
   }
 
   return (
@@ -42,21 +65,23 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
         ↻
       </button>
       
-      <form onSubmit={handleSubmit} style={{ flex: 1 }}>
+      <form onSubmit={handleSubmit} style={{ flex: 1, display: 'flex' }}>
         <input
           type="text"
-          className="nav-url-bar"
+          className="address-bar"
           value={urlInput}
           onChange={handleUrlChange}
           placeholder="Enter URL or search..."
+          title={currentUrl}
         />
       </form>
       
       <button
-        className={`nav-ai-toggle ${aiSidebarOpen ? 'active' : ''}`}
+        className={`ai-toggle-button ${aiSidebarOpen ? 'active' : ''}`}
         onClick={onToggleAI}
+        title={aiSidebarOpen ? 'Hide AI Assistant' : 'Show AI Assistant'}
       >
-        {aiSidebarOpen ? 'AI Assistant' : 'Show AI'}
+        🤖
       </button>
     </div>
   )
