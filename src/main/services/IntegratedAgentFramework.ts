@@ -279,7 +279,9 @@ export class IntegratedAgentFramework {
       research: researchScore + (complexScore * 0.5),
       navigation: navigationScore,
       analysis: analysisScore + (complexScore * 0.3),
-      shopping: shoppingScore
+      shopping: shoppingScore,
+      communication: communicationScore,
+      automation: automationScore + (complexScore * 0.4) // Automation often involves complex workflows
     }
     
     // Complex query detection (>50 characters or multiple sentences)
