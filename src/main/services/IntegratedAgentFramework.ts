@@ -140,7 +140,7 @@ export class IntegratedAgentFramework {
           logger.info('Agent task completed', { taskId: result.taskId })
           return { success: true, taskId: result.taskId }
         } else {
-          logger.error('Agent task failed', { error: result.error, taskId: result.taskId })
+          logger.error('Agent task failed', new Error(result.error || 'Agent task failed'), { taskId: result.taskId })
           return { success: false, error: result.error || 'Agent task failed', taskId: result.taskId }
         }
       }
