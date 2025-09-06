@@ -1,6 +1,6 @@
 // src/main/hooks/useBrowser.ts
 import { useState, useEffect, useCallback } from 'react'
-import BrowserEngine, { BrowserTab, BrowserState, BrowserEvent } from '../services/BrowserEngine'
+import BrowserEngine, { BrowserTab, BrowserEvent } from '../services/BrowserEngine'
 
 export interface UseBrowserState {
   tabs: BrowserTab[]
