@@ -82,43 +82,88 @@ export class IntegratedAgentFramework {
   }
 
   /**
-   * Process user input and assign to appropriate agent
+   * Process user input with enhanced conversation and coordination
    */
   async processUserInput(input: string): Promise<{ success: boolean; taskId?: string; error?: string }> {
     try {
       validateAgentTask(input)
-      logger.info('Processing user input', { input })
+      logger.info('Processing user input with enhanced framework', { input })
 
-      // Analyze intent and select agent
-      const intentAnalysis = await this.analyzeIntent(input)
-      const selectedAgent = this.selectAgent(intentAnalysis)
+      // Get current session for conversation continuity
+      const session = this.aiService.getCurrentSession()
+      
+      // Check if this requires multi-agent coordination
+      const intentAnalysis = session.sessionId 
+        ? await this.conversationManager.analyzeUserIntent(session.sessionId, input)
+        : null
 
-      logger.debug('Agent selected', { 
-        agentId: selectedAgent.id, 
-        confidence: intentAnalysis.confidence 
-      })
+      const needsCoordination = intentAnalysis?.suggestedAgents.length > 1 || 
+                               this.isComplexTask(input)
 
-      // Execute task through enhanced agent system
-      const result = await this.agentSystem.executeTask(input, {
-        timeout: 300000, // 5 minutes
-        maxRetries: 2,
-        onProgress: (status: AgentStatus) => {
-          this.emitEvent('agent-update', status)
+      if (needsCoordination && session.sessionId) {
+        // Use agent coordinator for complex tasks
+        logger.info('Using agent coordination for complex task', { 
+          suggestedAgents: intentAnalysis?.suggestedAgents || [],
+          sessionId: session.sessionId 
+        })
+
+        const result = await this.agentCoordinator.orchestrateTask(input, session.sessionId, {
+          priority: 'normal',
+          timeoutMs: 300000
+        })
+
+        return {
+          success: result.success,
+          taskId: result.collaborationId,
+          error: result.error
         }
-      })
-
-      if (result.success) {
-        logger.info('Agent task completed', { taskId: result.taskId })
-        return { success: true, taskId: result.taskId }
       } else {
-        logger.error('Agent task failed', { error: result.error, taskId: result.taskId })
-        return { success: false, error: result.error, taskId: result.taskId }
+        // Use traditional single-agent approach with enhanced capabilities
+        const intentAnalysis = await this.analyzeIntent(input)
+        const selectedAgent = this.selectAgent(intentAnalysis)
+
+        logger.debug('Agent selected for single execution', { 
+          agentId: selectedAgent.id, 
+          confidence: intentAnalysis.confidence 
+        })
+
+        // Execute task through enhanced agent system
+        const result = await this.agentSystem.executeTask(input, {
+          timeout: 300000, // 5 minutes
+          maxRetries: 2,
+          onProgress: (status: AgentStatus) => {
+            this.emitEvent('agent-update', status)
+          }
+        })
+
+        if (result.success) {
+          logger.info('Agent task completed', { taskId: result.taskId })
+          return { success: true, taskId: result.taskId }
+        } else {
+          logger.error('Agent task failed', { error: result.error, taskId: result.taskId })
+          return { success: false, error: result.error, taskId: result.taskId }
+        }
       }
 
     } catch (error) {
       logger.error('Failed to process user input', error as Error)
       return { success: false, error: (error as Error).message }
     }
+  }
+
+  /**
+   * Check if task requires complex coordination
+   */
+  private isComplexTask(input: string): boolean {
+    const complexityIndicators = [
+      'comprehensive', 'detailed', 'multiple', 'across', 'integrate', 
+      'workflow', 'compare and', 'research and analyze', 'create and send',
+      'automate and schedule', 'find and compare', 'analyze and report'
+    ]
+    
+    const lowerInput = input.toLowerCase()
+    return complexityIndicators.some(indicator => lowerInput.includes(indicator)) ||
+           input.length > 100 // Long requests often need coordination
   }
 
   /**
