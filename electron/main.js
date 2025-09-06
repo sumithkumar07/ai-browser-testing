@@ -1316,6 +1316,344 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       return { success: false, error: error.message }
     }
   }
+
+  // Specialized Agent Execution Methods
+  async executeResearchAgent(task, analysis) {
+    console.log('🔍 Executing Research Agent')
+    
+    // Determine research websites based on topic
+    const websites = this.getResearchWebsites(task)
+    const tabResults = []
+    
+    // Create research tabs (limit to 4 for performance)
+    for (let i = 0; i < Math.min(websites.length, 4); i++) {
+      const website = websites[i]
+      const tabResult = await this.createTab(website)
+      if (tabResult.success) {
+        tabResults.push({ url: website, tabId: tabResult.tabId, name: this.getWebsiteName(website) })
+      }
+      // Small delay to prevent overwhelming the system
+      await new Promise(resolve => setTimeout(resolve, 500))
+    }
+    
+    // Generate comprehensive research summary
+    const summaryContent = this.generateResearchSummary(task, tabResults, analysis)
+    const aiTabResult = await this.createAITab(`Research: ${this.getTitleFromTask(task)}`, summaryContent)
+    
+    return {
+      type: 'research_completed',
+      message: `✅ **Research Completed Successfully**\n\n📊 **Summary**: Created ${tabResults.length} research tabs with comprehensive analysis\n\n📑 **AI Summary Tab**: ${aiTabResult.tabId}\n\n**Next Steps**: Review the opened tabs and expand research as needed.`,
+      tabsCreated: tabResults.length,
+      aiTabId: aiTabResult.tabId,
+      websites: tabResults.map(t => t.name),
+      confidence: analysis.confidence
+    }
+  }
+
+  async executeNavigationAgent(task, analysis) {
+    console.log('🌐 Executing Navigation Agent')
+    
+    // Extract URLs or determine target websites
+    const urls = this.extractUrls(task)
+    if (urls.length > 0) {
+      const results = []
+      for (const url of urls.slice(0, 3)) { // Limit to 3 URLs
+        const tabResult = await this.createTab(url)
+        if (tabResult.success) {
+          results.push({ url, tabId: tabResult.tabId })
+        }
+      }
+      
+      return {
+        type: 'navigation_completed',
+        message: `🌐 **Navigation Completed**\n\n✅ Successfully opened ${results.length} tab(s)\n\n${results.map(r => `• ${r.url}`).join('\n')}\n\n**Action**: You can now interact with the opened websites.`,
+        tabsCreated: results.length,
+        urls: results.map(r => r.url)
+      }
+    } else {
+      // Suggest relevant websites based on task
+      const suggestedSites = this.suggestWebsites(task)
+      return {
+        type: 'navigation_suggestion',
+        message: `🌐 **Navigation Suggestions**\n\nBased on your request, here are relevant websites I can open:\n\n${suggestedSites.map(site => `• ${site.name}: ${site.url}`).join('\n')}\n\n**Action**: Let me know which sites you'd like to visit, or I can open the most relevant ones automatically.`,
+        suggestions: suggestedSites
+      }
+    }
+  }
+
+  async executeShoppingAgent(task, analysis) {
+    console.log('🛒 Executing Shopping Agent')
+    
+    const shoppingSites = [
+      'https://amazon.com',
+      'https://ebay.com',
+      'https://walmart.com',
+      'https://target.com'
+    ]
+    
+    const tabResults = []
+    for (let i = 0; i < Math.min(shoppingSites.length, 3); i++) {
+      const site = shoppingSites[i]
+      const tabResult = await this.createTab(site)
+      if (tabResult.success) {
+        tabResults.push({ url: site, tabId: tabResult.tabId })
+      }
+    }
+    
+    const summaryContent = `# Shopping Research: ${this.getTitleFromTask(task)}
+Generated: ${new Date().toLocaleString()}
+
+## Shopping Task
+${task}
+
+## Retail Sites Opened
+${tabResults.map(t => `- ${this.getWebsiteName(t.url)}: ${t.url}`).join('\n')}
+
+## Research Strategy
+1. **Product Search**: Search for your desired product on each site
+2. **Price Comparison**: Compare prices, shipping costs, and availability
+3. **Review Analysis**: Check customer reviews and ratings
+4. **Deal Detection**: Look for discounts, coupons, and special offers
+
+## Key Actions
+- [ ] Search for products on each site
+- [ ] Compare total costs including shipping
+- [ ] Read customer reviews
+- [ ] Check return policies
+- [ ] Look for price matching opportunities
+
+## Notes
+[Add your findings and comparisons here]`
+
+    const aiTabResult = await this.createAITab(`Shopping: ${this.getTitleFromTask(task)}`, summaryContent)
+    
+    return {
+      type: 'shopping_completed',
+      message: `🛒 **Shopping Research Initiated**\n\n✅ Opened ${tabResults.length} major retail sites for comparison\n\n📊 **Research Guide**: Created structured shopping analysis tab\n\n**Next Steps**: Search for your desired products on each site and use the AI tab to track your findings.`,
+      tabsCreated: tabResults.length,
+      aiTabId: aiTabResult.tabId
+    }
+  }
+
+  async executeCommunicationAgent(task, analysis) {
+    console.log('📧 Executing Communication Agent')
+    
+    const communicationType = this.determineCommunicationType(task)
+    
+    let content = ''
+    let title = ''
+    
+    if (communicationType.includes('email')) {
+      title = 'Email Composition'
+      content = this.generateEmailTemplate(task)
+    } else if (communicationType.includes('form')) {
+      title = 'Form Filling Guide'
+      content = this.generateFormGuide(task)
+    } else if (communicationType.includes('social')) {
+      title = 'Social Media Content'
+      content = this.generateSocialContent(task)
+    } else {
+      title = 'Communication Template'
+      content = this.generateGeneralCommunication(task)
+    }
+    
+    const aiTabResult = await this.createAITab(title, content)
+    
+    return {
+      type: 'communication_completed',
+      message: `📧 **Communication Template Created**\n\n✅ Generated ${communicationType} template\n\n📝 **Template Tab**: Ready for customization\n\n**Action**: Review and customize the template in the AI tab, then copy to your desired platform.`,
+      aiTabId: aiTabResult.tabId,
+      communicationType
+    }
+  }
+
+  async executeAutomationAgent(task, analysis) {
+    console.log('🤖 Executing Automation Agent')
+    
+    const workflowContent = `# Automation Workflow: ${this.getTitleFromTask(task)}
+Generated: ${new Date().toLocaleString()}
+
+## Automation Request
+${task}
+
+## Workflow Design
+\`\`\`
+Step 1: Task Analysis
+- Identify repetitive actions
+- Map out sequence of steps
+- Determine automation triggers
+
+Step 2: Implementation Plan
+- Break down into smaller tasks
+- Set up conditional logic
+- Define success criteria
+
+Step 3: Execution Strategy
+- Manual walkthrough first
+- Automated execution
+- Error handling and recovery
+
+Step 4: Monitoring & Optimization
+- Track performance metrics
+- Identify improvement areas
+- Refine automation rules
+\`\`\`
+
+## Automation Components
+1. **Triggers**: What starts the automation
+2. **Actions**: What tasks are performed
+3. **Conditions**: When to perform different actions
+4. **Error Handling**: What to do when things go wrong
+
+## Implementation Steps
+- [ ] Map out current manual process
+- [ ] Identify automation opportunities
+- [ ] Create step-by-step workflow
+- [ ] Test with small data set
+- [ ] Deploy full automation
+- [ ] Monitor and optimize
+
+## Notes
+[Document your automation findings and iterations here]`
+
+    const aiTabResult = await this.createAITab(`Automation: ${this.getTitleFromTask(task)}`, workflowContent)
+    
+    return {
+      type: 'automation_completed',
+      message: `🤖 **Automation Workflow Created**\n\n✅ Generated comprehensive automation plan\n\n📋 **Workflow Guide**: Step-by-step implementation strategy\n\n**Next Steps**: Review the workflow design and begin manual implementation to identify optimization opportunities.`,
+      aiTabId: aiTabResult.tabId
+    }
+  }
+
+  async executeAnalysisAgent(task, analysis) {
+    console.log('📊 Executing Analysis Agent')
+    
+    // Get current page context for analysis
+    const context = await this.getEnhancedPageContext()
+    
+    if (!this.aiService) {
+      return {
+        type: 'analysis_error',
+        message: '❌ AI service not available for content analysis'
+      }
+    }
+
+    try {
+      // Perform AI-powered analysis
+      const analysisPrompt = `Analyze the following webpage content and provide comprehensive insights:
+
+URL: ${context.url}
+Title: ${context.title}
+Content: ${context.extractedText || 'No content available'}
+
+Analysis Request: ${task}
+
+Please provide:
+1. Content Summary
+2. Key Points and Insights
+3. Sentiment Analysis
+4. Actionable Recommendations
+5. Related Topics for Further Research`
+
+      const analysisResult = await this.aiService.chat.completions.create({
+        messages: [{ role: 'user', content: analysisPrompt }],
+        model: 'llama3-8b-8192',
+        temperature: 0.3,
+        max_tokens: 1500
+      })
+
+      const analysis = analysisResult.choices[0].message.content
+
+      const analysisContent = `# Content Analysis: ${context.title}
+Generated: ${new Date().toLocaleString()}
+
+## Analysis Request
+${task}
+
+## Page Information
+- **URL**: ${context.url}
+- **Title**: ${context.title}
+- **Type**: ${context.pageType}
+- **Last Updated**: ${new Date().toLocaleString()}
+
+## AI Analysis Results
+
+${analysis}
+
+## Content Statistics
+- **Content Length**: ${context.extractedText?.length || 0} characters
+- **Has Images**: ${context.hasImages ? 'Yes' : 'No'}
+- **Has Videos**: ${context.hasVideos ? 'Yes' : 'No'}
+- **Number of Links**: ${context.links?.length || 0}
+- **Number of Forms**: ${context.forms?.length || 0}
+
+## Additional Notes
+[Add your own insights and observations here]`
+
+      const aiTabResult = await this.createAITab(`Analysis: ${context.title}`, analysisContent)
+
+      return {
+        type: 'analysis_completed',
+        message: `📊 **Content Analysis Completed**\n\n✅ Comprehensive analysis of "${context.title}"\n\n🔍 **Key Insights**: Generated detailed analysis with actionable recommendations\n\n**Review**: Check the AI tab for complete analysis results and insights.`,
+        aiTabId: aiTabResult.tabId,
+        pageAnalyzed: context.title
+      }
+
+    } catch (error) {
+      console.error('Analysis failed:', error)
+      return {
+        type: 'analysis_error',
+        message: `❌ Analysis failed: ${error.message}`
+      }
+    }
+  }
+
+  async executeGeneralAgent(task, analysis) {
+    console.log('🔧 Executing General Agent')
+    
+    const generalContent = `# General Task: ${this.getTitleFromTask(task)}
+Generated: ${new Date().toLocaleString()}
+
+## Task Description
+${task}
+
+## Analysis Results
+- **Primary Category**: General assistance
+- **Complexity**: ${analysis.complexity}
+- **Confidence**: ${Math.round(analysis.confidence * 100)}%
+
+## Suggested Approach
+1. **Task Breakdown**: Identify key components of the request
+2. **Resource Gathering**: Collect necessary information and tools
+3. **Step-by-Step Execution**: Follow a systematic approach
+4. **Quality Check**: Verify results and completeness
+5. **Documentation**: Record findings and next steps
+
+## Available Actions
+- Create additional tabs for research
+- Navigate to specific websites
+- Extract and analyze content
+- Generate reports and summaries
+
+## Next Steps
+Based on your task, consider if you need:
+- Research on specific topics
+- Navigation to particular websites
+- Content analysis of current page
+- Communication templates
+- Automation workflows
+
+## Notes
+[Document your progress and findings here]`
+
+    const aiTabResult = await this.createAITab(`Task: ${this.getTitleFromTask(task)}`, generalContent)
+    
+    return {
+      type: 'general_completed',
+      message: `🔧 **General Task Initiated**\n\n✅ Created task planning framework\n\n📋 **Planning Tab**: Use this to organize your approach\n\n**Suggestion**: Based on your task, you might want to be more specific about what type of assistance you need (research, analysis, navigation, etc.).`,
+      aiTabId: aiTabResult.tabId
+    }
+  }
   getMainWindow() {
     return this.mainWindow
   }
