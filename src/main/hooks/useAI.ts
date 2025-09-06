@@ -1,6 +1,15 @@
 // src/main/hooks/useAI.ts
 import { useState, useEffect, useCallback } from 'react'
-import AIService, { AIMessage, AIResponse, AIContext } from '../services/AIService'
+import UnifiedAIService from '../../core/services/UnifiedAIService'
+import { AIMessage, AIResponse } from '../../core/types'
+
+export interface AIContext {
+  model: string
+  temperature: number
+  maxTokens: number
+  isInitialized: boolean
+  agentCount: number
+}
 
 export interface UseAIState {
   messages: AIMessage[]
