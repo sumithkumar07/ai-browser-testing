@@ -186,7 +186,7 @@ export class BrowserController {
         const content = await this.extractPageContent(tabId)
         results.push({ tabId, ...content })
       } catch (error) {
-        results.push({ tabId, success: false, error: error.message })
+        results.push({ tabId, success: false, error: (error as Error).message })
       }
     }
     
