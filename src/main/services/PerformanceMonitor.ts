@@ -23,6 +23,7 @@ export interface PerformanceAlert {
   metric: PerformanceMetric
   recommendation: string
   timestamp: number
+  severity: 'low' | 'medium' | 'high'
 }
 
 export class PerformanceMonitor {
