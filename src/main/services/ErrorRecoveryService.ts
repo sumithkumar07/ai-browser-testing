@@ -156,7 +156,7 @@ export class ErrorRecoveryService {
 
     // If no recovery strategy worked
     logger.error('All recovery strategies failed', error)
-    appEvents.emit('error:unrecoverable', { error, context: fullContext })
+    appEvents.emit('error:unrecoverable', { error, context: fullContext.component })
     return false
   }
 
