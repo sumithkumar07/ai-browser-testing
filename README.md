@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # KAiro Browser - Agentic AI Browser
 
 ## 🚀 Overview
@@ -178,3 +179,6 @@ The application automatically checks for updates and notifies users when new ver
 =======
 # ai-browser-testing
 >>>>>>> origin/main
+=======
+# ai-browser-testing
+>>>>>>> 15dcc1496732fe92634f42528eb4bd4243813d4e
