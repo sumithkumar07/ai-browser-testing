@@ -342,54 +342,18 @@ export class BrowserEngine {
   }
 
   private setupEventListeners(): void {
-    // Browser events from main process
-    window.electronAPI.onBrowserEvent((event: BrowserEvent) => {
-      this.handleBrowserEvent(event)
-    })
-
-    window.electronAPI.onTabCreated((data: any) => {
-      this.handleBrowserEvent({
-        type: 'tab-created',
-        tabId: data.tabId,
-        url: data.url
-      })
-    })
-
-    window.electronAPI.onTabClosed((data: any) => {
-      this.handleBrowserEvent({
-        type: 'tab-closed',
-        tabId: data.tabId
-      })
-    })
-
-    window.electronAPI.onTabSwitched((data: any) => {
-      this.handleBrowserEvent({
-        type: 'tab-switched',
-        tabId: data.tabId,
-        url: data.url
-      })
-    })
-
-    window.electronAPI.onNavigationStarted((data: any) => {
-      this.handleBrowserEvent({
-        type: 'navigation-started',
-        url: data.url
-      })
-    })
-
-    window.electronAPI.onNavigationCompleted((data: any) => {
-      this.handleBrowserEvent({
-        type: 'navigation-completed',
-        url: data.url
-      })
-    })
-
-    window.electronAPI.onPageTitleUpdated((data: any) => {
-      this.handleBrowserEvent({
-        type: 'page-title-updated',
-        tabId: data.tabId,
-        title: data.title
-      })
+    // Browser events from main process (using the main onBrowserEvent listener)
+    window.electronAPI.onBrowserEvent((event: import('../types/electron.d.ts').BrowserEvent) => {
+      // Convert to our local BrowserEvent type and handle
+      const localEvent: BrowserEvent = {
+        type: event.type as any, // Type assertion for compatibility
+        tabId: event.tabId,
+        url: event.url,
+        title: event.title,
+        loading: event.loading,
+        error: event.error
+      }
+      this.handleBrowserEvent(localEvent)
     })
   }
 
