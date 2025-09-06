@@ -1,7 +1,7 @@
 // src/main/components/AISpecialTab.tsx
 import React, { useState, useEffect } from 'react'
 import { useAI } from '../hooks/useAI'
-import { AIMessage } from '../services/AIService'
+import { AIMessage } from '../types/electron'
 
 const AISpecialTab: React.FC = () => {
   const { 
