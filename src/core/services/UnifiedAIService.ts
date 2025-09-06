@@ -1,12 +1,14 @@
 /**
  * Unified AI Service
- * Single source of truth for AI functionality with robust error handling
+ * Enhanced with conversation quality and agent coordination
  */
 
 import { createLogger } from '../logger/Logger'
 import { APP_CONSTANTS } from '../utils/Constants'
 import { validateAIMessage } from '../utils/Validators'
 import { AIMessage, AIResponse, AgentStatus } from '../types'
+import ConversationManager from './ConversationManager'
+import AgentCoordinator from './AgentCoordinator'
 
 const logger = createLogger('UnifiedAIService')
 
