@@ -693,7 +693,7 @@ class UnifiedAIService {
       const result = await window.electronAPI.getAIContext()
       return result.success ? result.context : null
     } catch (error) {
-      logger.error('Failed to get AI context', error as Error)
+      logger.error(`Failed to get AI context: ${(error as Error).message}`)
       return null
     }
   }
