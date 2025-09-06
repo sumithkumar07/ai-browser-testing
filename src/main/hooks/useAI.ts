@@ -29,7 +29,7 @@ export interface UseAIActions {
 }
 
 export const useAI = (): UseAIState & UseAIActions => {
-  const [aiService] = useState(() => AIService.getInstance())
+  const [aiService] = useState(() => UnifiedAIService.getInstance())
   const [state, setState] = useState<UseAIState>({
     messages: [],
     isLoading: false,
@@ -43,11 +43,11 @@ export const useAI = (): UseAIState & UseAIActions => {
     const initializeAI = async () => {
       try {
         await aiService.initialize()
-        const context = await aiService.getAIContext()
+        const contextResponse = await aiService.getContext()
         setState(prev => ({
           ...prev,
           isInitialized: true,
-          context
+          context: contextResponse
         }))
       } catch (error) {
         setState(prev => ({
