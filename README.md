@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # KAiro Browser - Agentic AI Browser
 
 ## 🚀 Overview
@@ -174,3 +175,6 @@ The application automatically checks for updates and notifies users when new ver
 ---
 
 **Built with ❤️ using Electron, React, and Groq AI**
+=======
+# ai-browser-testing
+>>>>>>> origin/main
