@@ -257,7 +257,7 @@ class UnifiedAPIClient {
         throw new Error(normalizedResult.error || 'API call returned success: false')
 
       } catch (error) {
-        logger.warn(`API attempt ${attempt} failed: ${method}`, error as Error, { requestId })
+        logger.warn(`API attempt ${attempt} failed: ${method} - ${(error as Error).message}`, { requestId })
 
         if (attempt === maxRetries) {
           throw error
