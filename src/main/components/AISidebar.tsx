@@ -173,13 +173,23 @@ Try: "research top 5 AI websites and create summary"`)
 
   const shouldExecuteAgentTask = (message: string): boolean => {
     const agentKeywords = [
-      'research', 'find', 'search', 'top', 'best', 'compare', 
-      'analyze', 'summary', 'summarize', 'extract', 'websites',
-      'create', 'generate', 'make'
+      // Research keywords
+      'research', 'find', 'search', 'top', 'best', 'investigate', 'explore',
+      // Analysis keywords  
+      'analyze', 'analysis', 'summary', 'summarize', 'extract', 'examine',
+      // Shopping keywords
+      'compare', 'price', 'product', 'buy', 'shop', 'cost', 'deal',
+      // Creation keywords
+      'create', 'generate', 'make', 'build', 'compile', 'organize',
+      // Navigation keywords
+      'navigate', 'go to', 'visit', 'open', 'browse',
+      // Multi-step keywords
+      'websites', 'multiple', 'several', 'list of', 'across'
     ]
     
     const lowerMessage = message.toLowerCase()
-    return agentKeywords.some(keyword => lowerMessage.includes(keyword))
+    return agentKeywords.some(keyword => lowerMessage.includes(keyword)) ||
+           message.length > 50 // Complex queries likely need agents
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
