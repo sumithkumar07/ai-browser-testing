@@ -212,7 +212,7 @@ export class StartupOptimizer {
 
     } catch (error) {
       logger.error('Startup failed', error as Error)
-      appEvents.emit('startup:failed', { error })
+      appEvents.emit('startup:failed', { error: error as Error })
       throw error
     }
   }
