@@ -1,6 +1,6 @@
 /**
- * Integrated Agent Framework
- * Updated to use unified services and enhanced error handling
+ * Integrated Agent Framework - Enhanced with Coordination
+ * Updated to use unified services, conversation management, and agent coordination
  */
 
 import { createLogger } from '../../core/logger/Logger'
@@ -8,6 +8,8 @@ import { appEvents } from '../../core/utils/EventEmitter'
 import { validateAgentTask } from '../../core/utils/Validators'
 import EnhancedAgentSystem from '../../core/services/EnhancedAgentSystem'
 import UnifiedAIService from '../../core/services/UnifiedAIService'
+import ConversationManager from '../../core/services/ConversationManager'
+import AgentCoordinator from '../../core/services/AgentCoordinator'
 import MemoryManager from '../../core/services/MemoryManager'
 import { AgentStatus, AgentCapability, AgentTask } from '../../core/types'
 
