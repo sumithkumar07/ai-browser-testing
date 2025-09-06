@@ -2,41 +2,30 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  root: '.',
-  base: './', // Changed back to relative paths for file loading
-  build: {
-    outDir: 'dist',
-    emptyOutDir: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          zustand: ['zustand'],
-          electron: ['electron']
-        }
-      }
-    },
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src/main'),
+      '@/components': path.resolve(__dirname, './src/main/components'),
+      '@/services': path.resolve(__dirname, './src/main/services'),
+      '@/hooks': path.resolve(__dirname, './src/main/hooks'),
+      '@/stores': path.resolve(__dirname, './src/main/stores'),
+      '@/styles': path.resolve(__dirname, './src/main/styles'),
+      '@/types': path.resolve(__dirname, './src/main/types')
     }
   },
   server: {
     port: 5173,
-    strictPort: false,
+    strictPort: true
   },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src/main'),
-    },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: true
   },
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'zustand']
+  base: './',
+  define: {
+    'process.env': process.env
   }
 })

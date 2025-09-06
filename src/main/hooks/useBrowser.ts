@@ -1,135 +1,302 @@
-import { useBrowserStore } from '../stores/browserStore'
-import { useEnvironment } from './useEnvironment'
+// src/main/hooks/useBrowser.ts
+import { useState, useEffect, useCallback } from 'react'
+import BrowserEngine, { BrowserTab, BrowserState, BrowserEvent } from '../services/BrowserEngine'
 
-export const useBrowser = () => {
-  const { 
-    tabs, 
-    activeTabId, 
-    addTab, 
-    closeTab, 
-    setActiveTab, 
-    updateTab, 
-    navigateTab 
-  } = useBrowserStore()
-  
-  const { isElectron } = useEnvironment()
+export interface UseBrowserState {
+  tabs: BrowserTab[]
+  activeTabId: string | null
+  currentUrl: string
+  isLoading: boolean
+  error: string | null
+  isInitialized: boolean
+}
 
-  const activeTab = tabs.find(tab => tab.id === activeTabId)
+export interface UseBrowserActions {
+  createTab: (url?: string) => Promise<BrowserTab | null>
+  closeTab: (tabId: string) => Promise<boolean>
+  switchTab: (tabId: string) => Promise<boolean>
+  navigateTo: (url: string) => Promise<boolean>
+  goBack: () => Promise<boolean>
+  goForward: () => Promise<boolean>
+  reload: () => Promise<boolean>
+  getCurrentUrl: () => Promise<string>
+  getPageTitle: () => Promise<string>
+  clearError: () => void
+}
 
-  const handleNewTab = async () => {
-    console.log('Phase 4: Creating new tab')
-    addTab()
-    
-    // Create BrowserView for new tab in Electron
-    if (isElectron && window.electronAPI) {
+export const useBrowser = (): UseBrowserState & UseBrowserActions => {
+  const [browserEngine] = useState(() => BrowserEngine.getInstance())
+  const [state, setState] = useState<UseBrowserState>({
+    tabs: [],
+    activeTabId: null,
+    currentUrl: '',
+    isLoading: false,
+    error: null,
+    isInitialized: false
+  })
+
+  // Initialize browser engine
+  useEffect(() => {
+    const initializeBrowser = async () => {
       try {
-        // Get the newly created tab ID
-        const newTabId = `tab-${Date.now()}`
-        await window.electronAPI.createTabBrowserView(newTabId)
-        console.log('Phase 4: BrowserView created for new tab:', newTabId)
+        await browserEngine.initialize()
+        const engineState = browserEngine.getState()
+        setState(prev => ({
+          ...prev,
+          ...engineState,
+          isInitialized: true
+        }))
       } catch (error) {
-        console.error('Phase 4: Error creating BrowserView for new tab:', error)
+        setState(prev => ({
+          ...prev,
+          error: error instanceof Error ? error.message : 'Failed to initialize browser',
+          isInitialized: false
+        }))
       }
     }
-  }
 
-  const handleCloseTab = (id: string) => {
-    console.log('Phase 4: Closing tab:', id)
-    closeTab(id)
-  }
+    initializeBrowser()
+  }, [browserEngine])
 
-  const handleTabClick = async (id: string) => {
-    console.log('Phase 4: Switching to tab:', id)
-    setActiveTab(id)
-    
-    // Switch BrowserView in Electron
-    if (isElectron && window.electronAPI) {
-      try {
-        await window.electronAPI.setActiveTab(id)
-        console.log('Phase 4: BrowserView switched to tab:', id)
-      } catch (error) {
-        console.error('Phase 4: Error switching BrowserView:', error)
-      }
-    }
-  }
+  // Listen for browser events
+  useEffect(() => {
+    if (!state.isInitialized) return
 
-  const handleNavigate = async (url: string) => {
-    if (activeTabId) {
-      console.log('KAiro Browser: Navigating to:', url)
+    const handleBrowserEvent = (event: BrowserEvent) => {
+      console.log('Browser event received:', event.type)
       
-      // Update the tab immediately with the new URL
-      navigateTab(activeTabId, url)
-      updateTab(activeTabId, {
-        title: 'Loading...',
-        isLoading: true
-      })
-      
-      // In Electron mode, the WebView will handle the actual navigation
-      // The webview src will be updated by the useEffect in BrowserWindow
-      if (isElectron && window.electronAPI) {
-        try {
-          await window.electronAPI.navigateTo(url)
-        } catch (error) {
-          console.error('KAiro Browser: Navigation error:', error)
-          updateTab(activeTabId, {
-            title: 'Navigation failed',
-            isLoading: false
+      switch (event.type) {
+        case 'tab-created':
+          setState(prev => {
+            const engineState = browserEngine.getState()
+            return { ...prev, ...engineState }
           })
-        }
-      } else {
-        // Web mode - just update the state
-        updateTab(activeTabId, {
-          title: 'Web Mode - Navigation',
-          isLoading: false
-        })
+          break
+        case 'tab-closed':
+          setState(prev => {
+            const engineState = browserEngine.getState()
+            return { ...prev, ...engineState }
+          })
+          break
+        case 'tab-switched':
+          setState(prev => {
+            const engineState = browserEngine.getState()
+            return { ...prev, ...engineState }
+          })
+          break
+        case 'navigation-started':
+          setState(prev => ({
+            ...prev,
+            isLoading: true,
+            error: null
+          }))
+          break
+        case 'navigation-completed':
+          setState(prev => {
+            const engineState = browserEngine.getState()
+            return { ...prev, ...engineState, isLoading: false }
+          })
+          break
+        case 'page-title-updated':
+          setState(prev => {
+            const engineState = browserEngine.getState()
+            return { ...prev, ...engineState }
+          })
+          break
+        case 'error':
+          setState(prev => ({
+            ...prev,
+            error: event.error?.description || 'Unknown error',
+            isLoading: false
+          }))
+          break
       }
     }
-  }
 
-  const handleGoBack = async () => {
-    if (isElectron && window.electronAPI) {
-      try {
-        await window.electronAPI.goBack()
-        console.log('Phase 4: Went back')
-      } catch (error) {
-        console.error('Phase 4: Go back error:', error)
-      }
-    }
-  }
+    // Add event listeners for all event types
+    const eventTypes = [
+      'tab-created',
+      'tab-closed', 
+      'tab-switched',
+      'navigation-started',
+      'navigation-completed',
+      'page-title-updated',
+      'error'
+    ]
 
-  const handleGoForward = async () => {
-    if (isElectron && window.electronAPI) {
-      try {
-        await window.electronAPI.goForward()
-        console.log('Phase 4: Went forward')
-      } catch (error) {
-        console.error('Phase 4: Go forward error:', error)
-      }
-    }
-  }
+    eventTypes.forEach(eventType => {
+      browserEngine.addEventListener(eventType, handleBrowserEvent)
+    })
 
-  const handleRefresh = async () => {
-    if (isElectron && window.electronAPI) {
-      try {
-        await window.electronAPI.refresh()
-        console.log('Phase 4: Refreshed page')
-      } catch (error) {
-        console.error('Phase 4: Refresh error:', error)
-      }
+    return () => {
+      eventTypes.forEach(eventType => {
+        browserEngine.removeEventListener(eventType, handleBrowserEvent)
+      })
     }
-  }
+  }, [browserEngine, state.isInitialized])
+
+  const createTab = useCallback(async (url: string = 'about:blank'): Promise<BrowserTab | null> => {
+    if (!state.isInitialized) {
+      setState(prev => ({ ...prev, error: 'Browser not initialized' }))
+      return null
+    }
+
+    try {
+      const tab = await browserEngine.createTab(url)
+      if (tab) {
+        const engineState = browserEngine.getState()
+        setState(prev => ({ ...prev, ...engineState }))
+      }
+      return tab
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create tab'
+      setState(prev => ({ ...prev, error: errorMessage }))
+      return null
+    }
+  }, [browserEngine, state.isInitialized])
+
+  const closeTab = useCallback(async (tabId: string): Promise<boolean> => {
+    if (!state.isInitialized) {
+      setState(prev => ({ ...prev, error: 'Browser not initialized' }))
+      return false
+    }
+
+    try {
+      const success = await browserEngine.closeTab(tabId)
+      if (success) {
+        const engineState = browserEngine.getState()
+        setState(prev => ({ ...prev, ...engineState }))
+      }
+      return success
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to close tab'
+      setState(prev => ({ ...prev, error: errorMessage }))
+      return false
+    }
+  }, [browserEngine, state.isInitialized])
+
+  const switchTab = useCallback(async (tabId: string): Promise<boolean> => {
+    if (!state.isInitialized) {
+      setState(prev => ({ ...prev, error: 'Browser not initialized' }))
+      return false
+    }
+
+    try {
+      const success = await browserEngine.switchTab(tabId)
+      if (success) {
+        const engineState = browserEngine.getState()
+        setState(prev => ({ ...prev, ...engineState }))
+      }
+      return success
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to switch tab'
+      setState(prev => ({ ...prev, error: errorMessage }))
+      return false
+    }
+  }, [browserEngine, state.isInitialized])
+
+  const navigateTo = useCallback(async (url: string): Promise<boolean> => {
+    if (!state.isInitialized) {
+      setState(prev => ({ ...prev, error: 'Browser not initialized' }))
+      return false
+    }
+
+    try {
+      setState(prev => ({ ...prev, isLoading: true, error: null }))
+      const success = await browserEngine.navigateTo(url)
+      
+      const engineState = browserEngine.getState()
+      setState(prev => ({ ...prev, ...engineState }))
+      
+      return success
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Navigation failed'
+      setState(prev => ({ ...prev, error: errorMessage, isLoading: false }))
+      return false
+    }
+  }, [browserEngine, state.isInitialized])
+
+  const goBack = useCallback(async (): Promise<boolean> => {
+    if (!state.isInitialized) return false
+
+    try {
+      return await browserEngine.goBack()
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to go back'
+      setState(prev => ({ ...prev, error: errorMessage }))
+      return false
+    }
+  }, [browserEngine, state.isInitialized])
+
+  const goForward = useCallback(async (): Promise<boolean> => {
+    if (!state.isInitialized) return false
+
+    try {
+      return await browserEngine.goForward()
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to go forward'
+      setState(prev => ({ ...prev, error: errorMessage }))
+      return false
+    }
+  }, [browserEngine, state.isInitialized])
+
+  const reload = useCallback(async (): Promise<boolean> => {
+    if (!state.isInitialized) return false
+
+    try {
+      setState(prev => ({ ...prev, isLoading: true, error: null }))
+      const success = await browserEngine.reload()
+      setState(prev => ({ ...prev, isLoading: false }))
+      return success
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to reload'
+      setState(prev => ({ ...prev, error: errorMessage, isLoading: false }))
+      return false
+    }
+  }, [browserEngine, state.isInitialized])
+
+  const getCurrentUrl = useCallback(async (): Promise<string> => {
+    if (!state.isInitialized) return state.currentUrl
+
+    try {
+      const url = await browserEngine.getCurrentUrl()
+      setState(prev => ({ ...prev, currentUrl: url }))
+      return url
+    } catch (error) {
+      console.error('Failed to get current URL:', error)
+      return state.currentUrl
+    }
+  }, [browserEngine, state.isInitialized, state.currentUrl])
+
+  const getPageTitle = useCallback(async (): Promise<string> => {
+    if (!state.isInitialized) return 'Untitled'
+
+    try {
+      return await browserEngine.getPageTitle()
+    } catch (error) {
+      console.error('Failed to get page title:', error)
+      return 'Untitled'
+    }
+  }, [browserEngine, state.isInitialized])
+
+  const clearError = useCallback(() => {
+    setState(prev => ({ ...prev, error: null }))
+    browserEngine.clearError()
+  }, [browserEngine])
 
   return {
-    tabs,
-    activeTab,
-    activeTabId,
-    handleNewTab,
-    handleCloseTab,
-    handleTabClick,
-    handleNavigate,
-    handleGoBack,
-    handleGoForward,
-    handleRefresh,
-    updateTab
+    ...state,
+    createTab,
+    closeTab,
+    switchTab,
+    navigateTo,
+    goBack,
+    goForward,
+    reload,
+    getCurrentUrl,
+    getPageTitle,
+    clearError
   }
 }
+
+export default useBrowser
