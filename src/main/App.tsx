@@ -372,50 +372,65 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="app">
-      {/* Phase 1: Fixed Layout Structure */}
-      <div className="app-header">
-        <TabBar 
-          tabs={tabs}
-          activeTabId={activeTabId}
-          onTabClick={switchTab}
-          onTabClose={closeTab}
-          onNewTab={() => createNewTab()}
-        />
+    <ErrorBoundary
+      onError={(error, errorInfo) => {
+        logger.error('React component error', error, { errorInfo })
+        appEvents.emit('app:error', { error, context: 'component' })
+      }}
+    >
+      <div className="app">
+        {/* LOCKED LAYOUT STRUCTURE - DO NOT MODIFY */}
+        <div className="app-header">
+          <ErrorBoundary fallback={<div className="error-fallback">Tab bar error</div>}>
+            <TabBar 
+              tabs={tabs}
+              activeTabId={activeTabId}
+              onTabClick={switchTab}
+              onTabClose={closeTab}
+              onNewTab={() => createNewTab()}
+            />
+          </ErrorBoundary>
+          
+          {/* Only show navigation bar for browser content */}
+          {tabs.find(t => t.id === activeTabId)?.type === 'browser' && (
+            <ErrorBoundary fallback={<div className="error-fallback">Navigation error</div>}>
+              <NavigationBar
+                currentUrl={currentUrl}
+                onNavigate={navigateTo}
+                onGoBack={goBack}
+                onGoForward={goForward}
+                onReload={reload}
+                onToggleAI={toggleAISidebar}
+                aiSidebarOpen={aiSidebarOpen}
+              />
+            </ErrorBoundary>
+          )}
+        </div>
         
-        {/* Only show navigation bar for browser content */}
-        {tabs.find(t => t.id === activeTabId)?.type === 'browser' && (
-          <NavigationBar
-            currentUrl={currentUrl}
-            onNavigate={navigateTo}
-            onGoBack={goBack}
-            onGoForward={goForward}
-            onReload={reload}
-            onToggleAI={toggleAISidebar}
-            aiSidebarOpen={aiSidebarOpen}
-          />
-        )}
+        <div className="app-content">
+          {/* LOCKED: Browser Area (70% width) */}
+          <ErrorBoundary fallback={<div className="error-fallback">Browser window error</div>}>
+            <BrowserWindow 
+              activeTabId={activeTabId}
+              tabs={tabs}
+              onCreateAITab={createAITab}
+            />
+          </ErrorBoundary>
+          
+          {/* LOCKED: AI Assistant Panel (30% width) */}
+          {aiSidebarOpen && (
+            <ErrorBoundary fallback={<div className="error-fallback">AI sidebar error</div>}>
+              <AISidebar
+                onClose={() => setAISidebarOpen(false)}
+                currentUrl={currentUrl}
+                onAgentTask={handleAgentTask}
+                agentStatus={agentStatus}
+              />
+            </ErrorBoundary>
+          )}
+        </div>
       </div>
-      
-      <div className="app-content">
-        {/* Phase 1: Browser Area (70% width) */}
-        <BrowserWindow 
-          activeTabId={activeTabId}
-          tabs={tabs}
-          onCreateAITab={createAITab}
-        />
-        
-        {/* Phase 1: AI Assistant Panel (30% width) */}
-        {aiSidebarOpen && (
-          <AISidebar
-            onClose={() => setAISidebarOpen(false)}
-            currentUrl={currentUrl}
-            onAgentTask={handleAgentTask}
-            agentStatus={agentStatus}
-          />
-        )}
-      </div>
-    </div>
+    </ErrorBoundary>
   )
 }
 
