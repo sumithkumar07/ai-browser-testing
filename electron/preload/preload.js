@@ -45,9 +45,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // Bookmarks & History
   addBookmark: (bookmark) => ipcRenderer.invoke('add-bookmark', bookmark),
+  deleteBookmark: (bookmarkId) => ipcRenderer.invoke('remove-bookmark', bookmarkId),
+  getBookmarks: () => ipcRenderer.invoke('get-bookmarks'),
   removeBookmark: (bookmarkId) => ipcRenderer.invoke('remove-bookmark', bookmarkId),
   searchBookmarks: (options) => ipcRenderer.invoke('search-bookmarks', options),
   getHistory: (options) => ipcRenderer.invoke('get-history', options),
+  getBrowsingHistory: () => ipcRenderer.invoke('get-history', {}),
+  deleteHistoryItem: (historyId) => ipcRenderer.invoke('delete-history-item', historyId),
+  clearBrowsingHistory: () => ipcRenderer.invoke('clear-history', {}),
   clearHistory: (options) => ipcRenderer.invoke('clear-history', options),
   
   // System Info
