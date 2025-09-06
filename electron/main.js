@@ -1049,7 +1049,43 @@ ${tabResults.map(t => `- ${t.url}`).join('\n')}
     })
   }
 
-  // Public methods for IPC handlers
+  // Helper method to create AI tabs
+  async createAITab(title, content = '') {
+    try {
+      const tabId = `ai_tab_${++this.tabCounter}_${Date.now()}`
+      
+      // Store AI tab data
+      const aiTabData = {
+        id: tabId,
+        title: title,
+        content: content,
+        type: 'ai',
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      }
+      
+      // Save to storage
+      if (!this.aiTabs) {
+        this.aiTabs = new Map()
+      }
+      this.aiTabs.set(tabId, aiTabData)
+      
+      // Notify renderer about AI tab creation
+      this.mainWindow.webContents.send('browser-event', {
+        type: 'ai-tab-created',
+        tabId: tabId,
+        title: title,
+        content: content
+      })
+      
+      console.log(`✅ AI Tab created: ${tabId} - ${title}`)
+      return { success: true, tabId: tabId, title: title }
+      
+    } catch (error) {
+      console.error('❌ Failed to create AI tab:', error)
+      return { success: false, error: error.message }
+    }
+  }
   getMainWindow() {
     return this.mainWindow
   }
