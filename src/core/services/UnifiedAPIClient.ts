@@ -249,7 +249,7 @@ class UnifiedAPIClient {
           requestId
         }
 
-        if (normalizedResult.success) {
+        if (normalizedResult.success !== false) {
           logger.debug(`API call succeeded: ${method}`, { requestId, attempt })
           return normalizedResult
         }
