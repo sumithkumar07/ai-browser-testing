@@ -415,7 +415,7 @@ class MemoryManager {
 
   private setupEventListeners(): void {
     // Listen for tab events
-    appEvents.on('tab:created', (data: any) => {
+    appEvents.on('tab:created', () => {
       // Tab will be registered when actual Tab object is available
     })
 
