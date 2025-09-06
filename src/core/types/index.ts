@@ -6,6 +6,36 @@
 // Re-export main types
 export * from '../../main/types/electron'
 
+// Import missing types
+export interface Tab {
+  id: string
+  title: string
+  url: string
+  isLoading: boolean
+  isActive: boolean
+  type: 'browser' | 'ai'
+  content?: string
+  createdBy?: 'user' | 'agent'
+}
+
+export interface AIMessage {
+  id: string
+  content: string
+  timestamp: number
+  isUser: boolean
+  isLoading?: boolean
+  agentStatus?: AgentStatus
+}
+
+export interface AgentStatus {
+  id: string
+  name: string
+  status: 'idle' | 'active' | 'completed' | 'error'
+  currentTask?: string
+  progress?: number
+  details?: string[]
+}
+
 // Core Application Types
 export interface AppState {
   isInitialized: boolean
@@ -63,6 +93,13 @@ export interface AgentTask {
   metadata?: Record<string, any>
 }
 
+export interface AgentAction {
+  type: 'navigate' | 'extract' | 'create_tab' | 'write_content' | 'close_tab'
+  target?: string
+  data?: any
+  tabId?: string
+}
+
 // AI System Types
 export interface AIConversation {
   id: string
@@ -71,6 +108,15 @@ export interface AIConversation {
   createdAt: number
   updatedAt: number
   context?: Record<string, any>
+}
+
+export interface AIResponse {
+  success: boolean
+  result?: string
+  error?: string
+  actions?: AgentAction[]
+  agentStatus?: AgentStatus
+  data?: any
 }
 
 export interface AIModel {
@@ -101,6 +147,16 @@ export interface BrowserSettings {
     username?: string
     password?: string
   }
+}
+
+export interface BrowserEvent {
+  type: string
+  tabId?: string
+  url?: string
+  title?: string
+  loading?: boolean
+  error?: any
+  content?: string
 }
 
 export interface BookmarkFolder {

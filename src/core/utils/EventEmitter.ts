@@ -115,7 +115,7 @@ class EventEmitter<EventMap extends Record<string, any> = Record<string, any>> {
             promises.push(result)
           }
         } catch (error) {
-          logger.error(`Error in event handler for ${String(event)}:`, error)
+          logger.error(`Error in event handler for ${String(event)}:`, error as Error)
         }
       }
 
@@ -124,7 +124,7 @@ class EventEmitter<EventMap extends Record<string, any> = Record<string, any>> {
         try {
           await Promise.all(promises)
         } catch (error) {
-          logger.error(`Error in async event handlers for ${String(event)}:`, error)
+          logger.error(`Error in async event handlers for ${String(event)}:`, error as Error)
         }
       }
     }
@@ -145,7 +145,7 @@ class EventEmitter<EventMap extends Record<string, any> = Record<string, any>> {
             promises.push(result)
           }
         } catch (error) {
-          logger.error(`Error in once event handler for ${String(event)}:`, error)
+          logger.error(`Error in once event handler for ${String(event)}:`, error as Error)
         }
       }
 
@@ -154,7 +154,7 @@ class EventEmitter<EventMap extends Record<string, any> = Record<string, any>> {
         try {
           await Promise.all(promises)
         } catch (error) {
-          logger.error(`Error in async once event handlers for ${String(event)}:`, error)
+          logger.error(`Error in async once event handlers for ${String(event)}:`, error as Error)
         }
       }
 
@@ -213,19 +213,58 @@ class EventEmitter<EventMap extends Record<string, any> = Record<string, any>> {
   }
 }
 
-// Global app event emitter with typed events
+// Global app event emitter with comprehensive typed events
 export interface AppEvents {
+  // Core app events
   'app:initialized': { timestamp: number }
   'app:error': { error: Error; context?: string }
+  
+  // Tab events
   'tab:created': { tabId: string; url: string }
   'tab:closed': { tabId: string }
   'tab:switched': { tabId: string; previousTabId?: string }
+  
+  // AI events
   'ai:message': { message: string; response: string }
+  'ai:context-updated': { content: string }
+  
+  // Agent events
   'agent:task-started': { taskId: string; description: string }
   'agent:task-completed': { taskId: string; result: any }
   'agent:task-failed': { taskId: string; error: string }
+  'agent:update': AgentStatus
+  'agent:handoff-completed': { fromAgent: string; toAgent: string; taskId: string }
+  'agent:context-updated': { agentId: string; context: any }
+  'agent:collaboration-cancelled': { agentIds: string[]; reason: string }
+  'agent:collaboration-completed': { agentIds: string[]; result: any }
+  
+  // Browser events
   'browser:navigate': { tabId: string; url: string }
+  'page:loaded': { tabId: string; url: string; title: string }
+  
+  // Settings events
   'settings:changed': { key: string; value: any }
+  
+  // Performance events
+  'performance:metric': { name: string; value: number; timestamp: number }
+  'performance:alert': { type: string; message: string; severity: 'low' | 'medium' | 'high' }
+  
+  // Memory management events
+  'memory:cleanup-complete': { freedMemory: number; timestamp: number }
+  
+  // Conversation events
+  'conversation:started': { conversationId: string; timestamp: number }
+  'conversation:context-updated': { conversationId: string; context: any }
+  'conversation:message-added': { conversationId: string; message: AIMessage }
+  
+  // Startup events
+  'startup:complete': { duration: number; timestamp: number }
+  'startup:failed': { error: Error; timestamp: number }
+  'startup:progress': { stage: string; progress: number }
+  
+  // Error recovery events
+  'error:recovered': { error: Error; recovery: string }
+  'error:unrecoverable': { error: Error; context: string }
 }
 
 export const appEvents = new EventEmitter<AppEvents>()
