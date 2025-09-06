@@ -204,7 +204,8 @@ export class StartupOptimizer {
       logger.info('Application initialization completed', { totalTime })
       
       appEvents.emit('startup:complete', {
-        totalTime,
+        duration: totalTime,
+        timestamp: Date.now(),
         tasksCompleted: this.completedTasks.size,
         totalTasks: this.tasks.size
       })
