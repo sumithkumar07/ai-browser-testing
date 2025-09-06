@@ -344,7 +344,7 @@ const App: React.FC = () => {
   // Phase 4: Agent Task Execution Integration
   const handleAgentTask = async (task: string) => {
     try {
-      const result = await window.electronAPI.executeAgentTask(task)
+      const result = await IntegratedAgentFramework.getInstance().processUserInput(task)
       if (result.success) {
         console.log('✅ Agent task completed:', result)
       } else {
