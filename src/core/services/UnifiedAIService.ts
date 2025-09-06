@@ -118,7 +118,7 @@ class UnifiedAIService {
   }
 
   /**
-   * Send message with retry logic and timeout handling
+   * Send message with enhanced conversation quality and agent coordination
    */
   async sendMessage(
     message: string, 
@@ -130,26 +130,72 @@ class UnifiedAIService {
       // Validate input
       validateAIMessage(message)
       
-      logger.info('Processing AI message', { operationId, length: message.length })
+      logger.info('Processing enhanced AI message', { operationId, length: message.length })
 
       // Check if service is ready
       if (!this.isInitialized) {
         throw new Error('AI Service not initialized')
       }
 
+      // Ensure we have a conversation session
+      if (!this.currentSessionId) {
+        this.currentSessionId = await this.conversationManager.startConversation({
+          currentUrl: options.context || '',
+          pageTitle: 'Active Session'
+        })
+      }
+
+      // Add user message to conversation
+      await this.conversationManager.addMessage(this.currentSessionId, {
+        content: message,
+        timestamp: Date.now(),
+        isUser: true
+      })
+
+      // Analyze user intent with conversation context
+      const intentAnalysis = await this.conversationManager.analyzeUserIntent(this.currentSessionId, message)
+      
       // Check for duplicate operation
       if (this.operationQueue.has(message)) {
         logger.debug('Returning cached operation result')
         return await this.operationQueue.get(message)!
       }
 
-      // Create operation promise
-      const operationPromise = this.executeMessageOperation(message, options, operationId)
+      // Determine if this needs agent coordination
+      const needsCoordination = intentAnalysis.suggestedAgents.length > 1 || 
+                               intentAnalysis.responseStrategy === 'complex'
+
+      let operationPromise: Promise<AIResponse>
+
+      if (needsCoordination) {
+        // Use agent coordination for complex tasks
+        operationPromise = this.executeCoordinatedTask(message, intentAnalysis, options, operationId)
+      } else {
+        // Use enhanced single-agent execution
+        operationPromise = this.executeEnhancedMessage(message, intentAnalysis, options, operationId)
+      }
+
       this.operationQueue.set(message, operationPromise)
 
       // Execute with cleanup
       try {
         const result = await operationPromise
+        
+        // Add AI response to conversation with quality metrics
+        if (result.success && this.currentSessionId) {
+          await this.conversationManager.addMessage(this.currentSessionId, {
+            content: result.result || 'Task completed',
+            timestamp: Date.now(),
+            isUser: false
+          }, {
+            relevanceScore: intentAnalysis.confidence,
+            helpfulnessScore: 0.8,
+            contextAwareness: 0.9,
+            taskCompletion: result.success ? 1.0 : 0.0,
+            userSatisfaction: 0.8
+          })
+        }
+
         return result
       } finally {
         this.operationQueue.delete(message)
@@ -157,7 +203,7 @@ class UnifiedAIService {
       }
 
     } catch (error) {
-      logger.error('Failed to send AI message', error as Error, { operationId })
+      logger.error('Failed to send enhanced AI message', error as Error, { operationId })
       return {
         success: false,
         error: (error as Error).message
