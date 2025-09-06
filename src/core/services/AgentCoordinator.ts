@@ -162,10 +162,9 @@ class AgentCoordinator {
         this.activeHandoffs.delete(handoffId)
         
         appEvents.emit('agent:handoff-completed', {
-          handoffId,
           fromAgent,
           toAgent,
-          success: true
+          taskId: handoffId
         })
       }
 
