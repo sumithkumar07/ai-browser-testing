@@ -3,8 +3,9 @@
  * All TypeScript types and interfaces for KAiro Browser
  */
 
-// Re-export electron types (no duplication)
-export * from '../../main/types/electron.d.ts'
+// Import specific types from electron definitions
+import type { Tab, AIMessage, AgentStatus } from '../../main/types/electron.d.ts'
+export { Tab, AIMessage, AgentStatus }
 
 // Core Application Types
 export interface AppState {
