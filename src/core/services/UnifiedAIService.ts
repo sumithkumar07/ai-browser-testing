@@ -358,6 +358,13 @@ class UnifiedAIService {
   }
 
   /**
+   * Check connection status (alias for testConnection)
+   */
+  async checkConnection(): Promise<boolean> {
+    return this.testConnection()
+  }
+
+  /**
    * Get AI context with caching
    */
   async getContext(): Promise<any> {
