@@ -5,7 +5,7 @@
 
 import { createLogger } from '../logger/Logger'
 import { appEvents } from '../utils/EventEmitter'
-import { AgentTask, AgentStatus } from '../types'
+import { AgentStatus } from '../types'
 import IntegratedAgentFramework from '../../main/services/IntegratedAgentFramework'
 import ConversationManager from './ConversationManager'
 
