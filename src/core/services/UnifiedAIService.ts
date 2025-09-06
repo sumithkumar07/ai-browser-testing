@@ -145,6 +145,7 @@ class UnifiedAIService {
 
       // Add user message to conversation
       await this.conversationManager.addMessage(this.currentSessionId, {
+        id: `user_${operationId}`,
         content: message,
         timestamp: Date.now(),
         isUser: true
