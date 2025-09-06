@@ -81,38 +81,7 @@ declare global {
   }
 }
 
-export interface Tab {
-  id: string
-  title: string
-  url: string
-  isLoading: boolean
-  isActive: boolean
-}
-
-export interface BrowserEvent {
-  type: string
-  tabId?: string
-  url?: string
-  title?: string
-  loading?: boolean
-  error?: any
-}
-
-export interface AIMessage {
-  id: string
-  content: string
-  timestamp: number
-  isUser: boolean
-  isLoading?: boolean
-}
-
-export interface AIResponse {
-  success: boolean
-  result?: string
-  actions?: any[]
-  metadata?: any
-  error?: string
-}
+// Basic interfaces moved to main electron.ts file to avoid duplication
 
 export interface Product {
   id: string
