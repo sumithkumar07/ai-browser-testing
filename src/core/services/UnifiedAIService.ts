@@ -336,10 +336,7 @@ class UnifiedAIService {
     logger.info('All operations cancelled')
   }
 
-  /**
-   * Check connection status
-   */
-  async checkConnection(): Promise<boolean> {
+  async testConnection(): Promise<boolean> {
     try {
       // Throttle connection checks
       if (Date.now() - this.lastConnectionTest < 5000) {
@@ -347,7 +344,7 @@ class UnifiedAIService {
       }
 
       const result = await this.withTimeout(
-        window.electronAPI.testConnection(),
+        window.electronAPI.testAIConnection(),
         5000
       )
 
