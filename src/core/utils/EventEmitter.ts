@@ -232,7 +232,7 @@ export interface AppEvents {
   'agent:task-started': { taskId: string; description: string }
   'agent:task-completed': { taskId: string; result: any }
   'agent:task-failed': { taskId: string; error: string }
-  'agent:update': AgentStatus
+  'agent:update': any // AgentStatus - using any to avoid circular import
   'agent:handoff-completed': { fromAgent: string; toAgent: string; taskId: string }
   'agent:context-updated': { agentId: string; context: any }
   'agent:collaboration-cancelled': { agentIds: string[]; reason: string }
