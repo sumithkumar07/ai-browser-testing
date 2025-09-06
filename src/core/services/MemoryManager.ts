@@ -417,15 +417,15 @@ class MemoryManager {
 
   private setupEventListeners(): void {
     // Listen for tab events
-    appEvents.on('tab:created', (data) => {
+    appEvents.on('tab:created', (data: any) => {
       // Tab will be registered when actual Tab object is available
     })
 
-    appEvents.on('tab:closed', (data) => {
+    appEvents.on('tab:closed', (data: any) => {
       this.unregisterTab(data.tabId)
     })
 
-    appEvents.on('tab:switched', (data) => {
+    appEvents.on('tab:switched', (data: any) => {
       // Update last accessed time for active tab
       this.updateTabMemory(data.tabId, { isActive: true })
       
