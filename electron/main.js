@@ -423,6 +423,44 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       }
     })
 
+    ipcMain.handle('remove-bookmark', async (event, bookmarkId) => {
+      try {
+        console.log('🗑️ Removing bookmark:', bookmarkId)
+        return { success: true }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-bookmarks', async () => {
+      try {
+        // Return mock bookmarks for demonstration
+        return { 
+          success: true, 
+          data: {
+            bookmarks: [],
+            message: 'Bookmark feature will be implemented with persistent storage'
+          }
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('search-bookmarks', async (event, options) => {
+      try {
+        return { 
+          success: true, 
+          data: { 
+            bookmarks: [],
+            message: 'Bookmark search feature will be implemented with persistent storage'
+          }
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
     ipcMain.handle('get-history', async (event, options) => {
       try {
         // In a real implementation, this would return browsing history
@@ -433,6 +471,55 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
             message: 'History feature will be implemented with persistent storage'
           }
         }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('delete-history-item', async (event, historyId) => {
+      try {
+        console.log('🗑️ Deleting history item:', historyId)
+        return { success: true }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('clear-history', async (event, options) => {
+      try {
+        console.log('🧹 Clearing history with options:', options)
+        return { success: true }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Data Storage Handlers
+    ipcMain.handle('get-data', async (event, key) => {
+      try {
+        // In a real implementation, this would read from persistent storage
+        console.log('📖 Getting data for key:', key)
+        return { success: true, data: null }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('save-data', async (event, key, data) => {
+      try {
+        // In a real implementation, this would save to persistent storage
+        console.log('💾 Saving data for key:', key, 'Data length:', JSON.stringify(data).length)
+        return { success: true }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Keyboard Shortcuts Handler 
+    ipcMain.handle('register-shortcuts', async (event, shortcuts) => {
+      try {
+        console.log('⌨️ Registering keyboard shortcuts:', Object.keys(shortcuts).length, 'shortcuts')
+        return { success: true }
       } catch (error) {
         return { success: false, error: error.message }
       }
