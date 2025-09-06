@@ -79,7 +79,7 @@ export class ErrorRecoveryService {
       description: 'Fallback to Google search for failed navigation',
       condition: (error, context) => 
         context.component === 'NavigationAgent' && error.message.includes('navigation'),
-      execute: async (_error, context) => {
+      execute: async (_error, _context) => {
         if (window.electronAPI) {
           const query = encodeURIComponent(context.url || 'search')
           await window.electronAPI.navigateTo(`https://www.google.com/search?q=${query}`)
