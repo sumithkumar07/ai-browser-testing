@@ -331,6 +331,136 @@ Be helpful, concise, and actionable in your responses.`
       }
     })
 
+    // Shopping & Research Handlers
+    ipcMain.handle('search-products', async (event, query, options) => {
+      try {
+        if (!this.aiService) {
+          return { success: false, error: 'AI service not initialized' }
+        }
+
+        const response = await this.aiService.chat.completions.create({
+          messages: [
+            { 
+              role: 'system', 
+              content: 'You are a shopping assistant. Help users find and compare products online.'
+            },
+            { 
+              role: 'user', 
+              content: `Help me search for: ${query}. Provide product recommendations and where to find them.`
+            }
+          ],
+          model: 'llama3-8b-8192',
+          temperature: 0.5,
+          max_tokens: 1024
+        })
+
+        const result = response.choices[0].message.content
+        return { success: true, data: result }
+        
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Bookmarks & History Handlers
+    ipcMain.handle('add-bookmark', async (event, bookmark) => {
+      try {
+        // In a real implementation, this would save to persistent storage
+        console.log('📚 Adding bookmark:', bookmark)
+        return { success: true }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-history', async (event, options) => {
+      try {
+        // In a real implementation, this would return browsing history
+        return { 
+          success: true, 
+          data: { 
+            history: [],
+            message: 'History feature will be implemented with persistent storage'
+          }
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    // System Info Handlers
+    ipcMain.handle('get-version', async () => {
+      return app.getVersion()
+    })
+
+    ipcMain.handle('get-platform', async () => {
+      return process.platform
+    })
+
+    // Dev Tools Handlers
+    ipcMain.handle('open-dev-tools', async () => {
+      if (this.activeTabId) {
+        const browserView = this.browserViews.get(this.activeTabId)
+        if (browserView) {
+          browserView.webContents.openDevTools()
+          return { success: true }
+        }
+      }
+      return { success: false, error: 'No active tab' }
+    })
+
+    ipcMain.handle('close-dev-tools', async () => {
+      if (this.activeTabId) {
+        const browserView = this.browserViews.get(this.activeTabId)
+        if (browserView) {
+          browserView.webContents.closeDevTools()
+          return { success: true }
+        }
+      }
+      return { success: false, error: 'No active tab' }
+    })
+
+    // AI Tab Management
+    ipcMain.handle('save-ai-tab-content', async (event, content) => {
+      try {
+        // In a real implementation, this would save to persistent storage
+        console.log('💾 Saving AI tab content length:', content.length)
+        return { success: true }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('load-ai-tab-content', async () => {
+      try {
+        // In a real implementation, this would load from persistent storage
+        return { 
+          success: true, 
+          content: 'Welcome to the AI Special Tab!\n\nThis area can be used for:\n- Research notes\n- AI-generated content\n- Analysis results\n- Personal annotations'
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Debug Handler
+    ipcMain.handle('debug-browser-view', async () => {
+      try {
+        return {
+          success: true,
+          data: {
+            totalTabs: this.browserViews.size,
+            activeTabId: this.activeTabId,
+            tabIds: Array.from(this.browserViews.keys()),
+            isInitialized: this.isInitialized,
+            hasAI: !!this.aiService
+          }
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
     console.log('✅ IPC handlers setup complete')
   }
 
