@@ -37,6 +37,8 @@ export class IntegratedAgentFramework {
   private constructor() {
     this.agentSystem = EnhancedAgentSystem.getInstance()
     this.aiService = UnifiedAIService.getInstance()
+    this.conversationManager = ConversationManager.getInstance()
+    this.agentCoordinator = AgentCoordinator.getInstance()
     this.memoryManager = MemoryManager.getInstance()
   }
 
