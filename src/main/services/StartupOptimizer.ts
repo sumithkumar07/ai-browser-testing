@@ -206,9 +206,7 @@ export class StartupOptimizer {
       
       appEvents.emit('startup:complete', {
         duration: totalTime,
-        timestamp: Date.now(),
-        tasksCompleted: this.completedTasks.size,
-        totalTasks: this.tasks.size
+        timestamp: Date.now()
       })
 
     } catch (error) {
