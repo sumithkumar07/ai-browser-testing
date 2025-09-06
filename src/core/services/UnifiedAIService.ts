@@ -342,7 +342,7 @@ class UnifiedAIService {
   /**
    * Enhance AI response based on intent and context
    */
-  private async enhanceResponse(response: string, intentAnalysis: any, originalMessage: string): Promise<string> {
+  private async enhanceResponse(response: string, intentAnalysis: any, _originalMessage: string): Promise<string> {
     // Add helpful suggestions based on intent
     let enhanced = response
 
