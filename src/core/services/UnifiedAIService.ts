@@ -674,7 +674,6 @@ class UnifiedAIService {
     this.cancelAllOperations()
     this.clearMessages()
     this.isInitialized = false
-    this.connectionRetries = 0
     this.lastConnectionTest = 0
     
     logger.info('AI Service cleanup complete')
