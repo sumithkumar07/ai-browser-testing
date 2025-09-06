@@ -75,11 +75,11 @@ export const validateFileType = (filename: string, allowedTypes: string[]): bool
 }
 
 export const isImageFile = (filename: string): boolean => {
-  return validateFileType(filename, APP_CONSTANTS.SUPPORTED_FILES.IMAGES)
+  return validateFileType(filename, [...APP_CONSTANTS.SUPPORTED_FILES.IMAGES])
 }
 
 export const isDocumentFile = (filename: string): boolean => {
-  return validateFileType(filename, APP_CONSTANTS.SUPPORTED_FILES.DOCUMENTS)
+  return validateFileType(filename, [...APP_CONSTANTS.SUPPORTED_FILES.DOCUMENTS])
 }
 
 /**
