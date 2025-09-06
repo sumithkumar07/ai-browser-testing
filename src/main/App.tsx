@@ -189,6 +189,7 @@ const App: React.FC = () => {
 
   const createNewTab = async (url: string = 'about:blank', type: 'browser' | 'ai' = 'browser') => {
     try {
+      logger.debug(`Creating new tab: ${url} (type: ${type})`)
       const result = await window.electronAPI.createTab(url, type)
       if (result.success) {
         if (result.tabId) {
@@ -207,13 +208,17 @@ const App: React.FC = () => {
             prevTabs.map(tab => ({ ...tab, isActive: false })).concat(newTab)
           )
           setActiveTabId(result.tabId)
+          
+          // Emit tab created event
+          appEvents.emit('tab:created', { tabId: result.tabId, url })
         }
         if (type === 'browser') {
           setCurrentUrl(url)
         }
+        logger.info(`Tab created successfully: ${result.tabId}`)
       }
     } catch (error) {
-      console.error('Failed to create tab:', error)
+      logger.error('Failed to create tab', error as Error)
       setError('Failed to create new tab')
     }
   }
