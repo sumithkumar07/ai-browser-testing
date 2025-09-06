@@ -47,7 +47,7 @@ const App: React.FC = () => {
 
       // Initialize Agent Framework
       logger.debug('Initializing Agent Framework')
-      const agentFramework = AgentFramework.getInstance()
+      const agentFramework = IntegratedAgentFramework.getInstance()
       await agentFramework.initialize()
 
       // Set up event listeners
