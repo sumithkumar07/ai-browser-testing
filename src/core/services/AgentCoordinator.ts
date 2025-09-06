@@ -585,8 +585,8 @@ class AgentCoordinator {
 
   private async executeSingleAgentTask(
     task: string,
-    agentId: string,
-    sessionId: string
+    _agentId: string,
+    _sessionId: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
       const result = await this.agentFramework.processUserInput(task)
