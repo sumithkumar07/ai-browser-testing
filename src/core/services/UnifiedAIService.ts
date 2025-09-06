@@ -592,7 +592,7 @@ class UnifiedAIService {
       }
 
       const result = await this.withTimeout(
-        window.electronAPI.testAIConnection(),
+        window.electronAPI.testConnection(),
         5000
       )
 
