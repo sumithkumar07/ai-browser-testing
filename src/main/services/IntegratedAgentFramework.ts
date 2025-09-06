@@ -303,6 +303,8 @@ export class IntegratedAgentFramework {
     if (scores.navigation > 0) entities.push('navigation') 
     if (scores.analysis > 0) entities.push('analysis')
     if (scores.shopping > 0) entities.push('shopping')
+    if (scores.communication > 0) entities.push('communication')
+    if (scores.automation > 0) entities.push('automation')
     if (isComplexQuery) entities.push('complex')
     
     return {
