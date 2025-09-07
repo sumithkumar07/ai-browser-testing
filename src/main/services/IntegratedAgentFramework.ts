@@ -10,7 +10,7 @@ import EnhancedAgentSystem from '../../core/services/EnhancedAgentSystem'
 import UnifiedAIService from '../../core/services/UnifiedAIService'
 import ConversationManager from '../../core/services/ConversationManager'
 import AgentCoordinator from '../../core/services/AgentCoordinator'
-import MemoryManager from '../../core/services/MemoryManager'
+// import MemoryManager from '../../core/services/MemoryManager' // Reserved for future use
 import { AgentStatus, AgentCapability, AgentTask } from '../../core/types'
 
 const logger = createLogger('IntegratedAgentFramework')
