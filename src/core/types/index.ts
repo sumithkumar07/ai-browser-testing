@@ -43,7 +43,7 @@ export interface TabMetadata {
   scrollPosition: number
 }
 
-export interface ExtendedTab extends Tab {
+export interface ExtendedTab extends ElectronTab {
   metadata: TabMetadata
   parentTabId?: string
   groupId?: string
