@@ -48,8 +48,8 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
     setUrlInput(e.target.value)
   }
 
-  // Helper function for URL formatting
-  const formatDisplayUrl = (url: string) => {
+  // Helper function for URL formatting - used in future enhancements
+  const _formatDisplayUrl = (url: string) => {
     if (!url) return ''
     return url.replace(/^https?:\/\//, '').replace(/\/$/, '')
   }
