@@ -48,12 +48,6 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
     setUrlInput(e.target.value)
   }
 
-  // Helper function for URL formatting - used in future enhancements
-  const _formatDisplayUrl = (url: string) => {
-    if (!url) return ''
-    return url.replace(/^https?:\/\//, '').replace(/\/$/, '')
-  }
-
   return (
     <div className="navigation-bar">
       <button className="nav-button" onClick={onGoBack} title="Go Back">
