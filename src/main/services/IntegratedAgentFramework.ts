@@ -30,7 +30,7 @@ export class IntegratedAgentFramework {
   private aiService: UnifiedAIService
   private conversationManager: ConversationManager
   private agentCoordinator: AgentCoordinator
-  private _memoryManager: MemoryManager
+  private memoryManager: MemoryManager
   private eventListeners: Map<string, Function[]> = new Map()
   private isInitialized = false
 
