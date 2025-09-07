@@ -101,33 +101,6 @@ export interface AIModel {
   }
 }
 
-// Browser Engine Types
-export interface BrowserSettings {
-  defaultSearchEngine: string
-  homepage: string
-  downloadPath: string
-  enableJavaScript: boolean
-  enableImages: boolean
-  enablePopups: boolean
-  userAgent?: string
-  proxy?: {
-    enabled: boolean
-    host: string
-    port: number
-    username?: string
-    password?: string
-  }
-}
-
-export interface BrowserEvent {
-  type: string
-  tabId?: string
-  url?: string
-  title?: string
-  loading?: boolean
-  error?: any
-  content?: string
-}
 
 export interface BookmarkFolder {
   id: string
