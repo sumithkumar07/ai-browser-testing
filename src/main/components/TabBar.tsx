@@ -12,7 +12,6 @@ interface TabBarProps {
 
 const TabBar: React.FC<TabBarProps> = ({
   tabs,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   activeTabId,
   onTabClick,
   onTabClose,
