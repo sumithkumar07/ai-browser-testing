@@ -91,7 +91,7 @@ export class AIService {
       // Test with a simple completion
       const completion = await this.groq.chat.completions.create({
         messages: [{ role: 'user', content: 'Hello' }],
-        model: 'llama3-8b-8192',
+        model: 'llama-3.1-8b-instant',
         max_tokens: 10
       })
 
