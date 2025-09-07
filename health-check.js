@@ -93,11 +93,12 @@ try {
   const mainJs = fs.readFileSync('electron/main.js', 'utf8')
   const aiServiceTs = fs.readFileSync('electron/services/AIService.ts', 'utf8')
   
-  const mainModel = mainJs.includes('llama-3.1-8b-instant')
-  const serviceModel = aiServiceTs.includes('llama-3.1-8b-instant')
+  const mainModel = mainJs.includes('llama-3.3-70b-versatile')
+  const serviceModel = aiServiceTs.includes('llama-3.3-70b-versatile')
   
   if (mainModel && serviceModel) {
-    console.log('   ✅ Model consistency: All files use llama-3.1-8b-instant')
+    console.log('   ✅ Model consistency: All files use llama-3.3-70b-versatile (BEST MODEL)')
+    console.log('   🚀 Performance: 70B parameters, advanced reasoning, superior quality')
   } else {
     console.log('   ⚠️ Model inconsistency detected')
     if (!mainModel) console.log('     - main.js needs model update')
