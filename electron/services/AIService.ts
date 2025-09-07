@@ -85,9 +85,12 @@ export class AIService {
   async testConnection(): Promise<boolean> {
     try {
       if (!this.groq) {
+        console.error('❌ Groq client not initialized')
         throw new Error('Groq client not initialized')
       }
 
+      console.log('🔄 Testing GROQ AI connection...')
+      
       // Test with a simple completion
       const completion = await this.groq.chat.completions.create({
         messages: [{ role: 'user', content: 'Hello' }],
@@ -95,9 +98,29 @@ export class AIService {
         max_tokens: 10
       })
 
-      return completion.choices.length > 0
+      const isConnected = completion.choices.length > 0
+      
+      if (isConnected) {
+        console.log('✅ GROQ AI connection successful')
+      } else {
+        console.error('❌ GROQ AI connection failed - no response choices')
+      }
+      
+      return isConnected
     } catch (error) {
       console.error('❌ AI connection test failed:', error)
+      
+      // Enhanced error reporting
+      if (error instanceof Error) {
+        if (error.message.includes('API key')) {
+          console.error('🔑 API Key issue detected - check GROQ_API_KEY environment variable')
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          console.error('🌐 Network connectivity issue detected')
+        } else if (error.message.includes('model')) {
+          console.error('🤖 Model availability issue - may need to update model name')
+        }
+      }
+      
       return false
     }
   }
