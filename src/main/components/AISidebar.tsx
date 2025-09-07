@@ -11,7 +11,7 @@ interface AISidebarProps {
 
 const AISidebar: React.FC<AISidebarProps> = ({ 
   onClose, 
-  currentUrl, // Used for context awareness
+  currentUrl: _currentUrl, // Used for context awareness - TODO: implement
   onAgentTask,
   agentStatus 
 }) => {
