@@ -152,7 +152,7 @@ class KAiroBrowserManager {
         
         const response = await this.aiService.chat.completions.create({
           messages: [{ role: 'user', content: 'test' }],
-          model: 'llama3-8b-8192',
+          model: 'llama-3.1-8b-instant',
           max_tokens: 1
         })
         
