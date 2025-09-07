@@ -66,11 +66,11 @@ export class AIService {
 
       // Initialize context
       this.context = {
-        model: 'llama3-8b-8192',
+        model: 'llama-3.1-8b-instant',
         temperature: 0.7,
         maxTokens: 2048,
         isInitialized: true,
-        agentCount: 5
+        agentCount: 6
       }
 
       this.isInitialized = true
