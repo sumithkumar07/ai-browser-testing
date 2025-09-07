@@ -68,7 +68,7 @@ export class AIService {
       this.context = {
         model: 'llama-3.3-70b-versatile',
         temperature: 0.7,
-        maxTokens: 2048,
+        maxTokens: 3072,
         isInitialized: true,
         agentCount: 6
       }
