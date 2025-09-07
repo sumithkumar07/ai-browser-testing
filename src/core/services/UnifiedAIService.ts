@@ -401,73 +401,7 @@ class UnifiedAIService {
       isActive: this.isInitialized && this.currentSessionId !== null
     }
   }
-  // Unused method - keeping for future enhancement
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async executeMessageOperation(
-    message: string,
-    options: AIOperationOptions,
-    operationId: string
-  ): Promise<AIResponse> {
-    const maxRetries = options.retries ?? this.config.maxRetries
-    const timeout = options.timeout ?? this.config.timeout
-
-    // Create abort controller for cancellation
-    const abortController = new AbortController()
-    this.abortControllers.set(operationId, abortController)
-
-    // Add user message to history
-    const userMessage: AIMessage = {
-      id: operationId,
-      content: message,
-      timestamp: Date.now(),
-      isUser: true
-    }
-    this.addMessageToHistory(userMessage)
-
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        logger.debug(`Sending message attempt ${attempt}/${maxRetries}`, { operationId })
-
-        const result = await this.withTimeout(
-          window.electronAPI.sendAIMessage(message),
-          timeout
-        )
-
-        if (result.success && result.result) {
-          // Add AI response to history
-          const aiMessage: AIMessage = {
-            id: `ai_${operationId}`,
-            content: result.result,
-            timestamp: Date.now(),
-            isUser: false
-          }
-          this.addMessageToHistory(aiMessage)
-
-          logger.info('AI message processed successfully', { operationId, attempt })
-          return result
-        }
-
-        throw new Error(result.error || 'Empty response from AI service')
-
-      } catch (error) {
-        logger.warn(`Message attempt ${attempt} failed: ${(error as Error).message}`, { operationId, attempt })
-
-        if (attempt === maxRetries) {
-          throw error
-        }
-
-        // Check if operation was cancelled
-        if (abortController.signal.aborted) {
-          throw new Error('Operation cancelled')
-        }
-
-        // Exponential backoff
-        await this.delay(this.config.retryDelay * Math.pow(2, attempt - 1))
-      }
-    }
-
-    throw new Error('All retry attempts failed')
-  }
+  // Unused method - removed for cleanup
 
   /**
    * Summarize page with robust error handling
