@@ -4,8 +4,7 @@
  */
 
 // Import specific types from electron definitions
-import type { Tab, AIMessage, AgentStatus } from '../../main/types/electron.d.ts'
-export { Tab, AIMessage, AgentStatus }
+export type { Tab, AIMessage, AgentStatus, BrowserEvent, AIResponse, AgentAction } from '../../main/types/electron.d.ts'
 
 // Core Application Types
 export interface AppState {
