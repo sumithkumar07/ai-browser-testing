@@ -83,7 +83,7 @@ export interface AgentAction {
 export interface AIConversation {
   id: string
   title: string
-  messages: ElectronAIMessage[]
+  messages: AIMessage[]
   createdAt: number
   updatedAt: number
   context?: Record<string, any>
