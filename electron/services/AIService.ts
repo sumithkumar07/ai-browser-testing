@@ -66,7 +66,7 @@ export class AIService {
 
       // Initialize context
       this.context = {
-        model: 'llama-3.1-8b-instant',
+        model: 'llama-3.3-70b-versatile',
         temperature: 0.7,
         maxTokens: 2048,
         isInitialized: true,
