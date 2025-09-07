@@ -165,7 +165,7 @@ export class AIService {
       // Call Groq API
       const completion = await this.groq.chat.completions.create({
         messages: groqMessages,
-        model: this.context?.model || 'llama-3.1-8b-instant',
+        model: this.context?.model || 'llama-3.3-70b-versatile',
         temperature: this.context?.temperature || 0.7,
         max_tokens: this.context?.maxTokens || 2048
       })
