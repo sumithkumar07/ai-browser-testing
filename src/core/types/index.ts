@@ -72,12 +72,7 @@ export interface AgentTask {
   metadata?: Record<string, any>
 }
 
-export interface AgentAction {
-  type: 'navigate' | 'extract' | 'create_tab' | 'write_content' | 'close_tab'
-  target?: string
-  data?: any
-  tabId?: string
-}
+// AgentAction is imported from electron.d.ts - no need to redefine
 
 // AI System Types
 export interface AIConversation {
