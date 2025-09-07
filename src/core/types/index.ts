@@ -80,15 +80,6 @@ export interface AIConversation {
   context?: Record<string, any>
 }
 
-export interface AIResponse {
-  success: boolean
-  result?: string
-  error?: string
-  actions?: AgentAction[]
-  agentStatus?: AgentStatus
-  data?: any
-}
-
 export interface AIModel {
   id: string
   name: string
