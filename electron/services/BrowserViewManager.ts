@@ -18,6 +18,13 @@ export class BrowserViewManager {
   private tabs: Map<string, BrowserTab> = new Map()
   private activeTabId: string | null = null
   private tabCounter: number = 0
+  private maxTabs: number = parseInt(process.env.MAX_CONCURRENT_TABS || '10')
+  private performanceMetrics = {
+    tabsCreated: 0,
+    tabsClosed: 0,
+    navigationCount: 0,
+    averageLoadTime: 0
+  }
 
   private constructor() {}
 
