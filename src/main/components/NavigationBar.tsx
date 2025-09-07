@@ -48,8 +48,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({
     setUrlInput(e.target.value)
   }
 
-  // Helper function for URL formatting (for future use)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // Helper function for URL formatting
   const formatDisplayUrl = (url: string) => {
     if (!url) return ''
     return url.replace(/^https?:\/\//, '').replace(/\/$/, '')
