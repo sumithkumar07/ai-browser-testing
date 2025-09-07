@@ -45,11 +45,11 @@ criticalFiles.forEach(filePath => {
 
 // 3. Dependencies Check
 console.log('\n3. 📦 Dependencies:')
+let depsHealth = true
 try {
   const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'))
   const criticalDeps = ['electron', 'react', 'groq-sdk', 'typescript', 'vite']
   
-  let depsHealth = true
   criticalDeps.forEach(dep => {
     if (packageJson.dependencies[dep] || packageJson.devDependencies[dep]) {
       console.log(`   ✅ ${dep}: ${packageJson.dependencies[dep] || packageJson.devDependencies[dep]}`)
