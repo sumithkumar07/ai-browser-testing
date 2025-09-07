@@ -49,20 +49,30 @@ export class BrowserViewManager {
       throw new Error('Main window not set')
     }
 
+    // Performance check: limit concurrent tabs
+    if (this.tabs.size >= this.maxTabs) {
+      console.warn(`⚠️ Maximum tabs limit reached (${this.maxTabs}), closing oldest tab`)
+      const oldestTab = Array.from(this.tabs.values()).sort((a, b) => a.createdAt - b.createdAt)[0]
+      await this.closeTab(oldestTab.id)
+    }
+
     const tabId = `tab_${++this.tabCounter}_${Date.now()}`
+    const startTime = Date.now()
     
-    // Create BrowserView
+    // Create BrowserView with enhanced security
     const browserView = new BrowserView({
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
         webSecurity: true,
         allowRunningInsecureContent: false,
-        experimentalFeatures: false
+        experimentalFeatures: false,
+        sandbox: true, // Enhanced security
+        enableRemoteModule: false // Enhanced security
       }
     })
 
-    // Create tab object
+    // Create tab object with performance tracking
     const tab: BrowserTab = {
       id: tabId,
       browserView,
@@ -80,15 +90,26 @@ export class BrowserViewManager {
     // Set up event listeners
     this.setupBrowserViewListeners(tab)
 
-    // Load URL
+    // Load URL with performance tracking
     if (url !== 'about:blank') {
-      await browserView.webContents.loadURL(url)
+      try {
+        await browserView.webContents.loadURL(url)
+        const loadTime = Date.now() - startTime
+        this.updatePerformanceMetrics('load', loadTime)
+      } catch (error) {
+        console.error(`❌ Failed to load URL: ${url}`, error)
+        // Set error state
+        tab.title = 'Failed to Load'
+      }
     }
 
     // Set as active tab
     this.setActiveTab(tabId)
 
-    console.log(`✅ Tab created: ${tabId}`)
+    // Update metrics
+    this.performanceMetrics.tabsCreated++
+    
+    console.log(`✅ Tab created: ${tabId} (${this.tabs.size}/${this.maxTabs} tabs)`)
     return tab
   }
 
