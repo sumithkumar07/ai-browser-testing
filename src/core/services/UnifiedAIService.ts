@@ -639,15 +639,6 @@ class UnifiedAIService {
     return [...this.messages]
   }
 
-  private addMessageToHistory(message: AIMessage): void {
-    this.messages.push(message)
-    
-    // Limit history size
-    if (this.messages.length > this.config.maxHistoryLength) {
-      this.messages = this.messages.slice(-this.config.maxHistoryLength)
-    }
-  }
-
   clearMessages(): void {
     this.messages = []
     logger.debug('Message history cleared')
