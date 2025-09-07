@@ -162,7 +162,7 @@ class KAiroBrowserBackendTester:
             # Test with a simple completion request
             test_payload = {
                 "messages": [{"role": "user", "content": "test"}],
-                "model": "llama3-8b-8192",
+                "model": "llama-3.1-8b-instant",
                 "max_tokens": 1
             }
             
