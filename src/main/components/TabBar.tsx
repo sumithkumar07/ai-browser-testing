@@ -12,7 +12,7 @@ interface TabBarProps {
 
 const TabBar: React.FC<TabBarProps> = ({
   tabs,
-  activeTabId,
+  activeTabId: _activeTabId, // Will be used for visual indicators
   onTabClick,
   onTabClose,
   onNewTab
