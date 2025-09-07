@@ -3,8 +3,20 @@
  * All TypeScript types and interfaces for KAiro Browser
  */
 
-// Import specific types from electron definitions
-export type { Tab, AIMessage, AgentStatus, BrowserEvent, AIResponse, AgentAction } from '../../main/types/electron.d.ts'
+// Import specific types from electron definitions (avoiding conflicts)
+export type { 
+  Tab as ElectronTab, 
+  AIMessage as ElectronAIMessage, 
+  AgentStatus as ElectronAgentStatus, 
+  BrowserEvent, 
+  AIResponse, 
+  AgentAction 
+} from '../../main/types/electron.d.ts'
+
+// Re-export with original names for compatibility
+export type Tab = import('../../main/types/electron.d.ts').Tab
+export type AIMessage = import('../../main/types/electron.d.ts').AIMessage  
+export type AgentStatus = import('../../main/types/electron.d.ts').AgentStatus
 
 // Core Application Types
 export interface AppState {
