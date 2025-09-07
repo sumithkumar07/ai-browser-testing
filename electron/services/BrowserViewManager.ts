@@ -334,8 +334,10 @@ export class BrowserViewManager {
     }
   }
 
-  // Cleanup
+  // Cleanup with performance tracking
   destroy(): void {
+    console.log(`🧹 Cleaning up BrowserViewManager - ${this.tabs.size} tabs to clean`)
+    
     for (const tab of this.tabs.values()) {
       try {
         tab.browserView.webContents.destroy()
@@ -343,8 +345,32 @@ export class BrowserViewManager {
         console.error('Error destroying BrowserView:', error)
       }
     }
+    
+    // Log performance metrics
+    console.log('📊 Performance Metrics:', this.performanceMetrics)
+    
     this.tabs.clear()
     this.activeTabId = null
+  }
+
+  // Performance metrics helper
+  private updatePerformanceMetrics(type: 'load' | 'navigation', duration?: number): void {
+    if (type === 'load' && duration) {
+      const currentAvg = this.performanceMetrics.averageLoadTime
+      const count = this.performanceMetrics.tabsCreated
+      this.performanceMetrics.averageLoadTime = (currentAvg * (count - 1) + duration) / count
+    } else if (type === 'navigation') {
+      this.performanceMetrics.navigationCount++
+    }
+  }
+
+  // Get performance metrics
+  getPerformanceMetrics() {
+    return {
+      ...this.performanceMetrics,
+      activeTabs: this.tabs.size,
+      maxTabs: this.maxTabs
+    }
   }
 }
 
