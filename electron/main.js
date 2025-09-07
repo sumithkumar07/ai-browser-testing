@@ -296,7 +296,7 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
               content: `Please summarize this webpage:\n\nTitle: ${context.title}\nURL: ${context.url}\n\nContent: ${content}`
             }
           ],
-          model: 'llama-3.1-8b-instant',
+          model: 'llama-3.3-70b-versatile',
           temperature: 0.3,
           max_tokens: 1024
         })
@@ -334,7 +334,7 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
               content: `Please analyze this webpage content:\n\nTitle: ${context.title}\nURL: ${context.url}\n\nContent: ${content}\n\nProvide analysis including:\n1. Key themes and topics\n2. Important information\n3. Sentiment analysis\n4. Actionable insights`
             }
           ],
-          model: 'llama-3.1-8b-instant',
+          model: 'llama-3.3-70b-versatile',
           temperature: 0.3,
           max_tokens: 1536
         })
@@ -355,7 +355,7 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
         return { 
           success: true, 
           context: {
-            model: 'llama-3.1-8b-instant',
+            model: 'llama-3.3-70b-versatile',
             temperature: 0.7,
             maxTokens: 2048,
             isInitialized: !!this.aiService,
@@ -399,7 +399,7 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
               content: `Help me search for: ${query}. Provide product recommendations and where to find them.`
             }
           ],
-          model: 'llama-3.1-8b-instant',
+          model: 'llama-3.3-70b-versatile',
           temperature: 0.5,
           max_tokens: 1024
         })
@@ -1644,7 +1644,7 @@ Please provide:
 
       const analysisResult = await this.aiService.chat.completions.create({
         messages: [{ role: 'user', content: analysisPrompt }],
-        model: 'llama-3.1-8b-instant',
+        model: 'llama-3.3-70b-versatile',
         temperature: 0.3,
         max_tokens: 1500
       })
