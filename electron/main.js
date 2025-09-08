@@ -6,14 +6,11 @@ require('dotenv').config()
 console.log('🔑 Environment variables loaded:', process.env.GROQ_API_KEY ? 'YES' : 'NO')
 
 // Import enhanced backend services - ZERO UI IMPACT
-let DatabaseService, AgentPerformanceMonitor, BackgroundTaskScheduler, EnhancedAgentMemoryService
-try {
-  // Dynamic imports for compiled TypeScript services
-  console.log('🤖 Loading enhanced backend services...')
-  // Services will be initialized during startup
-} catch (error) {
-  console.log('⚠️  Enhanced services not compiled yet, using basic mode')
-}
+const { DatabaseService } = require('../src/backend/DatabaseService')
+const { AgentPerformanceMonitor } = require('../src/backend/AgentPerformanceMonitor')
+const { BackgroundTaskScheduler } = require('../src/backend/BackgroundTaskScheduler')
+
+console.log('🤖 Enhanced backend services loaded successfully')
 
 class KAiroBrowserManager {
   constructor() {
