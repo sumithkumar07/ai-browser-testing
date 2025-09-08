@@ -918,17 +918,120 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       }
     })
 
-    // Debug Handler
-    ipcMain.handle('debug-browser-view', async () => {
+    // Enhanced Agentic Capabilities IPC Handlers
+    ipcMain.handle('set-autonomous-goal', async (event, goalData) => {
+      try {
+        console.log('🎯 Setting autonomous goal:', goalData.description)
+        
+        if (!this.isAgenticMode || !this.autonomousPlanningEngine) {
+          return { success: false, error: 'Agentic mode not available' }
+        }
+        
+        const goalId = await this.autonomousPlanningEngine.createGoal({
+          description: goalData.description,
+          type: goalData.type || 'research',
+          priority: goalData.priority || 5,
+          deadline: goalData.deadline,
+          constraints: goalData.constraints || [],
+          successCriteria: goalData.successCriteria || []
+        })
+        
+        const planId = await this.autonomousPlanningEngine.createExecutionPlan(goalId)
+        
+        // Execute autonomously
+        this.autonomousPlanningEngine.executeAutonomously(planId).catch(error => {
+          console.error('❌ Autonomous goal execution failed:', error)
+        })
+        
+        return { 
+          success: true, 
+          goalId, 
+          planId,
+          message: 'Autonomous goal created and execution started' 
+        }
+        
+      } catch (error) {
+        console.error('❌ Failed to set autonomous goal:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-agent-memory-insights', async (event, agentId) => {
+      try {
+        if (!this.isAgenticMode || !this.agentMemoryService) {
+          return { success: false, error: 'Agent memory not available' }
+        }
+        
+        const memories = await this.agentMemoryService.getMemories(agentId || 'ai_assistant', {
+          limit: 10,
+          minImportance: 5
+        })
+        
+        const knowledge = await this.agentMemoryService.getKnowledge ? 
+          await this.agentMemoryService.getKnowledge(agentId || 'ai_assistant') : []
+        
+        return {
+          success: true,
+          data: {
+            recentMemories: memories.length,
+            knowledgeDomains: knowledge.length || 0,
+            agenticMode: this.isAgenticMode,
+            memoryEnabled: true
+          }
+        }
+        
+      } catch (error) {
+        console.error('❌ Failed to get agent memory insights:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('request-agent-collaboration', async (event, collaborationData) => {
+      try {
+        console.log('🤝 Requesting agent collaboration:', collaborationData.taskDescription)
+        
+        if (!this.isAgenticMode || !this.agentCoordinationService) {
+          return { success: false, error: 'Agent coordination not available' }
+        }
+        
+        const collaborationId = await this.agentCoordinationService.requestCollaboration({
+          requesterId: collaborationData.requesterId || 'user_agent',
+          taskDescription: collaborationData.taskDescription,
+          requiredSkills: collaborationData.requiredSkills || ['research'],
+          estimatedDuration: collaborationData.estimatedDuration || 120,
+          priority: collaborationData.priority || 5,
+          resourceRequirements: collaborationData.resourceRequirements || []
+        })
+        
+        return {
+          success: true,
+          collaborationId,
+          message: 'Agent collaboration requested successfully'
+        }
+        
+      } catch (error) {
+        console.error('❌ Failed to request agent collaboration:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-agentic-status', async () => {
       try {
         return {
           success: true,
           data: {
-            totalTabs: this.browserViews.size,
-            activeTabId: this.activeTabId,
-            tabIds: Array.from(this.browserViews.keys()),
-            isInitialized: this.isInitialized,
-            hasAI: !!this.aiService
+            agenticMode: this.isAgenticMode,
+            memoryService: !!this.agentMemoryService,
+            coordinationService: !!this.agentCoordinationService,
+            planningEngine: !!this.autonomousPlanningEngine,
+            capabilities: {
+              autonomousGoals: this.isAgenticMode,
+              persistentMemory: !!this.agentMemoryService,
+              agentCoordination: !!this.agentCoordinationService,
+              multiStepPlanning: !!this.autonomousPlanningEngine,
+              proactiveBehavior: this.isAgenticMode,
+              continuousLearning: !!this.agentMemoryService
+            }
           }
         }
       } catch (error) {
