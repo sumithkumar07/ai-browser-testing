@@ -212,7 +212,7 @@ export class IntegratedAgentFramework {
   }
 
   /**
-   * Analyze user intent using AI
+   * Analyze user intent using simple keyword analysis
    */
   private async analyzeIntent(input: string): Promise<{
     intent: string
@@ -220,40 +220,8 @@ export class IntegratedAgentFramework {
     entities: string[]
     agentType: string
   }> {
-    try {
-      const prompt = `Analyze this user request and determine the intent: "${input}"
-      
-      Respond with JSON format:
-      {
-        "intent": "research|navigation|analysis|shopping|communication|automation|general",
-        "confidence": 0.0-1.0,
-        "entities": ["key", "entities"],
-        "agentType": "research|navigation|analysis|shopping|communication|automation"
-      }`
-
-      const response = await this.aiService.sendMessage(prompt)
-      
-      if (response.success && response.result) {
-        try {
-          const analysis = JSON.parse(response.result)
-          return {
-            intent: analysis.intent || 'general',
-            confidence: analysis.confidence || 0.5,
-            entities: analysis.entities || [],
-            agentType: analysis.agentType || 'research'
-          }
-        } catch {
-          // Fallback to simple keyword analysis
-          return this.simpleIntentAnalysis(input)  
-        }
-      }
-
-      return this.simpleIntentAnalysis(input)
-
-    } catch (error) {
-      logger.warn('Intent analysis failed, using fallback', error as Error)
-      return this.simpleIntentAnalysis(input)
-    }
+    // Use simple keyword-based analysis since AI service is not available
+    return this.simpleIntentAnalysis(input)
   }
 
   /**
