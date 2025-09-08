@@ -1150,6 +1150,11 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
         bonusedScores.shopping += 4
       }
       
+      // Price-related context bonuses for shopping
+      if (text.includes('price') || text.includes('cost') || text.includes('deal')) {
+        bonusedScores.shopping += 3
+      }
+      
       // Communication context bonuses
       if (text.includes('@') || text.includes('gmail') || text.includes('outlook')) {
         bonusedScores.communication += 4
