@@ -1550,16 +1550,19 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
         'overview': 3, 'summary': 3, 'understanding': 3, 'knowledge': 3, 'show me': 3
       }
       
-      // Enhanced Navigation keywords with URL pattern detection
+      // IMPROVED Navigation keywords with better URL pattern detection
       const navigationKeywords = {
-        // Ultra-high priority navigation terms (weight: 8)
-        'navigate to': 8, 'go to website': 8, 'visit site': 8, 'open webpage': 8,
-        // High priority navigation terms (weight: 6)
-        'navigate': 6, 'go to': 6, 'visit': 6, 'open': 6, 'browse to': 6,
-        // Medium priority navigation terms (weight: 4)  
-        'browse': 4, 'website': 4, 'url': 4, 'page': 4, 'site': 4, 'webpage': 4,
-        // Context-enhanced terms (weight: 3)
-        'link': 3, 'redirect': 3, 'access': 3, 'load page': 3, 'show page': 3
+        // Ultra-high priority navigation terms (weight: 12) - INCREASED
+        'navigate to': 12, 'go to website': 12, 'visit site': 12, 'open webpage': 12,
+        'take me to': 12, 'load website': 12, 'browse to': 12,
+        // High priority navigation terms (weight: 10) - INCREASED
+        'navigate': 10, 'go to': 10, 'visit': 10, 'open': 8, 'load': 8,
+        // URL-specific terms (weight: 9) - NEW HIGH PRIORITY
+        'website': 9, 'url': 9, 'site': 9, 'webpage': 9, 'web page': 9,
+        // Action verbs for navigation (weight: 6) - IMPROVED
+        'browse': 6, 'access': 6, 'show': 6, 'display': 6, 'view': 6,
+        // Context-enhanced terms (weight: 4) - IMPROVED
+        'link': 4, 'redirect': 4, 'load page': 4, 'show page': 4, 'bring up': 4
       }
       
       // Enhanced Shopping keywords with product category intelligence
