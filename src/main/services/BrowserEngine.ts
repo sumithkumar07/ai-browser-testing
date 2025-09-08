@@ -388,7 +388,8 @@ export class BrowserEngine {
     try {
       // Browser events from main process - FIXED: Proper type import
       if (window.electronAPI?.onBrowserEvent) {
-        window.electronAPI.onBrowserEvent((event: ElectronBrowserEvent) => {
+        // Store the event listener reference for cleanup
+        this.browserEventListener = (event: ElectronBrowserEvent) => {
           // Convert to our local BrowserEvent type and handle
           const localEvent: BrowserEvent = {
             type: event.type as any, // Type assertion for compatibility
@@ -399,10 +400,24 @@ export class BrowserEngine {
             error: event.error
           }
           this.handleBrowserEvent(localEvent)
-        })
+        }
+        
+        window.electronAPI.onBrowserEvent(this.browserEventListener)
       }
     } catch (error) {
       console.warn('Failed to setup browser event listeners:', error)
+    }
+  }
+
+  // Add cleanup method to prevent memory leaks
+  private removeBrowserEventListener(): void {
+    try {
+      if (window.electronAPI?.removeBrowserEventListener && this.browserEventListener) {
+        window.electronAPI.removeBrowserEventListener()
+        this.browserEventListener = null
+      }
+    } catch (error) {
+      console.warn('Failed to remove browser event listeners:', error)
     }
   }
 
