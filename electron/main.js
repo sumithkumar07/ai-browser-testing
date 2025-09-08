@@ -446,6 +446,32 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
         
       } catch (error) {
         console.error('❌ AI message processing failed:', error)
+        
+        // Record performance metrics for failure - END
+        const endTime = Date.now()
+        if (this.performanceMonitor && typeof startTime !== 'undefined') {
+          await this.performanceMonitor.recordPerformanceMetric({
+            id: `perf_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            agentId: 'ai_assistant',
+            taskType: 'ai_message_processing',
+            startTime,
+            endTime,
+            duration: endTime - startTime,
+            success: false,
+            errorMessage: error.message,
+            resourceUsage: {
+              cpuTime: endTime - startTime,
+              memoryUsed: 0,
+              networkRequests: 0
+            },
+            qualityScore: 1, // Low score for failures
+            metadata: {
+              messageLength: message ? message.length : 0,
+              errorType: error.name || 'UnknownError'
+            }
+          })
+        }
+        
         return { success: false, error: error.message }
       }
     })
