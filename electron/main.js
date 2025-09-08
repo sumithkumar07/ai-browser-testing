@@ -1414,24 +1414,259 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
     }
   }
 
-  extractActionsFromResponse(response, originalMessage) {
-    const actions = []
+  // Enhanced Agentic Processing Methods
+  async processWithAgenticCapabilities(message) {
+    try {
+      console.log('🤖 Processing with enhanced agentic capabilities')
+      
+      // Analyze if this is a goal vs immediate task
+      const isGoalTask = this.analyzeIfGoalTask(message)
+      
+      if (isGoalTask.isGoal) {
+        return await this.handleAutonomousGoal(message, isGoalTask)
+      }
+      
+      // Check if task requires agent coordination
+      const requiresCoordination = this.analyzeIfRequiresCoordination(message)
+      
+      if (requiresCoordination.needsCoordination) {
+        return await this.handleCoordinatedTask(message, requiresCoordination)
+      }
+      
+      // Get memory context for enhanced responses
+      const memoryContext = await this.getMemoryContextForTask(message)
+      
+      if (memoryContext && memoryContext.relevantMemories.length > 0) {
+        console.log(`📚 Found ${memoryContext.relevantMemories.length} relevant memories`)
+      }
+      
+      return null // Continue with standard processing
+      
+    } catch (error) {
+      console.error('❌ Agentic processing failed:', error)
+      return null
+    }
+  }
+
+  analyzeIfGoalTask(message) {
+    const lowerMessage = message.toLowerCase()
     
-    // Simple pattern matching for navigation actions
-    const urlRegex = /(?:navigate to|go to|visit|open)\s+(https?:\/\/[^\s]+)/gi
-    const matches = originalMessage.match(urlRegex)
+    // Keywords that indicate autonomous goals
+    const goalKeywords = [
+      'monitor', 'track', 'watch', 'keep an eye', 'notify me', 'alert me',
+      'continuous', 'ongoing', 'daily', 'weekly', 'regularly', 'schedule',
+      'automate', 'automatically', 'set up', 'maintain', 'manage',
+      'goal', 'objective', 'long-term', 'project'
+    ]
     
-    if (matches) {
-      matches.forEach(match => {
-        const url = match.split(' ').pop()
-        actions.push({
-          type: 'navigate',
-          target: url
-        })
-      })
+    const hasGoalKeywords = goalKeywords.some(keyword => lowerMessage.includes(keyword))
+    const isLongRequest = message.length > 100
+    const hasTimeFrame = lowerMessage.match(/\b(daily|weekly|monthly|continuously|ongoing|regular)\b/)
+    
+    const isGoal = hasGoalKeywords || (isLongRequest && hasTimeFrame)
+    
+    return {
+      isGoal,
+      confidence: isGoal ? (hasGoalKeywords ? 0.9 : 0.7) : 0.3,
+      type: this.extractGoalType(message),
+      timeframe: hasTimeFrame ? hasTimeFrame[0] : null
+    }
+  }
+
+  analyzeIfRequiresCoordination(message) {
+    const lowerMessage = message.toLowerCase()
+    
+    // Multi-agent coordination indicators
+    const coordinationKeywords = [
+      'research and analyze', 'compare and shop', 'find and email',
+      'multiple', 'comprehensive', 'thorough', 'detailed analysis',
+      'step by step', 'complex', 'advanced', 'sophisticated'
+    ]
+    
+    const needsCoordination = coordinationKeywords.some(keyword => lowerMessage.includes(keyword)) ||
+                              message.length > 150 ||
+                              (lowerMessage.match(/\band\b/g) || []).length > 2
+    
+    return {
+      needsCoordination,
+      complexity: needsCoordination ? 'high' : 'medium',
+      estimatedAgents: needsCoordination ? this.estimateRequiredAgents(message) : 1
+    }
+  }
+
+  extractGoalType(message) {
+    const lowerMessage = message.toLowerCase()
+    
+    if (lowerMessage.includes('research') || lowerMessage.includes('monitor') || lowerMessage.includes('track')) {
+      return 'research'
+    }
+    if (lowerMessage.includes('shop') || lowerMessage.includes('price') || lowerMessage.includes('deal')) {
+      return 'shopping'
+    }
+    if (lowerMessage.includes('analyze') || lowerMessage.includes('analysis')) {
+      return 'analysis'
+    }
+    if (lowerMessage.includes('automate') || lowerMessage.includes('workflow')) {
+      return 'automation'
+    }
+    if (lowerMessage.includes('email') || lowerMessage.includes('contact') || lowerMessage.includes('message')) {
+      return 'communication'
     }
     
-    return actions
+    return 'research' // Default
+  }
+
+  estimateRequiredAgents(message) {
+    const lowerMessage = message.toLowerCase()
+    let agentCount = 1
+    
+    if (lowerMessage.includes('research')) agentCount++
+    if (lowerMessage.includes('shop') || lowerMessage.includes('price')) agentCount++
+    if (lowerMessage.includes('analyze')) agentCount++
+    if (lowerMessage.includes('email') || lowerMessage.includes('contact')) agentCount++
+    if (lowerMessage.includes('navigate') || lowerMessage.includes('visit')) agentCount++
+    
+    return Math.min(agentCount, 3) // Max 3 agents for coordination
+  }
+
+  async handleAutonomousGoal(message, goalAnalysis) {
+    console.log(`🎯 Handling autonomous goal: ${goalAnalysis.type}`)
+    
+    if (this.autonomousPlanningEngine) {
+      const goalId = await this.autonomousPlanningEngine.createGoal({
+        description: message,
+        type: goalAnalysis.type,
+        priority: 7,
+        constraints: [],
+        successCriteria: []
+      })
+      
+      const planId = await this.autonomousPlanningEngine.createExecutionPlan(goalId)
+      
+      // Execute autonomously in background
+      this.autonomousPlanningEngine.executeAutonomously(planId).catch(error => {
+        console.error('❌ Autonomous goal execution failed:', error)
+      })
+      
+      return {
+        success: true,
+        result: `🎯 **Autonomous Goal Created Successfully**\n\n**Goal**: ${message}\n\n**Type**: ${goalAnalysis.type}\n**Confidence**: ${Math.round(goalAnalysis.confidence * 100)}%\n**Timeframe**: ${goalAnalysis.timeframe || 'Ongoing'}\n\n🤖 **Autonomous Execution Started**\n\nI've created an autonomous goal and execution plan. I'll work on this independently and notify you of progress and completion.\n\n**What happens next:**\n• Agents will execute the plan autonomously\n• You'll receive progress updates\n• The system will adapt if obstacles are encountered\n• Completion notification when goal is achieved\n\n**Status**: ✅ Autonomous agents are now working toward your goal.`,
+        agenticMode: true,
+        goalId,
+        planId
+      }
+    }
+    
+    return null
+  }
+
+  async handleCoordinatedTask(message, coordinationAnalysis) {
+    console.log(`🤝 Handling coordinated task requiring ${coordinationAnalysis.estimatedAgents} agents`)
+    
+    if (this.agentCoordinationService) {
+      const collaborationId = await this.agentCoordinationService.requestCollaboration({
+        requesterId: 'user_agent',
+        taskDescription: message,
+        requiredSkills: this.extractRequiredSkills(message),
+        estimatedDuration: coordinationAnalysis.complexity === 'high' ? 300 : 120,
+        priority: 7,
+        resourceRequirements: []
+      })
+      
+      return {
+        success: true,
+        result: `🤝 **Multi-Agent Collaboration Initiated**\n\n**Task**: ${message}\n\n**Complexity**: ${coordinationAnalysis.complexity}\n**Estimated Agents**: ${coordinationAnalysis.estimatedAgents}\n**Collaboration ID**: ${collaborationId}\n\n🔄 **Coordination in Progress**\n\nMultiple specialized agents are now collaborating on your task:\n\n• **Task Analysis**: Completed\n• **Agent Selection**: In progress\n• **Work Distribution**: Pending\n• **Execution**: Awaiting coordination\n\n**Expected Benefits:**\n✅ Higher quality results through specialization\n✅ Parallel processing for faster completion\n✅ Cross-validation of findings\n✅ Comprehensive coverage of all aspects\n\n**Status**: Agents are coordinating and will provide enhanced results shortly.`,
+        agenticMode: true,
+        collaborationId,
+        estimatedAgents: coordinationAnalysis.estimatedAgents
+      }
+    }
+    
+    return null
+  }
+
+  extractRequiredSkills(message) {
+    const skills = []
+    const lowerMessage = message.toLowerCase()
+    
+    if (lowerMessage.includes('research') || lowerMessage.includes('find')) skills.push('research')
+    if (lowerMessage.includes('analyze') || lowerMessage.includes('analysis')) skills.push('analysis')
+    if (lowerMessage.includes('shop') || lowerMessage.includes('buy') || lowerMessage.includes('price')) skills.push('shopping')
+    if (lowerMessage.includes('navigate') || lowerMessage.includes('visit') || lowerMessage.includes('go to')) skills.push('navigation')
+    if (lowerMessage.includes('email') || lowerMessage.includes('contact') || lowerMessage.includes('message')) skills.push('communication')
+    if (lowerMessage.includes('automate') || lowerMessage.includes('workflow') || lowerMessage.includes('schedule')) skills.push('automation')
+    
+    return skills.length > 0 ? skills : ['research'] // Default to research
+  }
+
+  async getMemoryContextForTask(message) {
+    if (!this.agentMemoryService) return null
+    
+    try {
+      // Get relevant memories for task enhancement
+      const memories = await this.agentMemoryService.getMemories('ai_assistant', {
+        tags: ['task_outcome', 'success'],
+        minImportance: 6,
+        limit: 5
+      })
+      
+      return {
+        relevantMemories: memories,
+        hasSuccessfulPatterns: memories.some(m => m.content && m.content.success),
+        learningInsights: memories.length > 0 ? 'Previous successful strategies available' : 'No previous experience'
+      }
+    } catch (error) {
+      console.error('❌ Failed to get memory context:', error)
+      return null
+    }
+  }
+
+  async enhanceResponseWithAgenticCapabilities(response, originalMessage, context) {
+    if (!this.isAgenticMode) return response
+    
+    try {
+      // Add agentic enhancement footer
+      const agenticEnhancements = []
+      
+      // Check if we can offer autonomous monitoring
+      if (this.couldBenefitFromMonitoring(originalMessage)) {
+        agenticEnhancements.push('💡 **Autonomous Monitoring Available**: I can monitor this topic continuously and alert you to changes.')
+      }
+      
+      // Check if we can offer goal setting
+      if (this.couldBenefitFromGoalSetting(originalMessage)) {
+        agenticEnhancements.push('🎯 **Goal Setting Available**: I can convert this to an autonomous goal and work on it independently.')
+      }
+      
+      // Check if we can offer workflow automation
+      if (this.couldBenefitFromAutomation(originalMessage)) {
+        agenticEnhancements.push('🤖 **Automation Available**: I can create automated workflows for repetitive aspects of this task.')
+      }
+      
+      if (agenticEnhancements.length > 0) {
+        return response + '\n\n---\n\n🚀 **Enhanced Agentic Capabilities**\n\n' + agenticEnhancements.join('\n\n')
+      }
+      
+      return response
+      
+    } catch (error) {
+      console.error('❌ Failed to enhance response with agentic capabilities:', error)
+      return response
+    }
+  }
+
+  couldBenefitFromMonitoring(message) {
+    const monitorKeywords = ['price', 'news', 'updates', 'changes', 'trends', 'developments', 'market']
+    return monitorKeywords.some(keyword => message.toLowerCase().includes(keyword))
+  }
+
+  couldBenefitFromGoalSetting(message) {
+    return message.length > 80 || message.toLowerCase().includes('project') || message.toLowerCase().includes('research')
+  }
+
+  couldBenefitFromAutomation(message) {
+    const automationKeywords = ['regular', 'daily', 'weekly', 'repeat', 'routine', 'process', 'workflow']
+    return automationKeywords.some(keyword => message.toLowerCase().includes(keyword))
   }
 
   setupBrowserViewListeners(browserView, tabId) {
