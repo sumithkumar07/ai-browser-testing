@@ -109,31 +109,31 @@ class KAiroBrowserManager {
     }
   }
 
-  async scheduleMaintenanceTasks() {
+  async startAutonomousGoalMonitoring() {
     try {
-      console.log('🧹 Scheduling maintenance tasks...')
+      console.log('🎯 Starting autonomous goal monitoring...')
       
-      // Schedule daily data cleanup
-      await this.taskScheduler.scheduleTask('data_maintenance', {
-        type: 'cleanup_expired_memories'
-      }, {
-        priority: 3,
-        scheduledFor: Date.now() + (24 * 60 * 60 * 1000) // 24 hours from now
-      })
+      // Monitor autonomous goals every 10 minutes
+      setInterval(async () => {
+        try {
+          if (this.agentCoordinationService) {
+            const goalProgress = await this.agentCoordinationService.monitorGoalProgress()
+            console.log('📊 Autonomous Goal Status:', goalProgress)
+            
+            // Log significant progress updates
+            if (goalProgress.activeGoals > 0) {
+              console.log(`🎯 ${goalProgress.activeGoals} active autonomous goals running`)
+              console.log(`📈 Average progress: ${Math.round(goalProgress.averageProgress)}%`)
+            }
+          }
+        } catch (error) {
+          console.error('❌ Autonomous goal monitoring failed:', error)
+        }
+      }, 10 * 60 * 1000) // Every 10 minutes
       
-      // Schedule weekly history cleanup
-      await this.taskScheduler.scheduleTask('data_maintenance', {
-        type: 'cleanup_old_history',
-        daysToKeep: 90
-      }, {
-        priority: 2,
-        scheduledFor: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days from now
-      })
-      
-      console.log('✅ Maintenance tasks scheduled')
-      
+      console.log('✅ Autonomous goal monitoring started')
     } catch (error) {
-      console.error('❌ Failed to schedule maintenance tasks:', error)
+      console.error('❌ Failed to start autonomous goal monitoring:', error)
     }
   }
 
