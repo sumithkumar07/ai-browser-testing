@@ -96,13 +96,19 @@ export const validateSettings = (settings: any): void => {
 /**
  * Agent Task Validation
  */
-export const validateAgentTask = (task: string): void => {
-  if (!task || task.trim().length === 0) {
-    throw new ValidationError('Task description cannot be empty', 'task')
-  }
-  
-  if (task.length > 1000) {
-    throw new ValidationError('Task description too long. Maximum 1000 characters', 'task')
+export const validateAgentTask = (task: string): { isValid: boolean; error?: string } => {
+  try {
+    if (!task || task.trim().length === 0) {
+      return { isValid: false, error: 'Task description cannot be empty' }
+    }
+    
+    if (task.length > 1000) {
+      return { isValid: false, error: 'Task description too long. Maximum 1000 characters' }
+    }
+    
+    return { isValid: true }
+  } catch (error) {
+    return { isValid: false, error: 'Validation failed' }
   }
 }
 
