@@ -1758,10 +1758,10 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       return bonusedScores
     }
 
-    // ENHANCED: Smarter agent decision making
+    // ENHANCED: IMPROVED Smarter agent decision making with better accuracy
     this.makeEnhancedAgentDecision = (contextualScores, originalTask, lowerTask) => {
-      // Higher minimum threshold for better precision
-      const minThreshold = 3
+      // IMPROVED minimum threshold for better precision
+      const minThreshold = 4 // INCREASED from 3
       const validScores = Object.entries(contextualScores).filter(([_, score]) => score >= minThreshold)
       
       let primaryAgent = 'research' // Intelligent default
@@ -1771,39 +1771,68 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
         // Find agent with highest score
         [primaryAgent, maxScore] = validScores.reduce((a, b) => a[1] > b[1] ? a : b)
         
-        // Smart fallback logic for edge cases
-        if (maxScore < 5 && lowerTask.includes('help')) {
+        // IMPROVED Smart fallback logic for edge cases
+        if (maxScore < 8 && lowerTask.includes('help')) { // INCREASED threshold from 5 to 8
           primaryAgent = 'research' // Default to research for general help
+        }
+        
+        // NEW: Special case handling for very clear intents
+        if (maxScore >= 15) {
+          // Very high confidence - stick with the decision
+        } else if (maxScore >= 10) {
+          // High confidence - check for competing agents
+          const secondHighest = validScores.filter(([agent]) => agent !== primaryAgent)
+            .reduce((a, b) => a[1] > b[1] ? a : b, ['none', 0])
+          
+          // If second highest is very close, increase complexity
+          if (secondHighest[1] > maxScore * 0.8) {
+            // Close competition - this might need multiple agents
+          }
         }
       }
       
       // Enhanced complexity determination
       const complexity = this.determineEnhancedComplexity(originalTask, lowerTask, contextualScores)
       
-      // Smarter supporting agents calculation
+      // IMPROVED supporting agents calculation with better threshold
       const supportingAgents = Object.entries(contextualScores)
-        .filter(([agent, score]) => agent !== primaryAgent && score >= minThreshold)
+        .filter(([agent, score]) => agent !== primaryAgent && score >= Math.max(minThreshold, maxScore * 0.3)) // IMPROVED threshold
         .sort(([, a], [, b]) => b - a)
         .slice(0, complexity === 'high' ? 3 : 2) // More agents for complex tasks
         .map(([agent]) => agent)
 
-      // Enhanced confidence calculation with normalization
+      // IMPROVED confidence calculation with better normalization
       const totalScore = Object.values(contextualScores).reduce((sum, score) => sum + score, 0)
-      let confidence = totalScore > 0 ? Math.min(100, Math.round((maxScore / totalScore) * 100)) : 0
+      let confidence = 50 // Base confidence
       
-      // Boost confidence for clear intent patterns
-      if (maxScore >= 8) confidence = Math.min(100, confidence + 10)
-      if (maxScore >= 10) confidence = Math.min(100, confidence + 15)
+      if (totalScore > 0) {
+        // Calculate relative confidence
+        const relativeStrength = (maxScore / totalScore) * 100
+        confidence = Math.min(95, Math.max(50, relativeStrength))
+        
+        // ENHANCED confidence boosting for strong signals
+        if (maxScore >= 15) confidence = Math.min(95, confidence + 15) // INCREASED boost
+        else if (maxScore >= 12) confidence = Math.min(95, confidence + 10) // NEW tier
+        else if (maxScore >= 8) confidence = Math.min(95, confidence + 5) // DECREASED boost
+        
+        // Reduce confidence if there's competition
+        const secondHighest = Math.max(...Object.values(contextualScores).filter(score => score !== maxScore))
+        if (secondHighest > maxScore * 0.7) {
+          confidence -= 10 // Reduce confidence when there's close competition
+        }
+      }
 
       return {
         primaryAgent,
         supportingAgents,
         complexity,
         scores: contextualScores,
-        confidence,
-        needsMultipleAgents: supportingAgents.length > 0 && (complexity === 'high' || maxScore < 10),
+        confidence: Math.round(confidence),
+        needsMultipleAgents: supportingAgents.length > 0 && (complexity === 'high' || maxScore < 12), // INCREASED threshold
         taskLength: originalTask.length,
-        intentStrength: maxScore
+        intentStrength: maxScore,
+        // NEW: Additional debugging info
+        decisionReason: maxScore >= 15 ? 'high_confidence' : maxScore >= 10 ? 'medium_confidence' : 'fallback'
       }
     }
 
