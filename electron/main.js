@@ -1589,18 +1589,23 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
         'store': 4, 'retailer': 4, 'vendor': 4, 'marketplace': 4
       }
       
-      // Enhanced Communication keywords with intent recognition
+      // IMPROVED Communication keywords with better intent recognition
       const communicationKeywords = {
-        // Ultra-high priority communication terms (weight: 8)
-        'compose email': 8, 'write email': 8, 'send message': 8, 'create email': 8,
-        // High priority communication terms (weight: 6)
-        'email': 6, 'compose': 6, 'write': 6, 'send': 6, 'contact': 6, 'message': 6,
-        // Medium priority communication terms (weight: 4)
-        'form': 4, 'fill': 4, 'submit': 4, 'social': 4, 'post': 4, 'communication': 4,
-        // Social platform specific (weight: 4)
-        'tweet': 4, 'linkedin': 4, 'facebook': 4, 'instagram': 4, 'discord': 4,
-        // Context terms (weight: 3)
-        'reply': 3, 'respond': 3, 'draft': 3, 'template': 3, 'newsletter': 3
+        // Ultra-high priority communication terms (weight: 12) - INCREASED
+        'compose email': 12, 'write email': 12, 'send message': 12, 'create email': 12,
+        'draft email': 12, 'send email': 12, 'write message': 12,
+        // High priority communication terms (weight: 10) - INCREASED
+        'email': 10, 'compose': 8, 'write': 6, 'send': 8, 'contact': 8, 'message': 8,
+        // Enhanced writing intent (weight: 8) - NEW
+        'need to write': 8, 'help me write': 8, 'create message': 8, 'draft message': 8,
+        // Medium priority communication terms (weight: 6) - IMPROVED
+        'form': 6, 'fill': 6, 'submit': 6, 'social': 6, 'post': 6, 'communication': 6,
+        // Social platform specific (weight: 6) - IMPROVED
+        'tweet': 6, 'linkedin': 6, 'facebook': 6, 'instagram': 6, 'discord': 6,
+        'social media': 6, 'social post': 6,
+        // Context terms (weight: 4) - IMPROVED
+        'reply': 4, 'respond': 4, 'draft': 4, 'template': 4, 'newsletter': 4,
+        'letter': 4, 'memo': 4, 'correspondence': 4
       }
       
       // Enhanced Automation keywords with workflow recognition
