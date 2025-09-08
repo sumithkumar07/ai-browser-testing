@@ -1033,19 +1033,27 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       }
     }
 
-    // Enhanced task analysis method with improved accuracy
+    // ENHANCED task analysis method with 95%+ accuracy target
     this.analyzeAgentTask = (task) => {
       const lowerTask = task.toLowerCase()
+      const originalTask = task.trim()
       
-      // Enhanced Research keywords with weighted scoring
+      // PHASE 1: Pre-processing and intent detection
+      const intentPatterns = this.detectTaskIntent(lowerTask)
+      
+      // PHASE 2: Enhanced Research keywords with context-aware weighted scoring
       const researchKeywords = {
-        // High priority research terms (weight: 5)
-        'research': 5, 'investigate': 5, 'comprehensive': 5, 'trending': 5,
-        // Medium priority research terms (weight: 3)
-        'find': 3, 'search': 3, 'explore': 3, 'discover': 3, 'study': 3, 'examine': 3,
-        'latest': 3, 'developments': 3, 'news': 3, 'topics': 3, 'sources': 3,
-        // Low priority research terms (weight: 2)
-        'top': 2, 'best': 2, 'list': 2, 'data': 2, 'information': 2, 'report': 2
+        // Ultra-high priority research terms (weight: 8)
+        'research comprehensive': 8, 'investigate thoroughly': 8, 'deep dive': 8,
+        // High priority research terms (weight: 6)
+        'research': 6, 'investigate': 6, 'comprehensive': 6, 'trending': 6, 'analyze trends': 6,
+        'find information': 6, 'gather data': 6, 'study topic': 6,
+        // Medium priority research terms (weight: 4)
+        'find': 4, 'search': 4, 'explore': 4, 'discover': 4, 'study': 4, 'examine': 4,
+        'latest': 4, 'developments': 4, 'news': 4, 'topics': 4, 'sources': 4, 'insights': 4,
+        // Context-enhanced terms (weight: 3)
+        'top': 3, 'best': 3, 'list': 3, 'data': 3, 'information': 3, 'report': 3,
+        'overview': 3, 'summary': 3, 'understanding': 3, 'knowledge': 3
       }
       
       // Enhanced Navigation keywords with weighted scoring
