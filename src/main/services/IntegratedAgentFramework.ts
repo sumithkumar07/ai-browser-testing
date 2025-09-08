@@ -73,70 +73,51 @@ export class IntegratedAgentFramework {
   /**
    * Process user input with enhanced conversation and coordination
    */
-  async processUserInput(input: string): Promise<{ success: boolean; taskId?: string; error?: string }> {
+  async processUserInput(input: string): Promise<{ success: boolean; result?: any; error?: string }> {
     try {
-      validateAgentTask(input)
-      logger.info('Processing user input with enhanced framework', { input })
+      if (!this.isInitialized) {
+        throw new Error('Agent framework not initialized')
+      }
 
-      // Get current session for conversation continuity
-      const session = this.aiService.getCurrentSession()
+      logger.debug('Processing user input:', input)
+
+      // Validate input
+      const validation = validateAgentTask(input)
+      if (!validation.isValid) {
+        return {
+          success: false,
+          error: validation.error
+        }
+      }
+
+      // Use Electron API to send message to AI service
+      const result = await window.electronAPI.sendAIMessage(input)
       
-      // Check if this requires multi-agent coordination
-      const intentAnalysis = session.sessionId 
-        ? await this.conversationManager.analyzeUserIntent(session.sessionId, input)
-        : null
-
-      const needsCoordination = (intentAnalysis?.suggestedAgents && intentAnalysis.suggestedAgents.length > 1) || 
-                               this.isComplexTask(input)
-
-      if (needsCoordination && session.sessionId) {
-        // Use agent coordinator for complex tasks
-        logger.info('Using agent coordination for complex task', { 
-          suggestedAgents: intentAnalysis?.suggestedAgents || [],
-          sessionId: session.sessionId 
-        })
-
-        const result = await this.agentCoordinator.orchestrateTask(input, session.sessionId, {
-          priority: 'normal',
-          timeoutMs: 300000
+      if (result.success) {
+        // Emit processing event
+        appEvents.emit('agent:task-completed', {
+          input,
+          result: result.result,
+          timestamp: Date.now()
         })
 
         return {
-          success: result.success,
-          taskId: result.collaborationId,
-          error: result.error
+          success: true,
+          result: result.result
         }
       } else {
-        // Use traditional single-agent approach with enhanced capabilities
-        const intentAnalysis = await this.analyzeIntent(input)
-        const selectedAgent = this.selectAgent(intentAnalysis)
-
-        logger.debug('Agent selected for single execution', { 
-          agentId: selectedAgent.id, 
-          confidence: intentAnalysis.confidence 
-        })
-
-        // Execute task through enhanced agent system
-        const result = await this.agentSystem.executeTask(input, {
-          timeout: 300000, // 5 minutes
-          maxRetries: 2,
-          onProgress: (status: AgentStatus) => {
-            this.emitEvent('agent-update', status)
-          }
-        })
-
-        if (result.success) {
-          logger.info('Agent task completed', { taskId: result.taskId })
-          return { success: true, taskId: result.taskId }
-        } else {
-          logger.error('Agent task failed', new Error(result.error || 'Agent task failed'), { taskId: result.taskId })
-          return { success: false, error: result.error || 'Agent task failed', taskId: result.taskId }
+        return {
+          success: false,
+          error: result.error || 'Unknown error'
         }
       }
 
     } catch (error) {
       logger.error('Failed to process user input', error as Error)
-      return { success: false, error: (error as Error).message }
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
     }
   }
 
