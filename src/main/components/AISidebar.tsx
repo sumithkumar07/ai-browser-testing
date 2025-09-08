@@ -28,6 +28,31 @@ const AISidebar: React.FC<AISidebarProps> = ({
 
   // PERFORMANCE: Memoize updateAgentStatusMessage
   const updateAgentStatusMessage = useCallback((status: AgentStatus) => {
+    const formatStatus = (status: AgentStatus): string => {
+      const statusEmoji = {
+        idle: '⏸️',
+        active: '⏳',
+        completed: '✅',
+        error: '❌'
+      }
+
+      let message = `${statusEmoji[status.status]} **${status.name}**: ${status.status.toUpperCase()}`
+      
+      if (status.currentTask) {
+        message += `\n📋 Task: ${status.currentTask}`
+      }
+      
+      if (status.progress !== undefined && status.progress !== null) {
+        message += `\n📊 Progress: ${Math.round(status.progress)}%`
+      }
+      
+      if (status.details && status.details.length > 0) {
+        message += '\n\n**Details:**\n' + status.details.map(detail => `• ${detail}`).join('\n')
+      }
+      
+      return message
+    }
+
     setMessages(prevMessages => {
       // Remove previous agent status messages
       const filtered = prevMessages.filter(msg => !msg.agentStatus)
@@ -35,7 +60,7 @@ const AISidebar: React.FC<AISidebarProps> = ({
       // Add new agent status message
       const statusMessage: AIMessage = {
         id: `agent_status_${Date.now()}`,
-        content: formatAgentStatus(status),
+        content: formatStatus(status),
         timestamp: Date.now(),
         isUser: false,
         agentStatus: status
