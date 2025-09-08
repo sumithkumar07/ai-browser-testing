@@ -49,6 +49,43 @@ class ConversationManager {
     return ConversationManager.instance
   }
 
+  async initialize(): Promise<void> {
+    try {
+      logger.info('Initializing Conversation Manager...')
+      
+      // Set up conversation context cleanup interval
+      setInterval(() => {
+        this.cleanupExpiredContexts()
+      }, this.contextTimeoutMs)
+
+      logger.info('✅ Conversation Manager initialized successfully')
+    } catch (error) {
+      logger.error('Failed to initialize Conversation Manager', error as Error)
+      throw error
+    }
+  }
+
+  private cleanupExpiredContexts(): void {
+    const now = Date.now()
+    const expiredSessions: string[] = []
+
+    for (const [sessionId, context] of this.conversations.entries()) {
+      if (now - context.timestamp > this.contextTimeoutMs) {
+        expiredSessions.push(sessionId)
+      }
+    }
+
+    for (const sessionId of expiredSessions) {
+      this.conversations.delete(sessionId)
+      this.contextMemory.delete(sessionId)
+      logger.debug(`Cleaned up expired conversation context: ${sessionId}`)
+    }
+
+    if (expiredSessions.length > 0) {
+      logger.info(`Cleaned up ${expiredSessions.length} expired conversation contexts`)
+    }
+  }
+
   private setupEventListeners(): void {
     // Listen for conversation events
     appEvents.on('conversation:started', (data) => {
