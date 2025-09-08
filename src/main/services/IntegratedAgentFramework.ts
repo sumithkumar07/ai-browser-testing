@@ -61,7 +61,7 @@ export class IntegratedAgentFramework {
       logger.info('✅ Integrated Agent Framework initialized successfully')
 
       // Emit initialization event
-      appEvents.emit('agent-framework:initialized', { 
+      appEvents.emit('app:initialized', { 
         timestamp: Date.now(),
         agentCount: this.agents.size 
       })
@@ -98,9 +98,8 @@ export class IntegratedAgentFramework {
       if (result.success) {
         // Emit processing event
         appEvents.emit('agent:task-completed', {
-          input,
-          result: result.result,
-          timestamp: Date.now()
+          taskId: `task_${Date.now()}`,
+          result: result.result
         })
 
         return {

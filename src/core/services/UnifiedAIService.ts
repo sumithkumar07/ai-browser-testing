@@ -68,8 +68,7 @@ class UnifiedAIService {
         id: `msg_${Date.now()}_user`,
         content: message,
         isUser: true,
-        timestamp: Date.now(),
-        agentId: 'user'
+        timestamp: Date.now()
       }
       this.messages.push(userMessage)
 
@@ -82,15 +81,13 @@ class UnifiedAIService {
           id: `msg_${Date.now()}_ai`,
           content: response.data.content || response.data,
           isUser: false,
-          timestamp: Date.now(),
-          agentId: response.data.agentId || 'ai-assistant'
+          timestamp: Date.now()
         }
         this.messages.push(aiMessage)
 
         return {
           success: true,
-          data: response.data,
-          message: 'Message sent successfully'
+          data: response.data
         }
       } else {
         return {
@@ -147,7 +144,7 @@ class UnifiedAIService {
         return false
       }
       
-      const response = await window.electronAPI.testAIConnection()
+      const response = await window.electronAPI.testConnection()
       return response.success
     } catch (error) {
       logger.error('Connection check failed', error as Error)
