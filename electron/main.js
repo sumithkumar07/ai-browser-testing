@@ -1524,7 +1524,7 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       }
     }
 
-    // ENHANCED task analysis method with 95%+ accuracy target
+    // ENHANCED task analysis method with 95%+ accuracy target - IMPROVED ALGORITHM
     this.analyzeAgentTask = (task) => {
       const lowerTask = task.toLowerCase()
       const originalTask = task.trim()
@@ -1532,19 +1532,22 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       // PHASE 1: Pre-processing and intent detection
       const intentPatterns = this.detectTaskIntent(lowerTask)
       
-      // PHASE 2: Enhanced keyword sets with better context understanding
+      // PHASE 2: IMPROVED keyword sets with better context understanding and weights
       const researchKeywords = {
-        // Ultra-high priority research terms (weight: 8)
-        'research comprehensive': 8, 'investigate thoroughly': 8, 'deep dive': 8,
-        // High priority research terms (weight: 6)
-        'research': 6, 'investigate': 6, 'comprehensive': 6, 'trending': 6, 'analyze trends': 6,
-        'find information': 6, 'gather data': 6, 'study topic': 6,
-        // Medium priority research terms (weight: 4)
-        'find': 4, 'search': 4, 'explore': 4, 'discover': 4, 'study': 4, 'examine': 4,
-        'latest': 4, 'developments': 4, 'news': 4, 'topics': 4, 'sources': 4, 'insights': 4,
+        // Ultra-high priority research terms (weight: 10) - INCREASED
+        'research comprehensive': 10, 'investigate thoroughly': 10, 'deep dive': 10,
+        'conduct research': 10, 'find information about': 10, 'gather data on': 10,
+        // High priority research terms (weight: 8) - INCREASED
+        'research': 8, 'investigate': 8, 'comprehensive': 8, 'trending': 8, 'analyze trends': 8,
+        'find information': 8, 'gather data': 8, 'study topic': 8, 'learn about': 8,
+        // Enhanced search terms (weight: 6)
+        'find': 6, 'search': 6, 'explore': 6, 'discover': 6, 'study': 6, 'examine': 6,
+        'latest': 6, 'developments': 6, 'news': 6, 'topics': 6, 'sources': 6, 'insights': 6,
+        // Question words that indicate research (weight: 5) - NEW
+        'what is': 5, 'how does': 5, 'why is': 5, 'where can': 5, 'who are': 5, 'when did': 5,
         // Context-enhanced terms (weight: 3)
         'top': 3, 'best': 3, 'list': 3, 'data': 3, 'information': 3, 'report': 3,
-        'overview': 3, 'summary': 3, 'understanding': 3, 'knowledge': 3
+        'overview': 3, 'summary': 3, 'understanding': 3, 'knowledge': 3, 'show me': 3
       }
       
       // Enhanced Navigation keywords with URL pattern detection
