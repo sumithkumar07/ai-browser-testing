@@ -6,6 +6,24 @@ import AgentMemoryService from './AgentMemoryService'
 
 const logger = createLogger('AgentCoordinationService')
 
+export interface GoalExecutionStep {
+  id: string
+  description: string
+  assignedAgent: string
+  estimatedDuration: number
+  dependencies: string[]
+  status: 'pending' | 'in_progress' | 'completed' | 'failed'
+  priority: number
+  result?: any
+  error?: string
+}
+
+export interface MonitoringCriteria {
+  metric: string
+  threshold: number
+  action: string
+}
+
 export interface AgentMessage {
   id: string
   fromAgent: string
