@@ -125,9 +125,15 @@ const BrowserWindow: React.FC<BrowserWindowProps> = ({
         <AITabContent 
           tab={activeTab}
           onContentChange={(content) => {
-            // Save content changes
-            if (window.electronAPI.saveAITabContent) {
-              window.electronAPI.saveAITabContent(activeTab.id, content)
+            // FIXED: Add Electron API safety check before saving content
+            try {
+              if (window.electronAPI?.saveAITabContent) {
+                window.electronAPI.saveAITabContent(activeTab.id, content)
+              } else {
+                console.warn('AI tab content saving not available - Electron API not found')
+              }
+            } catch (error) {
+              console.error('Failed to save AI tab content:', error)
             }
           }}
         />

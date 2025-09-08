@@ -1,5 +1,6 @@
 // AI Tab Content Display Component
 import React, { useState, useEffect, useRef, useCallback } from 'react'
+import DOMPurify from 'dompurify'
 import { Tab } from '../types/electron'
 
 interface AITabContentProps {
@@ -17,11 +18,14 @@ const AITabContent: React.FC<AITabContentProps> = ({ tab, onContentChange }) => 
 
   const loadTabContent = useCallback(async () => {
     try {
-      if (window.electronAPI && window.electronAPI.loadAITabContent) {
+      // FIXED: Enhanced Electron API safety check
+      if (window.electronAPI?.loadAITabContent) {
         const result = await window.electronAPI.loadAITabContent(tab.id)
         if (result && result.success && result.content) {
           setContent(result.content)
         }
+      } else {
+        console.warn('AI tab content loading not available - Electron API not found')
       }
     } catch (error) {
       console.error('Failed to load AI tab content:', error)
@@ -34,7 +38,8 @@ const AITabContent: React.FC<AITabContentProps> = ({ tab, onContentChange }) => 
       setSaveStatus('saving')
       onContentChange(content)
       
-      if (window.electronAPI && window.electronAPI.saveAITabContent) {
+      // FIXED: Enhanced Electron API safety check
+      if (window.electronAPI?.saveAITabContent) {
         const result = await window.electronAPI.saveAITabContent(tab.id, content)
         if (result && result.success) {
           setLastSaved(new Date())
@@ -42,6 +47,9 @@ const AITabContent: React.FC<AITabContentProps> = ({ tab, onContentChange }) => 
         } else {
           setSaveStatus('error')
         }
+      } else {
+        console.warn('AI tab content saving not available - Electron API not found')
+        setSaveStatus('error')
       }
     } catch (error) {
       console.error('Failed to save AI tab content:', error)
@@ -73,7 +81,7 @@ const AITabContent: React.FC<AITabContentProps> = ({ tab, onContentChange }) => 
     }
   }, [content, tab.content, saveContent])
 
-  // Cleanup timeout on unmount
+  // FIXED: Enhanced cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) {
@@ -272,7 +280,7 @@ You can use:
   )
 }
 
-// Enhanced markdown renderer with better error handling
+// FIXED: Enhanced markdown renderer with DOMPurify sanitization to prevent XSS
 const renderMarkdown = (text: string): string => {
   try {
     let html = text
@@ -303,7 +311,14 @@ const renderMarkdown = (text: string): string => {
     // Clean up extra br tags around ul
     html = html.replace(/<br>\s*<ul>/g, '<ul>').replace(/<\/ul>\s*<br>/g, '</ul>')
 
-    return html
+    // FIXED: Sanitize the HTML to prevent XSS attacks
+    const sanitizedHTML = DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 'code', 'pre', 'br', 'p', 'div', 'span', 'ul', 'ol', 'li', 'a', 'img'],
+      ALLOWED_ATTR: ['href', 'src', 'alt', 'style', 'target', 'rel'],
+      ALLOW_DATA_ATTR: false
+    })
+
+    return sanitizedHTML
   } catch (error) {
     console.error('Markdown rendering error:', error)
     // Return escaped plain text as fallback

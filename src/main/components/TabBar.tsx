@@ -68,10 +68,11 @@ const TabBar: React.FC<TabBarProps> = ({
 
   const handleNewAITab = async () => {
     try {
-      if (window.electronAPI && window.electronAPI.createAITab) {
+      // FIXED: Enhanced Electron API safety check
+      if (window.electronAPI?.createAITab) {
         await window.electronAPI.createAITab('AI Notes', '# AI Notes\n\nStart your notes here...')
       } else {
-        console.warn('AI tab creation not available')
+        console.warn('AI tab creation not available - Electron API not found')
       }
     } catch (error) {
       console.error('Failed to create AI tab:', error)
