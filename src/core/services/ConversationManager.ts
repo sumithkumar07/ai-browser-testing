@@ -318,9 +318,37 @@ class ConversationManager {
     return hasCompletionIndicators ? 0.8 : 0.5
   }
 
-  private calculateUserSatisfaction(_userMessages: AIMessage[]): number {
-    // Placeholder - in real implementation would analyze user feedback
-    return 0.7
+  private calculateUserSatisfaction(userMessages: AIMessage[]): number {
+    // Analyze user message patterns for satisfaction indicators
+    if (userMessages.length === 0) return 0.5
+
+    const satisfactionKeywords = ['thanks', 'thank you', 'perfect', 'great', 'awesome', 'excellent', 'helpful']
+    const dissatisfactionKeywords = ['wrong', 'bad', 'error', 'mistake', 'not working', 'failed']
+    
+    let satisfactionScore = 0
+    let totalIndicators = 0
+
+    userMessages.forEach(message => {
+      const content = message.content.toLowerCase()
+      satisfactionKeywords.forEach(keyword => {
+        if (content.includes(keyword)) {
+          satisfactionScore += 1
+          totalIndicators += 1
+        }
+      })
+      dissatisfactionKeywords.forEach(keyword => {
+        if (content.includes(keyword)) {
+          satisfactionScore -= 1
+          totalIndicators += 1
+        }
+      })
+    })
+
+    if (totalIndicators === 0) return 0.7 // Default neutral satisfaction
+    
+    // Normalize score between 0 and 1
+    const normalizedScore = (satisfactionScore + totalIndicators) / (2 * totalIndicators)
+    return Math.max(0, Math.min(1, normalizedScore))
   }
 
   getQualityReport(): object {
