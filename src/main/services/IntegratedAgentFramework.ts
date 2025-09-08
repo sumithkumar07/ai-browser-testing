@@ -122,22 +122,6 @@ export class IntegratedAgentFramework {
   }
 
   /**
-   * Check if task requires complex coordination
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private isComplexTask(input: string): boolean {
-    const complexityIndicators = [
-      'comprehensive', 'detailed', 'multiple', 'across', 'integrate', 
-      'workflow', 'compare and', 'research and analyze', 'create and send',
-      'automate and schedule', 'find and compare', 'analyze and report'
-    ]
-    
-    const lowerInput = input.toLowerCase()
-    return complexityIndicators.some(indicator => lowerInput.includes(indicator)) ||
-           input.length > 100 // Long requests often need coordination
-  }
-
-  /**
    * Cancel an active task
    */
   async cancelTask(taskId: string): Promise<{ success: boolean; error?: string }> {
