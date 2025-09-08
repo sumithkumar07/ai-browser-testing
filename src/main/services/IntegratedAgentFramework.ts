@@ -1,16 +1,12 @@
 /**
- * Integrated Agent Framework - Enhanced with Coordination
- * Updated to use unified services, conversation management, and agent coordination
+ * Integrated Agent Framework - Enhanced with Backend Services
+ * Updated to work with existing backend services and eliminate missing dependencies
  */
 
 import { createLogger } from '../../core/logger/Logger'
 import { appEvents } from '../../core/utils/EventEmitter'
 import { validateAgentTask } from '../../core/utils/Validators'
-import EnhancedAgentSystem from '../../core/services/EnhancedAgentSystem'
-import UnifiedAIService from '../../core/services/UnifiedAIService'
 import ConversationManager from '../../core/services/ConversationManager'
-import AgentCoordinator from '../../core/services/AgentCoordinator'
-// import MemoryManager from '../../core/services/MemoryManager' // Reserved for future use
 import { AgentStatus, AgentCapability, AgentTask } from '../../core/types'
 
 const logger = createLogger('IntegratedAgentFramework')
