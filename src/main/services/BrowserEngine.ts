@@ -229,8 +229,8 @@ export class BrowserEngine {
       this.state.error = null
 
       // TODO: Handle navigation options (timeout, replace) if needed
-      // const timeout = options.timeout || 30000
-      // const replace = options.replace || false
+      // const timeout = _options.timeout || 30000
+      // const replace = _options.replace || false
 
       // Emit navigation started event
       this.emitEvent({
