@@ -1,4 +1,6 @@
 // src/main/services/BrowserEngine.ts
+import { BrowserEvent as ElectronBrowserEvent } from '../types/electron'
+
 export interface BrowserTab {
   id: string
   title: string
@@ -89,7 +91,7 @@ export class BrowserEngine {
         throw new Error('BrowserEngine not initialized')
       }
 
-      if (!window.electronAPI || !window.electronAPI.createTab) {
+      if (!window.electronAPI?.createTab) {
         throw new Error('Create tab API not available')
       }
 
@@ -135,7 +137,7 @@ export class BrowserEngine {
     try {
       console.log(`🌐 Closing tab: ${tabId}`)
       
-      if (!window.electronAPI || !window.electronAPI.closeTab) {
+      if (!window.electronAPI?.closeTab) {
         throw new Error('Close tab API not available')
       }
       
@@ -178,7 +180,7 @@ export class BrowserEngine {
     try {
       console.log(`🌐 Switching to tab: ${tabId}`)
       
-      if (!window.electronAPI || !window.electronAPI.switchTab) {
+      if (!window.electronAPI?.switchTab) {
         throw new Error('Switch tab API not available')
       }
       
@@ -221,16 +223,12 @@ export class BrowserEngine {
     try {
       console.log(`🌐 Navigating to: ${url}`)
       
-      if (!window.electronAPI || !window.electronAPI.navigateTo) {
+      if (!window.electronAPI?.navigateTo) {
         throw new Error('Navigate API not available')
       }
       
       this.state.isLoading = true
       this.state.error = null
-
-      // TODO: Handle navigation options (timeout, replace) if needed
-      // const timeout = _options.timeout || 30000
-      // const replace = _options.replace || false
 
       // Emit navigation started event
       this.emitEvent({
@@ -278,7 +276,7 @@ export class BrowserEngine {
     try {
       console.log('🌐 Going back')
       
-      if (!window.electronAPI || !window.electronAPI.goBack) {
+      if (!window.electronAPI?.goBack) {
         throw new Error('Go back API not available')
       }
       
@@ -301,7 +299,7 @@ export class BrowserEngine {
     try {
       console.log('🌐 Going forward')
       
-      if (!window.electronAPI || !window.electronAPI.goForward) {
+      if (!window.electronAPI?.goForward) {
         throw new Error('Go forward API not available')
       }
       
@@ -324,7 +322,7 @@ export class BrowserEngine {
     try {
       console.log('🌐 Reloading page')
       
-      if (!window.electronAPI || !window.electronAPI.reload) {
+      if (!window.electronAPI?.reload) {
         throw new Error('Reload API not available')
       }
       
@@ -345,7 +343,7 @@ export class BrowserEngine {
 
   async getCurrentUrl(): Promise<string> {
     try {
-      if (!window.electronAPI || !window.electronAPI.getCurrentUrl) {
+      if (!window.electronAPI?.getCurrentUrl) {
         return this.state.currentUrl
       }
 
@@ -363,7 +361,7 @@ export class BrowserEngine {
 
   async getPageTitle(): Promise<string> {
     try {
-      if (!window.electronAPI || !window.electronAPI.getPageTitle) {
+      if (!window.electronAPI?.getPageTitle) {
         return 'Untitled'
       }
 
@@ -388,9 +386,9 @@ export class BrowserEngine {
 
   private setupEventListeners(): void {
     try {
-      // Browser events from main process
-      if (window.electronAPI && window.electronAPI.onBrowserEvent) {
-        window.electronAPI.onBrowserEvent((event: import('../types/electron.d.ts').BrowserEvent) => {
+      // Browser events from main process - FIXED: Proper type import
+      if (window.electronAPI?.onBrowserEvent) {
+        window.electronAPI.onBrowserEvent((event: ElectronBrowserEvent) => {
           // Convert to our local BrowserEvent type and handle
           const localEvent: BrowserEvent = {
             type: event.type as any, // Type assertion for compatibility
@@ -523,6 +521,15 @@ export class BrowserEngine {
         listeners.splice(index, 1)
       }
     }
+  }
+
+  // Cleanup method to prevent memory leaks
+  cleanup(): void {
+    this.eventListeners.clear()
+    this.state.tabs = []
+    this.state.activeTabId = null
+    this.state.currentUrl = ''
+    this.state.error = null
   }
 
   // Public utility methods

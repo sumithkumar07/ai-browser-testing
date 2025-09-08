@@ -1,5 +1,6 @@
 // Enhanced AI Sidebar with Agent Integration
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
+import DOMPurify from 'dompurify'
 import { AIMessage, AIResponse, AgentStatus } from '../types/electron'
 
 interface AISidebarProps {
@@ -47,7 +48,7 @@ const AISidebar: React.FC<AISidebarProps> = ({
   const initializeAI = async () => {
     try {
       // Check if electronAPI exists first
-      if (!window.electronAPI || !window.electronAPI.testConnection) {
+      if (!window.electronAPI?.testConnection) {
         setConnectionStatus('disconnected')
         addMessage(false, '❌ Electronic API not available. Please ensure you are running in Electron environment.')
         return
@@ -142,7 +143,8 @@ const AISidebar: React.FC<AISidebarProps> = ({
     })
   }
 
-  const formatAgentStatus = (status: AgentStatus): string => {
+  // FIXED: Memoize formatAgentStatus to prevent unnecessary re-renders
+  const formatAgentStatus = useMemo(() => (status: AgentStatus): string => {
     const statusEmoji = {
       idle: '⏸️',
       active: '⏳',
@@ -165,7 +167,7 @@ const AISidebar: React.FC<AISidebarProps> = ({
     }
     
     return message
-  }
+  }, [])
 
   const scrollToBottom = () => {
     try {
@@ -192,7 +194,7 @@ const AISidebar: React.FC<AISidebarProps> = ({
 
     try {
       // Check if electronAPI exists
-      if (!window.electronAPI || !window.electronAPI.sendAIMessage) {
+      if (!window.electronAPI?.sendAIMessage) {
         throw new Error('AI service not available')
       }
 
@@ -298,7 +300,7 @@ const AISidebar: React.FC<AISidebarProps> = ({
       )
     }
 
-    // Render markdown-like content with proper error handling
+    // FIXED: XSS Vulnerability - Sanitize content with DOMPurify
     try {
       const content = message.content
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -306,10 +308,16 @@ const AISidebar: React.FC<AISidebarProps> = ({
         .replace(/`(.*?)`/g, '<code>$1</code>')
         .replace(/\n/g, '<br>')
 
+      // Sanitize the content before rendering
+      const sanitizedContent = DOMPurify.sanitize(content, {
+        ALLOWED_TAGS: ['strong', 'em', 'code', 'br', 'p', 'div', 'span'],
+        ALLOWED_ATTR: []
+      })
+
       return (
         <div 
           className="message-content"
-          dangerouslySetInnerHTML={{ __html: content }}
+          dangerouslySetInnerHTML={{ __html: sanitizedContent }}
         />
       )
     } catch (error) {

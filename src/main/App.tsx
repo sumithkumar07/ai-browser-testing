@@ -147,15 +147,19 @@ const App: React.FC = () => {
 
       case 'tab-closed':
         if (event.tabId) {
-          setTabs(prevTabs => prevTabs.filter(tab => tab.id !== event.tabId))
-          if (event.tabId === activeTabId) {
-            const remainingTabs = tabs.filter(tab => tab.id !== event.tabId)
-            if (remainingTabs.length > 0) {
-              setActiveTabId(remainingTabs[0].id)
-            } else {
-              setActiveTabId(null)
+          // FIXED: Use functional state update to avoid stale state
+          setTabs(prevTabs => {
+            const remainingTabs = prevTabs.filter(tab => tab.id !== event.tabId)
+            // Update activeTabId if the closed tab was active
+            if (event.tabId === activeTabId) {
+              if (remainingTabs.length > 0) {
+                setActiveTabId(remainingTabs[0].id)
+              } else {
+                setActiveTabId(null)
+              }
             }
-          }
+            return remainingTabs
+          })
         }
         break
 
@@ -253,16 +257,18 @@ const App: React.FC = () => {
     try {
       const result = await window.electronAPI.closeTab(tabId)
       if (result.success) {
-        setTabs(prevTabs => prevTabs.filter(tab => tab.id !== tabId))
-        if (tabId === activeTabId) {
-          const remainingTabs = tabs.filter(tab => tab.id !== tabId)
-          if (remainingTabs.length > 0) {
-            await switchTab(remainingTabs[0].id)
-          } else {
-            setActiveTabId(null)
-            setCurrentUrl('')
+        setTabs(prevTabs => {
+          const remainingTabs = prevTabs.filter(tab => tab.id !== tabId)
+          if (tabId === activeTabId) {
+            if (remainingTabs.length > 0) {
+              switchTab(remainingTabs[0].id)
+            } else {
+              setActiveTabId(null)
+              setCurrentUrl('')
+            }
           }
-        }
+          return remainingTabs
+        })
       }
     } catch (error) {
       console.error('Failed to close tab:', error)
