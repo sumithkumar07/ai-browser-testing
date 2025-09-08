@@ -83,11 +83,24 @@ class KAiroBrowserManager {
       // Initialize Background Task Scheduler
       this.taskScheduler = new BackgroundTaskScheduler(this.databaseService)
       await this.taskScheduler.initialize()
+
+      // Initialize Enhanced Agent Services
+      const { default: AgentMemoryService } = require('../src/core/services/AgentMemoryService')
+      const { default: AgentCoordinationService } = require('../src/core/services/AgentCoordinationService')
+      
+      this.agentMemoryService = AgentMemoryService.getInstance()
+      await this.agentMemoryService.initialize()
+      
+      this.agentCoordinationService = AgentCoordinationService.getInstance()
+      await this.agentCoordinationService.initialize()
       
       console.log('✅ Enhanced Backend Services initialized successfully')
       
       // Schedule regular maintenance tasks
       await this.scheduleMaintenanceTasks()
+
+      // Start autonomous goal monitoring
+      await this.startAutonomousGoalMonitoring()
       
     } catch (error) {
       console.error('❌ Failed to initialize enhanced backend services:', error)
