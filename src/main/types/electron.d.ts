@@ -103,6 +103,7 @@ export interface ElectronAPI {
   
   // Event Listeners
   onBrowserEvent: (callback: (event: BrowserEvent) => void) => void
+  removeBrowserEventListener?: () => void
   onMenuAction: (callback: (action: string) => void) => void
   onAgentUpdate?: (callback: (status: AgentStatus) => void) => void
   
