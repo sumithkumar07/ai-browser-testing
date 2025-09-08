@@ -39,32 +39,33 @@ export class IntegratedAgentFramework {
 
   async initialize(): Promise<void> {
     if (this.isInitialized) {
-      logger.warn('Agent Framework already initialized')
+      logger.warn('IntegratedAgentFramework already initialized')
       return
     }
 
+    logger.info('Initializing Integrated Agent Framework...')
+
     try {
-      logger.info('Initializing Integrated Agent Framework')
+      // Initialize conversation manager
+      await this.conversationManager.initialize()
 
-      // Initialize AI service
-      await this.aiService.initialize()
-
-      // Register built-in agents
-      this.registerAgent(new ResearchAgent(this.aiService))
-      this.registerAgent(new NavigationAgent())
-      this.registerAgent(new AnalysisAgent(this.aiService))
-      this.registerAgent(new ShoppingAgent(this.aiService))
-      this.registerAgent(new CommunicationAgent(this.aiService))
-      this.registerAgent(new AutomationAgent(this.aiService))
+      // Register default agents
+      this.registerAgents()
 
       // Set up event listeners
       this.setupEventListeners()
 
       this.isInitialized = true
-      logger.info('Agent Framework initialized successfully')
+      logger.info('✅ Integrated Agent Framework initialized successfully')
+
+      // Emit initialization event
+      appEvents.emit('agent-framework:initialized', { 
+        timestamp: Date.now(),
+        agentCount: this.agents.size 
+      })
 
     } catch (error) {
-      logger.error('Failed to initialize Agent Framework', error as Error)
+      logger.error('Failed to initialize Integrated Agent Framework', error as Error)
       throw error
     }
   }
