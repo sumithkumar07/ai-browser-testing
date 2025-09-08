@@ -49,16 +49,14 @@ const App: React.FC = () => {
 
       // Initialize Agent Framework - PERFORMANCE: Lazy load
       logger.debug('Initializing Agent Framework')
-      const { default: IntegratedAgentFrameworkClass } = await IntegratedAgentFramework
-      const agentFramework = IntegratedAgentFrameworkClass.getInstance()
+      const { default: AgentFrameworkClass } = await IntegratedAgentFramework
+      const agentFramework = AgentFrameworkClass.getInstance()
       await agentFramework.initialize()
 
       // Set up event listeners
       setupEventListeners()
 
-      // Set up agent event listeners - PERFORMANCE: Lazy load
-      const { default: IntegratedAgentFrameworkClass } = await IntegratedAgentFramework
-      const agentFramework = IntegratedAgentFrameworkClass.getInstance()
+      // Set up agent event listeners - PERFORMANCE: Use existing instance
       agentFramework.addEventListener('agent-update', (status: AgentStatus) => {
         logger.debug('Agent status update received', status)
         setAgentStatus(status)
