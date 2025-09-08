@@ -19,7 +19,6 @@ const logger = createLogger('App')
 
 const App: React.FC = () => {
   const [tabs, setTabs] = useState<Tab[]>([])
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [activeTabId, setActiveTabId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [currentUrl, setCurrentUrl] = useState('')
