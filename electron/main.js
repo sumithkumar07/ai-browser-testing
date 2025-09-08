@@ -5,12 +5,12 @@ require('dotenv').config()
 
 console.log('🔑 Environment variables loaded:', process.env.GROQ_API_KEY ? 'YES' : 'NO')
 
-// Import enhanced agentic services (compiled from TypeScript)
-let AgentMemoryService, AgentCoordinationService, AutonomousPlanningEngine, EnhancedIntegratedAgentFramework
+// Import enhanced backend services - ZERO UI IMPACT
+let DatabaseService, AgentPerformanceMonitor, BackgroundTaskScheduler, EnhancedAgentMemoryService
 try {
-  // These will be available after TypeScript compilation
-  console.log('🤖 Loading enhanced agentic services...')
-  // Services will be dynamically loaded when needed
+  // Dynamic imports for compiled TypeScript services
+  console.log('🤖 Loading enhanced backend services...')
+  // Services will be initialized during startup
 } catch (error) {
   console.log('⚠️  Enhanced services not compiled yet, using basic mode')
 }
