@@ -429,15 +429,17 @@ const App: React.FC = () => {
             />
           </ErrorBoundary>
           
-          {/* LOCKED: AI Assistant Panel (30% width) */}
+          {/* LOCKED: AI Assistant Panel (30% width) - PERFORMANCE: Lazy loaded */}
           {aiSidebarOpen && (
             <ErrorBoundary fallback={<div className="error-fallback">AI sidebar error</div>}>
-              <AISidebar
-                onClose={() => setAISidebarOpen(false)}
-                currentUrl={currentUrl}
-                onAgentTask={handleAgentTask}
-                agentStatus={agentStatus}
-              />
+              <Suspense fallback={<div className="ai-sidebar-loading">Loading AI Assistant...</div>}>
+                <AISidebar
+                  onClose={() => setAISidebarOpen(false)}
+                  currentUrl={currentUrl}
+                  onAgentTask={handleAgentTask}
+                  agentStatus={agentStatus}
+                />
+              </Suspense>
             </ErrorBoundary>
           )}
         </div>
