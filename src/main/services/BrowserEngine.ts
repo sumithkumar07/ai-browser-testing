@@ -541,11 +541,22 @@ export class BrowserEngine {
 
   // Cleanup method to prevent memory leaks
   cleanup(): void {
+    // Remove event listeners
+    this.removeBrowserEventListener()
+    
+    // Clear all local event listeners
     this.eventListeners.clear()
+    
+    // Reset state
     this.state.tabs = []
     this.state.activeTabId = null
     this.state.currentUrl = ''
     this.state.error = null
+    
+    // Reset initialization flag
+    this.isInitialized = false
+    
+    console.log('🧹 BrowserEngine cleaned up successfully')
   }
 
   // Public utility methods
