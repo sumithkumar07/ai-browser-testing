@@ -82,7 +82,8 @@ function analyzeAgentTaskTest(task) {
   
   const automationKeywords = {
     'automate': 10, 'schedule': 8, 'automatic': 8, 'recurring': 6,
-    'routine': 6, 'make this': 6, 'set up': 6
+    'routine': 8, 'make this': 6, 'set up': 6, 'daily routine': 12,
+    'create routine': 12, 'daily': 6
   };
   
   // Calculate scores
