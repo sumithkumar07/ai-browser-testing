@@ -168,13 +168,13 @@ class DatabaseService {
       bookmark.title,
       bookmark.url,
       bookmark.description,
-      JSON.stringify(bookmark.tags),
-      bookmark.createdAt,
-      bookmark.updatedAt,
-      bookmark.visitCount,
-      bookmark.lastVisited,
-      bookmark.favicon,
-      bookmark.category
+      JSON.stringify(bookmark.tags || []),
+      bookmark.createdAt || Date.now(),
+      bookmark.updatedAt || Date.now(),
+      bookmark.visitCount || 0,
+      bookmark.lastVisited || Date.now(),
+      bookmark.favicon || null,
+      bookmark.category || 'general'
     );
   }
 
