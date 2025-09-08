@@ -1565,24 +1565,28 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
         'link': 4, 'redirect': 4, 'load page': 4, 'show page': 4, 'bring up': 4
       }
       
-      // Enhanced Shopping keywords with product category intelligence
+      // IMPROVED Shopping keywords with enhanced product intelligence
       const shoppingKeywords = {
-        // Ultra-high priority shopping terms (weight: 8)
-        'compare prices': 8, 'find best price': 8, 'price comparison': 8, 'shopping research': 8,
-        // High priority shopping terms (weight: 6)
-        'buy': 6, 'purchase': 6, 'shopping': 6, 'compare': 6, 'price': 6, 'prices': 6,
-        'best price': 6, 'find price': 6, 'product search': 6,
-        // Medium priority shopping terms (weight: 4)
-        'shop': 4, 'cost': 4, 'product': 4, 'deal': 4, 'discount': 4, 'sale': 4,
-        'find best': 4, 'best deal': 4, 'cheapest': 4, 'affordable': 4, 'budget': 4,
-        // Product categories with higher weights (weight: 5)
-        'laptop': 5, 'phone': 5, 'computer': 5, 'tablet': 5, 'electronics': 5,
-        'smartphone': 5, 'iphone': 5, 'android': 5, 'macbook': 5, 'gaming': 5,
-        // Additional product categories (weight: 4)
-        'camera': 4, 'headphones': 4, 'speaker': 4, 'keyboard': 4, 'mouse': 4,
-        'monitor': 4, 'tv': 4, 'watch': 4, 'accessories': 4, 'gadgets': 4,
-        // Shopping context terms (weight: 3)
-        'cheap': 3, 'review': 3, 'rating': 3, 'order': 3, 'checkout': 3, 'cart': 3
+        // Ultra-high priority shopping terms (weight: 12) - INCREASED
+        'compare prices': 12, 'find best price': 12, 'price comparison': 12, 'shopping research': 12,
+        'price check': 12, 'shop for': 12, 'buy online': 12,
+        // High priority shopping terms (weight: 10) - INCREASED  
+        'buy': 10, 'purchase': 10, 'shopping': 10, 'compare': 8, 'price': 8, 'prices': 8,
+        'best price': 10, 'find price': 10, 'product search': 10, 'want to buy': 10,
+        // Enhanced shopping intent (weight: 8) - NEW
+        'need to buy': 8, 'looking to purchase': 8, 'shopping for': 8, 'in the market for': 8,
+        // Medium priority shopping terms (weight: 6) - IMPROVED
+        'shop': 6, 'cost': 6, 'product': 6, 'deal': 6, 'discount': 6, 'sale': 6,
+        'find best': 6, 'best deal': 6, 'cheapest': 6, 'affordable': 6, 'budget': 6,
+        // Product categories with higher weights (weight: 7) - INCREASED
+        'laptop': 7, 'phone': 7, 'computer': 7, 'tablet': 7, 'electronics': 7,
+        'smartphone': 7, 'iphone': 7, 'android': 7, 'macbook': 7, 'gaming': 7,
+        // Additional product categories (weight: 5) - IMPROVED
+        'camera': 5, 'headphones': 5, 'speaker': 5, 'keyboard': 5, 'mouse': 5,
+        'monitor': 5, 'tv': 5, 'watch': 5, 'accessories': 5, 'gadgets': 5,
+        // Shopping context terms (weight: 4) - IMPROVED
+        'cheap': 4, 'review': 4, 'rating': 4, 'order': 4, 'checkout': 4, 'cart': 4,
+        'store': 4, 'retailer': 4, 'vendor': 4, 'marketplace': 4
       }
       
       // Enhanced Communication keywords with intent recognition
