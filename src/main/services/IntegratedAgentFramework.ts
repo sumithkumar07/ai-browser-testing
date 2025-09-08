@@ -199,6 +199,7 @@ export class IntegratedAgentFramework {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private emitEvent(event: string, data: any): void {
     const listeners = this.eventListeners.get(event)
     if (listeners) {
