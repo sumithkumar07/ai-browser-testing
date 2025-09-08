@@ -228,12 +228,9 @@ export class BrowserEngine {
       this.state.isLoading = true
       this.state.error = null
 
-      // Handle options if provided
-      const _timeout = options.timeout || 30000 // 30 second default timeout
-      const _replace = options.replace || false
-
-      // TODO: Implement timeout and replace functionality
-      // For now, we acknowledge the options but don't use them yet
+      // TODO: Handle navigation options (timeout, replace) if needed
+      // const timeout = options.timeout || 30000
+      // const replace = options.replace || false
 
       // Emit navigation started event
       this.emitEvent({
