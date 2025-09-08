@@ -38,8 +38,15 @@ const AISidebar: React.FC<AISidebarProps> = ({
 
   const initializeAI = async () => {
     try {
+      // Check if electronAPI exists first
+      if (!window.electronAPI || !window.electronAPI.testConnection) {
+        setConnectionStatus('disconnected')
+        addMessage(false, '❌ Electronic API not available. Please ensure you are running in Electron environment.')
+        return
+      }
+
       const result = await window.electronAPI.testConnection()
-      if (result.success) {
+      if (result && result.success) {
         setConnectionStatus('connected')
         addMessage(false, `🤖 **Hello! I'm KAiro, your enhanced AI assistant with intelligent agent coordination.**
 
@@ -88,11 +95,12 @@ const AISidebar: React.FC<AISidebarProps> = ({
 • "automate this repetitive workflow"`)
       } else {
         setConnectionStatus('disconnected')
-        addMessage(false, 'I\'m currently unable to connect to the AI service. Please check your internet connection and try again.')
+        addMessage(false, '⚠️ Unable to connect to AI service. Please check your GROQ API key and internet connection.')
       }
     } catch (error) {
       setConnectionStatus('disconnected')
-      addMessage(false, 'I encountered an error while initializing. Please try refreshing the application or check your connection.')
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      addMessage(false, `❌ Connection error: ${errorMessage}. Please try refreshing the application.`)
     }
   }
 
@@ -140,7 +148,7 @@ const AISidebar: React.FC<AISidebarProps> = ({
       message += `\n📋 Task: ${status.currentTask}`
     }
     
-    if (status.progress !== undefined) {
+    if (status.progress !== undefined && status.progress !== null) {
       message += `\n📊 Progress: ${Math.round(status.progress)}%`
     }
     
@@ -152,13 +160,20 @@ const AISidebar: React.FC<AISidebarProps> = ({
   }
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    try {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    } catch (error) {
+      // Fallback for older browsers
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight
+      }
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!inputValue.trim() || isLoading) return
+    if (!inputValue.trim() || isLoading || connectionStatus !== 'connected') return
 
     const userMessage = inputValue.trim()
     setInputValue('')
@@ -168,6 +183,11 @@ const AISidebar: React.FC<AISidebarProps> = ({
     addMessage(true, userMessage)
 
     try {
+      // Check if electronAPI exists
+      if (!window.electronAPI || !window.electronAPI.sendAIMessage) {
+        throw new Error('AI service not available')
+      }
+
       // Add loading message
       addMessage(false, '🤖 Processing your request...', true)
 
@@ -177,30 +197,40 @@ const AISidebar: React.FC<AISidebarProps> = ({
       // Remove loading message
       setMessages(prev => prev.filter(msg => !msg.isLoading))
 
-      if (result.success) {
+      if (result && result.success) {
         addMessage(false, result.result || 'Task initiated successfully')
         
         // Execute agent task if this is a complex request
         if (shouldExecuteAgentTask(userMessage)) {
           addMessage(false, '🔄 Executing agent task...')
-          onAgentTask(userMessage)
+          try {
+            onAgentTask(userMessage)
+          } catch (agentError) {
+            addMessage(false, `⚠️ Agent task warning: ${agentError instanceof Error ? agentError.message : 'Unknown error'}`)
+          }
         }
         
         // Execute actions if any
-        if (result.actions && result.actions.length > 0) {
+        if (result.actions && Array.isArray(result.actions) && result.actions.length > 0) {
           for (const action of result.actions) {
-            if (action.type === 'navigate' && action.target) {
-              await window.electronAPI.navigateTo(action.target)
+            try {
+              if (action.type === 'navigate' && action.target && window.electronAPI.navigateTo) {
+                await window.electronAPI.navigateTo(action.target)
+              }
+            } catch (actionError) {
+              addMessage(false, `⚠️ Action warning: ${actionError instanceof Error ? actionError.message : 'Action failed'}`)
             }
           }
         }
       } else {
-        addMessage(false, `❌ Error: ${result.error || 'Unknown error occurred'}`)
+        const errorMsg = result?.error || 'Unknown error occurred'
+        addMessage(false, `❌ Error: ${errorMsg}`)
       }
     } catch (error) {
       // Remove loading message
       setMessages(prev => prev.filter(msg => !msg.isLoading))
-      addMessage(false, `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      addMessage(false, `❌ Error: ${errorMessage}`)
     } finally {
       setIsLoading(false)
     }
@@ -236,10 +266,14 @@ const AISidebar: React.FC<AISidebarProps> = ({
   }
 
   const formatTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    })
+    try {
+      return new Date(timestamp).toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })
+    } catch (error) {
+      return 'Invalid time'
+    }
   }
 
   const renderMessageContent = (message: AIMessage) => {
@@ -256,19 +290,27 @@ const AISidebar: React.FC<AISidebarProps> = ({
       )
     }
 
-    // Render markdown-like content
-    const content = message.content
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`(.*?)`/g, '<code>$1</code>')
-      .replace(/\n/g, '<br>')
+    // Render markdown-like content with proper error handling
+    try {
+      const content = message.content
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`(.*?)`/g, '<code>$1</code>')
+        .replace(/\n/g, '<br>')
 
-    return (
-      <div 
-        className="message-content"
-        dangerouslySetInnerHTML={{ __html: content }}
-      />
-    )
+      return (
+        <div 
+          className="message-content"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      )
+    } catch (error) {
+      return (
+        <div className="message-content">
+          {message.content}
+        </div>
+      )
+    }
   }
 
   const quickActions = [
@@ -310,11 +352,17 @@ const AISidebar: React.FC<AISidebarProps> = ({
     }
   ]
 
+  const handleQuickAction = (action: string) => {
+    if (!isLoading && connectionStatus === 'connected') {
+      setInputValue(action)
+    }
+  }
+
   return (
     <div className="ai-sidebar">
       <div className="ai-sidebar-header">
         <h3 className="ai-sidebar-title">🤖 AI Assistant</h3>
-        <button className="ai-sidebar-close" onClick={onClose}>
+        <button className="ai-sidebar-close" onClick={onClose} aria-label="Close AI sidebar">
           ×
         </button>
       </div>
@@ -357,8 +405,8 @@ const AISidebar: React.FC<AISidebarProps> = ({
               <button
                 key={index}
                 className="quick-action-btn"
-                onClick={() => setInputValue(action.action)}
-                disabled={isLoading}
+                onClick={() => handleQuickAction(action.action)}
+                disabled={isLoading || connectionStatus !== 'connected'}
               >
                 {action.label}
               </button>
@@ -373,7 +421,7 @@ const AISidebar: React.FC<AISidebarProps> = ({
                 onChange={handleInputChange}
                 placeholder="Ask me anything... I can control the browser to help you research, navigate, and analyze content."
                 rows={1}
-                disabled={isLoading}
+                disabled={isLoading || connectionStatus !== 'connected'}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault()
@@ -384,7 +432,8 @@ const AISidebar: React.FC<AISidebarProps> = ({
               <button
                 type="submit"
                 className="ai-send-button"
-                disabled={!inputValue.trim() || isLoading}
+                disabled={!inputValue.trim() || isLoading || connectionStatus !== 'connected'}
+                aria-label="Send message"
               >
                 {isLoading ? '⏳' : '📤'}
               </button>
