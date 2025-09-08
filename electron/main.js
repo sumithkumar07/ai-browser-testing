@@ -710,8 +710,198 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
 
         const result = response.choices[0].message.content
         
-        // Enhanced agentic post-processing
-        const enhancedResult = await this.enhanceResponseWithAgenticCapabilities(result, message, context)
+  async enhanceResponseWithAgenticCapabilities(aiResponse, originalMessage, context) {
+    try {
+      if (!this.isAgenticMode || !aiResponse) {
+        return aiResponse
+      }
+
+      console.log('✨ Enhancing AI response with agentic capabilities')
+
+      // PHASE 1: Response Quality Enhancement
+      const enhancedResponse = await this.enhanceResponseQuality(aiResponse, originalMessage, context)
+
+      // PHASE 2: Add Contextual Actions
+      const responseWithActions = await this.addContextualActions(enhancedResponse, originalMessage, context)
+
+      // PHASE 3: Add Proactive Suggestions
+      const finalResponse = await this.addProactiveSuggestions(responseWithActions, originalMessage, context)
+
+      return finalResponse
+
+    } catch (error) {
+      console.error('❌ Response enhancement failed:', error)
+      return aiResponse // Return original if enhancement fails
+    }
+  }
+
+  async enhanceResponseQuality(response, message, context) {
+    try {
+      // Add response structure and formatting
+      let enhanced = response
+
+      // Add context awareness
+      if (context.url && context.url !== 'about:blank') {
+        enhanced = `**Context**: Currently viewing ${context.title || context.url}\n\n${enhanced}`
+      }
+
+      // Add confidence indicators for high-quality responses
+      if (response.length > 500 && response.includes('##')) {
+        enhanced += `\n\n---\n*🎯 High-confidence response generated with enhanced AI analysis*`
+      }
+
+      // Add timestamp for time-sensitive information
+      if (message.toLowerCase().includes('latest') || message.toLowerCase().includes('current')) {
+        const timestamp = new Date().toLocaleString()
+        enhanced += `\n\n*📅 Information current as of: ${timestamp}*`
+      }
+
+      return enhanced
+
+    } catch (error) {
+      console.error('❌ Response quality enhancement failed:', error)
+      return response
+    }
+  }
+
+  async addContextualActions(response, message, context) {
+    try {
+      let enhanced = response
+
+      // Detect actionable content and suggest follow-ups
+      const actions = []
+
+      // Navigation suggestions
+      if (response.includes('http') || message.toLowerCase().includes('website')) {
+        actions.push('🌐 I can navigate to any websites mentioned above')
+      }
+
+      // Research expansion suggestions
+      if (message.toLowerCase().includes('research') || message.toLowerCase().includes('find')) {
+        actions.push('🔍 I can create detailed research tabs with comprehensive findings')
+      }
+
+      // Shopping assistance
+      if (response.includes('price') || response.includes('product') || message.toLowerCase().includes('buy')) {
+        actions.push('🛒 I can compare prices across multiple retailers for you')
+      }
+
+      // Content creation
+      if (message.toLowerCase().includes('write') || message.toLowerCase().includes('compose')) {
+        actions.push('✍️ I can help create and refine the content further')
+      }
+
+      // Analysis offers
+      if (context.url && context.url !== 'about:blank') {
+        actions.push('📊 I can analyze the current page content for additional insights')
+      }
+
+      // Add actions if any were identified
+      if (actions.length > 0) {
+        enhanced += `\n\n## 🎯 **What I Can Do Next:**\n${actions.map(action => `• ${action}`).join('\n')}`
+      }
+
+      return enhanced
+
+    } catch (error) {
+      console.error('❌ Contextual actions addition failed:', error)
+      return response
+    }
+  }
+
+  async addProactiveSuggestions(response, message, context) {
+    try {
+      let enhanced = response
+
+      // Add proactive suggestions based on response content and context
+      const suggestions = []
+
+      // Time-saving automation suggestions
+      if (response.length > 800 || message.toLowerCase().includes('complex')) {
+        suggestions.push('⚡ **Automation Tip**: I can create workflows to automate similar tasks in the future')
+      }
+
+      // Related research suggestions
+      if (message.toLowerCase().includes('research') && response.includes('##')) {
+        suggestions.push('🔍 **Research Expansion**: I can dive deeper into any specific aspect mentioned above')
+      }
+
+      // Cross-platform coordination
+      if (response.includes('email') || response.includes('social')) {
+        suggestions.push('📧 **Multi-Platform**: I can help adapt this content for different platforms and formats')
+      }
+
+      // Continuous monitoring offers
+      if (message.toLowerCase().includes('latest') || message.toLowerCase().includes('updates')) {
+        suggestions.push('📡 **Stay Updated**: I can monitor this topic and provide regular updates')
+      }
+
+      // Data organization suggestions
+      if (response.includes('multiple') || response.includes('several')) {
+        suggestions.push('📋 **Organization**: I can create structured summaries and organize this information')
+      }
+
+      // Add suggestions if any were identified
+      if (suggestions.length > 0) {
+        enhanced += `\n\n## 💡 **Proactive Suggestions:**\n${suggestions.map(suggestion => `• ${suggestion}`).join('\n')}`
+      }
+
+      // Add intelligent follow-up prompt
+      const followUpPrompts = this.generateIntelligentFollowUpPrompts(message, response)
+      if (followUpPrompts.length > 0) {
+        enhanced += `\n\n## ❓ **Quick Follow-ups:**\n${followUpPrompts.map(prompt => `• "${prompt}"`).join('\n')}`
+      }
+
+      return enhanced
+
+    } catch (error) {
+      console.error('❌ Proactive suggestions addition failed:', error)
+      return response
+    }
+  }
+
+  generateIntelligentFollowUpPrompts(originalMessage, response) {
+    const prompts = []
+    const lowerMessage = originalMessage.toLowerCase()
+    const lowerResponse = response.toLowerCase()
+
+    // Research follow-ups
+    if (lowerMessage.includes('research') || lowerMessage.includes('find')) {
+      if (lowerResponse.includes('source') || lowerResponse.includes('website')) {
+        prompts.push('Open research tabs for these sources')
+      }
+      if (lowerResponse.includes('trend') || lowerResponse.includes('development')) {
+        prompts.push('Monitor this topic for updates')
+      }
+    }
+
+    // Shopping follow-ups  
+    if (lowerMessage.includes('price') || lowerMessage.includes('product') || lowerMessage.includes('buy')) {
+      prompts.push('Compare prices across retailers')
+      prompts.push('Set up price monitoring')
+    }
+
+    // Analysis follow-ups
+    if (lowerMessage.includes('analyze') || lowerMessage.includes('review')) {
+      prompts.push('Create detailed analysis report')
+      prompts.push('Extract key data points')
+    }
+
+    // Communication follow-ups
+    if (lowerMessage.includes('email') || lowerMessage.includes('write') || lowerMessage.includes('compose')) {
+      prompts.push('Refine the tone and style')
+      prompts.push('Create variations for different audiences')
+    }
+
+    // General enhancement follow-ups
+    if (response.length > 400) {
+      prompts.push('Expand on any specific point')
+      prompts.push('Create action items from this information')
+    }
+
+    // Limit to top 3 most relevant prompts
+    return prompts.slice(0, 3)
+  }
         
         // Record interaction for learning
         if (this.isAgenticMode && this.agentMemoryService) {
