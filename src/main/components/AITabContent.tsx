@@ -18,7 +18,7 @@ const AITabContent: React.FC<AITabContentProps> = ({ tab, onContentChange }) => 
   useEffect(() => {
     // Load content from local storage if available
     loadTabContent()
-  }, [tab.id])
+  }, [tab.id, loadTabContent])
 
   useEffect(() => {
     // Auto-save content changes with debouncing
