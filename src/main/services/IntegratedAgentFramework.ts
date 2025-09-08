@@ -22,20 +22,12 @@ export interface Agent {
 export class IntegratedAgentFramework {
   private static instance: IntegratedAgentFramework
   private agents: Map<string, Agent> = new Map()
-  private agentSystem: EnhancedAgentSystem
-  private aiService: UnifiedAIService
   private conversationManager: ConversationManager
-  private agentCoordinator: AgentCoordinator
-  // private memoryManager: MemoryManager // Reserved for advanced memory management
   private eventListeners: Map<string, Function[]> = new Map()
   private isInitialized = false
 
   private constructor() {
-    this.agentSystem = EnhancedAgentSystem.getInstance()
-    this.aiService = UnifiedAIService.getInstance()
     this.conversationManager = ConversationManager.getInstance()
-    this.agentCoordinator = AgentCoordinator.getInstance()
-    // this.memoryManager = MemoryManager.getInstance() // Reserved for future use
   }
 
   static getInstance(): IntegratedAgentFramework {
