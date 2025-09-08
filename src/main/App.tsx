@@ -349,10 +349,10 @@ const App: React.FC = () => {
     setAISidebarOpen(!aiSidebarOpen)
   }
 
-  // Phase 4: Agent Task Execution Integration - PERFORMANCE: Lazy load
+  // Phase 4: Agent Task Execution Integration - PERFORMANCE: Dynamic import
   const handleAgentTask = async (task: string) => {
     try {
-      const { default: IntegratedAgentFrameworkClass } = await IntegratedAgentFramework
+      const { default: IntegratedAgentFrameworkClass } = await import('./services/IntegratedAgentFramework')
       const result = await IntegratedAgentFrameworkClass.getInstance().processUserInput(task)
       if (result.success) {
         console.log('✅ Agent task completed:', result)
