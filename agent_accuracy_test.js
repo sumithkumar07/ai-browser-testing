@@ -76,7 +76,8 @@ function analyzeAgentTaskTest(task) {
   
   const analysisKeywords = {
     'analyze': 10, 'summarize': 8, 'what does this': 8,
-    'explain': 4, 'break down': 12, 'this page': 12
+    'explain': 4, 'break down': 12, 'this page': 12,
+    'what does': 8, 'mean': 6
   };
   
   const automationKeywords = {
