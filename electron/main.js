@@ -123,30 +123,6 @@ class KAiroBrowserManager {
       console.error('❌ Failed to schedule maintenance tasks:', error)
     }
   }
-      
-      this.autonomousPlanningEngine = {
-        createGoal: async (goalData) => {
-          console.log(`🎯 Created autonomous goal: ${goalData.description}`)
-          return `goal_${Date.now()}`
-        },
-        createExecutionPlan: async (goalId) => {
-          console.log(`📋 Created execution plan for goal: ${goalId}`)
-          return `plan_${Date.now()}`
-        },
-        executeAutonomously: async (planId) => {
-          console.log(`⚡ Executing plan autonomously: ${planId}`)
-          // This would run in background in production
-        }
-      }
-      
-      console.log('✅ Enhanced Agentic Services initialized (placeholder mode)')
-      
-    } catch (error) {
-      console.error('❌ Failed to initialize agentic services:', error)
-      // Continue with basic mode if agentic services fail
-      this.isAgenticMode = false
-    }
-  }
 
   async initializeAIService() {
     try {
