@@ -88,6 +88,15 @@ export const APP_CONSTANTS = {
     AGENT_TASK: 300000,
     AUTO_SAVE: 1000,
     CONNECTION_CHECK: 5000
+  },
+
+  // Validation Limits
+  LIMITS: {
+    MAX_TASK_LENGTH: 10000,
+    MAX_URL_LENGTH: 2048,
+    MAX_TAB_ID_LENGTH: 100,
+    MAX_MESSAGE_CONTENT_LENGTH: 50000,
+    MIN_TASK_LENGTH: 1
   }
 } as const
 
