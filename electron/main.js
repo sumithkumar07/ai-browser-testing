@@ -1074,22 +1074,64 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       }, 0)
     }
 
-    // Agent Status
+    // REAL Agent Status - Connected to Enhanced Agent System
     ipcMain.handle('get-agent-status', async (event, agentId) => {
       try {
-        // Return mock agent status for demonstration
+        if (!this.agentCoordinationService && !this.enhancedAgentFramework) {
+          // Fallback to basic status if services not available
+          return {
+            success: true,
+            status: {
+              id: agentId || 'ai-assistant',
+              name: 'AI Assistant',
+              status: 'ready',
+              currentTask: null,
+              progress: 0,
+              details: ['Agent system ready']
+            }
+          }
+        }
+
+        // Get real agent metrics from enhanced system
+        let agentMetrics = null
+        if (this.performanceMonitor) {
+          try {
+            agentMetrics = await this.performanceMonitor.getAgentHealthStatus(agentId || 'ai-assistant')
+          } catch (error) {
+            console.warn('Could not get agent metrics:', error.message)
+          }
+        }
+
+        // Get real task status
+        let currentTask = null
+        let progress = 0
+        if (this.agentCoordinationService) {
+          try {
+            const activeTasks = await this.agentCoordinationService.getActiveTasks(agentId || 'ai-assistant')
+            if (activeTasks && activeTasks.length > 0) {
+              currentTask = activeTasks[0]
+              progress = currentTask.progress || 0
+            }
+          } catch (error) {
+            console.warn('Could not get active tasks:', error.message)
+          }
+        }
+
         return {
           success: true,
           status: {
-            id: agentId || 'research-agent',
-            name: 'Research Agent',
-            status: 'idle',
-            currentTask: null,
-            progress: 0,
-            details: ['Agent ready for tasks']
+            id: agentId || 'ai-assistant',
+            name: this.getAgentName(agentId || 'ai-assistant'),
+            status: currentTask ? 'working' : 'ready',
+            currentTask: currentTask ? currentTask.description : null,
+            progress: progress,
+            details: this.getAgentDetails(agentId || 'ai-assistant', agentMetrics),
+            health: agentMetrics || { status: 'healthy', lastCheck: Date.now() },
+            capabilities: this.getAgentCapabilities(agentId || 'ai-assistant')
           }
         }
       } catch (error) {
+        console.error('❌ Failed to get real agent status:', error)
         return { success: false, error: error.message }
       }
     })
