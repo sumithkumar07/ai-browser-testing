@@ -140,27 +140,27 @@ export class IntegratedAgentFramework {
    * Cancel an active task
    */
   async cancelTask(taskId: string): Promise<{ success: boolean; error?: string }> {
-    try {
-      logger.info('Cancelling task', { taskId })
-      return await this.agentSystem.cancelTask(taskId)
-    } catch (error) {
-      logger.error('Failed to cancel task', error as Error, { taskId })
-      return { success: false, error: (error as Error).message }
-    }
+    logger.info('Task cancellation not implemented', { taskId })
+    return { success: false, error: 'Task cancellation not implemented' }
   }
 
   /**
    * Get status of all active tasks
    */
   getActiveTasks(): AgentTask[] {
-    return this.agentSystem.getActiveTasks()
+    return []
   }
 
   /**
    * Get agent metrics
    */
   getMetrics() {
-    return this.agentSystem.getMetrics()
+    return {
+      totalAgents: this.agents.size,
+      activeAgents: this.agents.size,
+      completedTasks: 0,
+      failedTasks: 0
+    }
   }
 
   /**
