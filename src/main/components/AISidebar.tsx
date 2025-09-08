@@ -70,32 +70,6 @@ const AISidebar: React.FC<AISidebarProps> = ({
     })
   }, [])
 
-  // PERFORMANCE: Memoize formatAgentStatus to prevent unnecessary re-renders
-  const formatAgentStatus = useCallback((status: AgentStatus): string => {
-    const statusEmoji = {
-      idle: '⏸️',
-      active: '⏳',
-      completed: '✅',
-      error: '❌'
-    }
-
-    let message = `${statusEmoji[status.status]} **${status.name}**: ${status.status.toUpperCase()}`
-    
-    if (status.currentTask) {
-      message += `\n📋 Task: ${status.currentTask}`
-    }
-    
-    if (status.progress !== undefined && status.progress !== null) {
-      message += `\n📊 Progress: ${Math.round(status.progress)}%`
-    }
-    
-    if (status.details && status.details.length > 0) {
-      message += '\n\n**Details:**\n' + status.details.map(detail => `• ${detail}`).join('\n')
-    }
-    
-    return message
-  }, [])
-
   useEffect(() => {
     scrollToBottom()
   }, [messages])
