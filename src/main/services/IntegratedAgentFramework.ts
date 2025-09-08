@@ -49,8 +49,10 @@ export class IntegratedAgentFramework {
       // Initialize conversation manager
       await this.conversationManager.initialize()
 
-      // Register default agents
+      // Register simplified navigation agent
       this.registerAgent(new NavigationAgent())
+      
+      logger.debug(`Registered ${this.agents.size} agents`)
 
       // Set up event listeners
       this.setupEventListeners()
