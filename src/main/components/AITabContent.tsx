@@ -15,39 +15,6 @@ const AITabContent: React.FC<AITabContentProps> = ({ tab, onContentChange }) => 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  useEffect(() => {
-    // Load content from local storage if available
-    loadTabContent()
-  }, [tab.id, loadTabContent])
-
-  useEffect(() => {
-    // Auto-save content changes with debouncing
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current)
-    }
-
-    saveTimeoutRef.current = setTimeout(() => {
-      if (content !== tab.content) {
-        saveContent()
-      }
-    }, 1000) // Save after 1 second of no changes
-
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current)
-      }
-    }
-  }, [content, tab.content, saveContent])
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current)
-      }
-    }
-  }, [])
-
   const loadTabContent = useCallback(async () => {
     try {
       if (window.electronAPI && window.electronAPI.loadAITabContent) {
@@ -81,6 +48,39 @@ const AITabContent: React.FC<AITabContentProps> = ({ tab, onContentChange }) => 
       setSaveStatus('error')
     }
   }, [content, onContentChange, tab.id])
+
+  useEffect(() => {
+    // Load content from local storage if available
+    loadTabContent()
+  }, [tab.id, loadTabContent])
+
+  useEffect(() => {
+    // Auto-save content changes with debouncing
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
+
+    saveTimeoutRef.current = setTimeout(() => {
+      if (content !== tab.content) {
+        saveContent()
+      }
+    }, 1000) // Save after 1 second of no changes
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+    }
+  }, [content, tab.content, saveContent])
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value)
