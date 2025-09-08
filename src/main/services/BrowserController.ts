@@ -20,24 +20,27 @@ export class BrowserController {
   }
 
   private setupAgentControls() {
+    // FIXED: Add Electron API safety check
+    if (!window.electronAPI) {
+      console.warn('⚠️ Electron API not available - agent controls will be limited')
+      return
+    }
+
     // Enhance window.electronAPI with agent-specific controls
-    if (window.electronAPI) {
-      // Add agent browser control methods safely
-      try {
-        window.electronAPI.createAITab = this.createAITab.bind(this)
-        window.electronAPI.extractPageContent = this.extractPageContent.bind(this)
-        window.electronAPI.executeAgentTask = this.executeAgentTask.bind(this)
-        window.electronAPI.getAgentStatus = this.getAgentStatus.bind(this)
-      } catch (error) {
-        console.warn('Failed to setup some agent controls:', error)
-      }
+    try {
+      window.electronAPI.createAITab = this.createAITab.bind(this)
+      window.electronAPI.extractPageContent = this.extractPageContent.bind(this)
+      window.electronAPI.executeAgentTask = this.executeAgentTask.bind(this)
+      window.electronAPI.getAgentStatus = this.getAgentStatus.bind(this)
+    } catch (error) {
+      console.warn('Failed to setup some agent controls:', error)
     }
   }
 
   async createAITab(title: string, content: string = ''): Promise<any> {
     try {
-      // Check if electronAPI is available
-      if (!window.electronAPI || !window.electronAPI.createTab) {
+      // FIXED: Enhanced Electron API safety check
+      if (!window.electronAPI?.createTab) {
         throw new Error('Create tab API not available')
       }
 
@@ -66,8 +69,8 @@ export class BrowserController {
 
   async extractPageContent(_tabId?: string): Promise<any> {
     try {
-      // Check if electronAPI is available
-      if (!window.electronAPI || !window.electronAPI.getCurrentUrl) {
+      // FIXED: Enhanced Electron API safety check
+      if (!window.electronAPI?.getCurrentUrl) {
         throw new Error('Page content extraction API not available')
       }
 
@@ -106,21 +109,28 @@ export class BrowserController {
         startTime: Date.now()
       })
       
-      // Import and use IntegratedAgentFramework
-      const { default: IntegratedAgentFramework } = await import('./IntegratedAgentFramework')
-      const agentFramework = IntegratedAgentFramework.getInstance()
-      
-      const result = await agentFramework.processUserInput(task)
-      
-      // Update task status
-      const agentTask = this.activeAgentTasks.get(taskId)
-      if (agentTask) {
-        agentTask.status = result.success ? 'completed' : 'failed'
-        agentTask.endTime = Date.now()
-        agentTask.result = result
+      // FIXED: Use proper dynamic import to avoid circular dependency
+      try {
+        const IntegratedAgentFrameworkModule = await import('./IntegratedAgentFramework')
+        const IntegratedAgentFramework = IntegratedAgentFrameworkModule.default
+        const agentFramework = IntegratedAgentFramework.getInstance()
+        
+        const result = await agentFramework.processUserInput(task)
+        
+        // Update task status
+        const agentTask = this.activeAgentTasks.get(taskId)
+        if (agentTask) {
+          agentTask.status = result.success ? 'completed' : 'failed'
+          agentTask.endTime = Date.now()
+          agentTask.result = result
+        }
+        
+        return { success: true, taskId, result }
+      } catch (importError) {
+        // If import fails, handle gracefully
+        console.warn('Failed to import IntegratedAgentFramework:', importError)
+        return { success: false, error: 'Agent framework not available' }
       }
-      
-      return { success: true, taskId, result }
     } catch (error) {
       console.error('❌ Agent task execution failed:', error)
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
@@ -145,7 +155,7 @@ export class BrowserController {
 
   private async saveAIContent(tabId: string, content: any): Promise<void> {
     try {
-      // Check if localStorage is available
+      // FIXED: Enhanced storage safety check
       if (typeof Storage === "undefined") {
         throw new Error('Local storage not supported')
       }
@@ -163,6 +173,7 @@ export class BrowserController {
 
   async loadAIContent(tabId: string): Promise<any> {
     try {
+      // FIXED: Enhanced storage safety check
       if (typeof Storage === "undefined") {
         throw new Error('Local storage not supported')
       }
@@ -185,13 +196,15 @@ export class BrowserController {
   async createMultipleTabs(urls: string[]): Promise<any[]> {
     const results = []
     
-    if (!Array.isArray(urls)) {
-      return [{ success: false, error: 'Invalid URLs array' }]
+    // FIXED: Enhanced input validation
+    if (!Array.isArray(urls) || urls.length === 0) {
+      return [{ success: false, error: 'Invalid or empty URLs array' }]
     }
     
     for (const url of urls) {
       try {
-        if (!window.electronAPI || !window.electronAPI.createTab) {
+        // FIXED: Enhanced Electron API safety check
+        if (!window.electronAPI?.createTab) {
           throw new Error('Create tab API not available')
         }
 
@@ -204,6 +217,9 @@ export class BrowserController {
       } catch (error) {
         results.push({ success: false, url, error: error instanceof Error ? error.message : 'Unknown error' })
       }
+      
+      // FIXED: Add delay to prevent overwhelming the system
+      await new Promise(resolve => setTimeout(resolve, 100))
     }
     
     return results
@@ -212,32 +228,47 @@ export class BrowserController {
   async extractContentFromMultipleTabs(tabIds: string[]): Promise<any[]> {
     const results = []
     
-    if (!Array.isArray(tabIds)) {
-      return [{ success: false, error: 'Invalid tab IDs array' }]
+    // FIXED: Enhanced input validation
+    if (!Array.isArray(tabIds) || tabIds.length === 0) {
+      return [{ success: false, error: 'Invalid or empty tab IDs array' }]
     }
     
     for (const tabId of tabIds) {
       try {
-        if (!window.electronAPI || !window.electronAPI.switchTab) {
+        // FIXED: Enhanced Electron API safety check
+        if (!window.electronAPI?.switchTab) {
           throw new Error('Switch tab API not available')
         }
 
         // Switch to tab first
         await window.electronAPI.switchTab(tabId)
         
-        // Extract content
-        const content = await this.extractPageContent(tabId)
+        // FIXED: Add timeout to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Operation timeout')), 30000)
+        )
+        
+        // Extract content with timeout
+        const content = await Promise.race([
+          this.extractPageContent(tabId),
+          timeoutPromise
+        ])
+        
         results.push({ tabId, ...content })
       } catch (error) {
         results.push({ tabId, success: false, error: error instanceof Error ? error.message : 'Unknown error' })
       }
+      
+      // FIXED: Add delay between operations
+      await new Promise(resolve => setTimeout(resolve, 500))
     }
     
     return results
   }
 
-  // Cleanup method
+  // FIXED: Enhanced cleanup method
   cleanup(): void {
     this.activeAgentTasks.clear()
+    console.log('🧹 BrowserController cleaned up')
   }
 }

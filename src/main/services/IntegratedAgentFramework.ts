@@ -91,6 +91,11 @@ export class IntegratedAgentFramework {
         }
       }
 
+      // FIXED: Add Electron API safety check before using
+      if (!window.electronAPI?.sendAIMessage) {
+        throw new Error('AI service not available - Electron API not found')
+      }
+
       // Use Electron API to send message to AI service
       const result = await window.electronAPI.sendAIMessage(input)
       
@@ -187,7 +192,7 @@ export class IntegratedAgentFramework {
    * Set up event listeners
    */
   private setupEventListeners(): void {
-    // Listen for memory cleanup events
+    // Listen for memory cleanup events  
     appEvents.on('memory:cleanup-complete', (data) => {
       logger.debug('Memory cleanup completed', data)
     })
@@ -199,13 +204,26 @@ export class IntegratedAgentFramework {
   }
 
   /**
-   * Cleanup resources
+   * FIXED: Enhanced cleanup resources method
    */
   async cleanup(): Promise<void> {
     logger.info('Cleaning up Integrated Agent Framework')
 
+    // Clear agents
     this.agents.clear()
+    
+    // Clear event listeners
     this.eventListeners.clear()
+    
+    // Cleanup conversation manager
+    if (this.conversationManager) {
+      try {
+        await this.conversationManager.cleanup()
+      } catch (error) {
+        logger.warn('Failed to cleanup conversation manager:', error)
+      }
+    }
+    
     this.isInitialized = false
 
     logger.info('Agent Framework cleanup complete')
@@ -249,32 +267,47 @@ class NavigationAgent implements Agent {
     
     // Smart URL processing
     if (url) {
-      // Clean up the URL
-      url = url.replace(/[^\w\-\.\/\:]/g, '')
+      // FIXED: Better URL cleaning and validation
+      url = url.trim().replace(/[^\w\-\.\/\:\?\=\&\%]/g, '')
       
       // Add protocol if missing
       if (!url.startsWith('http')) {
         url = `https://${url}`
       }
       
-      return {
-        type: 'navigation',
-        action: 'navigate',
-        target: url,
-        timestamp: Date.now(),
-        confidence: 0.9
+      // FIXED: Add URL validation
+      try {
+        new URL(url) // Validate URL format
+        
+        return {
+          type: 'navigation',
+          action: 'navigate',
+          target: url,
+          timestamp: Date.now(),
+          confidence: 0.9
+        }
+      } catch (urlError) {
+        throw new Error(`Invalid URL format: ${url}`)
       }
     }
     
     // Fallback: try to extract domain names
     const domainMatch = task.match(/([a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.(?:com|org|net|edu|gov|io|co|ai))/i)
     if (domainMatch) {
-      return {
-        type: 'navigation',
-        action: 'navigate', 
-        target: `https://${domainMatch[0]}`,
-        timestamp: Date.now(),
-        confidence: 0.7
+      const fallbackUrl = `https://${domainMatch[0]}`
+      
+      try {
+        new URL(fallbackUrl) // Validate URL format
+        
+        return {
+          type: 'navigation',
+          action: 'navigate', 
+          target: fallbackUrl,
+          timestamp: Date.now(),
+          confidence: 0.7
+        }
+      } catch (urlError) {
+        throw new Error(`Invalid domain format: ${domainMatch[0]}`)
       }
     }
 

@@ -63,6 +63,11 @@ class UnifiedAIService {
     }
 
     try {
+      // FIXED: Add Electron API safety check
+      if (!window.electronAPI?.sendAIMessage) {
+        throw new Error('AI service not available - Electron API not found')
+      }
+
       // Add user message to history
       const userMessage: AIMessage = {
         id: `msg_${Date.now()}_user`,
@@ -110,6 +115,11 @@ class UnifiedAIService {
     }
 
     try {
+      // FIXED: Add Electron API safety check
+      if (!window.electronAPI?.summarizePage) {
+        throw new Error('Page summarization not available - Electron API not found')
+      }
+
       const response = await window.electronAPI.summarizePage()
       return response
     } catch (error) {
@@ -127,6 +137,11 @@ class UnifiedAIService {
     }
 
     try {
+      // FIXED: Add Electron API safety check
+      if (!window.electronAPI?.analyzeContent) {
+        throw new Error('Content analysis not available - Electron API not found')
+      }
+
       const response = await window.electronAPI.analyzeContent()
       return response
     } catch (error) {
@@ -140,7 +155,8 @@ class UnifiedAIService {
 
   async checkConnection(): Promise<boolean> {
     try {
-      if (!window.electronAPI) {
+      // FIXED: Add comprehensive Electron API safety check
+      if (!window.electronAPI?.testConnection) {
         return false
       }
       
@@ -173,6 +189,13 @@ class UnifiedAIService {
   clearMessages(): void {
     this.messages = []
     logger.debug('Messages cleared')
+  }
+
+  // FIXED: Add cleanup method to prevent memory leaks
+  cleanup(): void {
+    this.messages = []
+    this.isInitialized = false
+    logger.debug('UnifiedAIService cleaned up')
   }
 }
 
