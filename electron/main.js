@@ -1738,6 +1738,13 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       if (lowerTask.includes('schedule') || lowerTask.includes('recurring') || lowerTask.includes('repeat')) {
         bonusedScores.automation += 6 // NEW
       }
+      // FIX: Better handling for routine creation
+      if (lowerTask.includes('daily') && lowerTask.includes('routine')) {
+        bonusedScores.automation += 10 // STRONGER bonus for automation intent
+      }
+      if (lowerTask.includes('create') && (lowerTask.includes('routine') || lowerTask.includes('workflow'))) {
+        bonusedScores.automation += 8 // NEW: creation + routine/workflow
+      }
       
       // ENHANCED task complexity bonuses
       if (originalTask.length > 80) {
