@@ -47,9 +47,10 @@ const App: React.FC = () => {
       const browserController = BrowserController.getInstance()
       await browserController.initialize()
 
-      // Initialize Agent Framework
+      // Initialize Agent Framework - PERFORMANCE: Lazy load
       logger.debug('Initializing Agent Framework')
-      const agentFramework = IntegratedAgentFramework.getInstance()
+      const { default: IntegratedAgentFrameworkClass } = await IntegratedAgentFramework
+      const agentFramework = IntegratedAgentFrameworkClass.getInstance()
       await agentFramework.initialize()
 
       // Set up event listeners
