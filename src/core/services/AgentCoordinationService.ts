@@ -1003,12 +1003,40 @@ class AgentCoordinationService {
     const totalProgress = allGoals.reduce((sum, goal) => sum + goal.progress, 0)
     const averageProgress = allGoals.length > 0 ? totalProgress / allGoals.length : 0
 
-    return {
-      activeGoals,
-      completedGoals,
-      failedGoals,
-      averageProgress
+  // Shared Context Management
+  async shareContext(teamId: string, key: string, value: any): Promise<void> {
+    const team = this.activeTeams.get(teamId)
+    if (team) {
+      team.sharedContext.set(key, value)
+      
+      // Notify team members about context update
+      for (const memberId of team.members) {
+        await this.sendMessage({
+          fromAgent: 'system',
+          toAgent: memberId,
+          type: 'notification',
+          content: {
+            type: 'context_update',
+            teamId,
+            key,
+            value
+          },
+          priority: 4,
+          requiresResponse: false
+        })
+      }
     }
+  }
+
+  async getSharedContext(teamId: string, key?: string): Promise<any> {
+    const team = this.activeTeams.get(teamId)
+    if (!team) return null
+
+    if (key) {
+      return team.sharedContext.get(key)
+    }
+    
+    return Object.fromEntries(team.sharedContext.entries())
   }
 
   async getSharedContext(teamId: string, key?: string): Promise<any> {
