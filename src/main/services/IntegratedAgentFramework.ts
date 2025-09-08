@@ -216,6 +216,7 @@ export class IntegratedAgentFramework {
   /**
    * Analyze user intent using simple keyword analysis
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async analyzeIntent(input: string): Promise<{
     intent: string
     confidence: number
