@@ -63,7 +63,11 @@ export class ErrorRecoveryService {
       name: 'AI Service Retry',
       description: 'Retry AI service calls with exponential backoff',
       condition: (error, context) => 
-        context.component === 'AIService' && error.message.includes('network'),
+        context.component === 'AIService' && (
+          error.message.includes('network') || 
+          error.message.includes('timeout') ||
+          error.message.includes('connection')
+        ),
       execute: async (_error, context) => {
         const delay = Math.min(1000 * Math.pow(2, context.retryCount || 0), 10000)
         await new Promise(resolve => setTimeout(resolve, delay))
@@ -78,14 +82,23 @@ export class ErrorRecoveryService {
       name: 'Navigation Fallback',
       description: 'Fallback to Google search for failed navigation',
       condition: (error, context) => 
-        context.component === 'NavigationAgent' && error.message.includes('navigation'),
+        context.component === 'NavigationAgent' && (
+          error.message.includes('navigation') ||
+          error.message.includes('network') ||
+          error.message.includes('dns')
+        ),
       execute: async (_error, context) => {
-        if (window.electronAPI) {
-          const query = encodeURIComponent(context.url || 'search')
-          await window.electronAPI.navigateTo(`https://www.google.com/search?q=${query}`)
-          return true
+        try {
+          if (window.electronAPI && window.electronAPI.navigateTo) {
+            const query = encodeURIComponent(context.url || 'search')
+            await window.electronAPI.navigateTo(`https://www.google.com/search?q=${query}`)
+            return true
+          }
+          return false
+        } catch (recoveryError) {
+          logger.error('Navigation fallback failed', recoveryError as Error)
+          return false
         }
-        return false
       },
       maxRetries: 1
     })
@@ -96,15 +109,40 @@ export class ErrorRecoveryService {
       name: 'Tab Recreation',
       description: 'Recreate failed tabs',
       condition: (error, context) => 
-        context.component === 'TabManager' && error.message.includes('tab'),
+        context.component === 'TabManager' && (
+          error.message.includes('tab') ||
+          error.message.includes('browser')
+        ),
       execute: async (_error, _context) => {
-        if (window.electronAPI) {
-          await window.electronAPI.createTab('https://www.google.com')
-          return true
+        try {
+          if (window.electronAPI && window.electronAPI.createTab) {
+            await window.electronAPI.createTab('https://www.google.com')
+            return true
+          }
+          return false
+        } catch (recoveryError) {
+          logger.error('Tab recreation failed', recoveryError as Error)
+          return false
         }
-        return false
       },
       maxRetries: 2
+    })
+
+    // Electron API Recovery
+    this.registerStrategy({
+      id: 'electron-api-retry',
+      name: 'Electron API Retry',
+      description: 'Retry Electron API calls after short delay',
+      condition: (error, _context) => 
+        error.message.includes('electronAPI') || 
+        error.message.includes('IPC') ||
+        error.message.includes('not available'),
+      execute: async (_error, _context) => {
+        // Wait for Electron API to be ready
+        await new Promise(resolve => setTimeout(resolve, 500))
+        return !!window.electronAPI
+      },
+      maxRetries: 3
     })
   }
 
@@ -119,8 +157,8 @@ export class ErrorRecoveryService {
       action: context.action || 'Unknown',
       error,
       timestamp: Date.now(),
-      userAgent: navigator.userAgent,
-      url: context.url || window?.location?.href,
+      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
+      url: context.url || (typeof window !== 'undefined' ? window?.location?.href : undefined),
       retryCount: context.retryCount || 0,
       ...context
     }
@@ -133,7 +171,14 @@ export class ErrorRecoveryService {
 
     // Find applicable recovery strategies
     const applicableStrategies = Array.from(this.recoveryStrategies.values())
-      .filter(strategy => strategy.condition(error, fullContext))
+      .filter(strategy => {
+        try {
+          return strategy.condition(error, fullContext)
+        } catch (conditionError) {
+          logger.warn('Recovery strategy condition check failed', conditionError as Error)
+          return false
+        }
+      })
 
     for (const strategy of applicableStrategies) {
       if ((fullContext.retryCount || 0) >= strategy.maxRetries) {
@@ -204,27 +249,49 @@ export class ErrorRecoveryService {
   }
 
   private setupEventListeners(): void {
-    // Global error handler
-    window.addEventListener('error', (event) => {
-      this.handleError(event.error, {
-        component: 'Global',
-        action: 'runtime',
-        url: event.filename
-      })
-    })
+    try {
+      // Global error handler
+      if (typeof window !== 'undefined') {
+        window.addEventListener('error', (event) => {
+          this.handleError(event.error || new Error(event.message), {
+            component: 'Global',
+            action: 'runtime',
+            url: event.filename
+          })
+        })
 
-    // Unhandled promise rejection handler
-    window.addEventListener('unhandledrejection', (event) => {
-      this.handleError(new Error(event.reason), {
-        component: 'Promise',
-        action: 'rejection'
-      })
-    })
+        // Unhandled promise rejection handler
+        window.addEventListener('unhandledrejection', (event) => {
+          const error = event.reason instanceof Error ? event.reason : new Error(String(event.reason))
+          this.handleError(error, {
+            component: 'Promise',
+            action: 'rejection'
+          })
+        })
+      }
+    } catch (error) {
+      logger.warn('Failed to setup global error listeners', error as Error)
+    }
   }
 
   clearHistory(): void {
     this.errorHistory = []
     logger.info('Error history cleared')
+  }
+
+  getRecoveryStrategies(): RecoveryStrategy[] {
+    return Array.from(this.recoveryStrategies.values())
+  }
+
+  removeStrategy(strategyId: string): boolean {
+    return this.recoveryStrategies.delete(strategyId)
+  }
+
+  // Cleanup method
+  cleanup(): void {
+    this.errorHistory = []
+    // Keep recovery strategies as they might be reused
+    logger.info('Error Recovery Service cleaned up')
   }
 }
 

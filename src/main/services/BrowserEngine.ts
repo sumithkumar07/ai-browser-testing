@@ -65,6 +65,11 @@ export class BrowserEngine {
     console.log('🌐 Initializing Browser Engine...')
     
     try {
+      // Check if electronAPI is available
+      if (!window.electronAPI) {
+        throw new Error('Electronic API not available. Please run in Electron environment.')
+      }
+
       // Setup event listeners
       this.setupEventListeners()
       
@@ -84,9 +89,13 @@ export class BrowserEngine {
         throw new Error('BrowserEngine not initialized')
       }
 
+      if (!window.electronAPI || !window.electronAPI.createTab) {
+        throw new Error('Create tab API not available')
+      }
+
       const result = await window.electronAPI.createTab(url)
       
-      if (result.success && result.tabId) {
+      if (result && result.success && result.tabId) {
         const tab: BrowserTab = {
           id: result.tabId,
           title: 'New Tab',
@@ -113,7 +122,7 @@ export class BrowserEngine {
         return tab
       }
 
-      return null
+      throw new Error(result?.error || 'Failed to create tab')
       
     } catch (error) {
       console.error('❌ Failed to create tab:', error)
@@ -126,9 +135,13 @@ export class BrowserEngine {
     try {
       console.log(`🌐 Closing tab: ${tabId}`)
       
+      if (!window.electronAPI || !window.electronAPI.closeTab) {
+        throw new Error('Close tab API not available')
+      }
+      
       const result = await window.electronAPI.closeTab(tabId)
       
-      if (result.success) {
+      if (result && result.success) {
         // Update state
         this.state.tabs = this.state.tabs.filter(tab => tab.id !== tabId)
         
@@ -152,7 +165,7 @@ export class BrowserEngine {
         return true
       }
 
-      return false
+      throw new Error(result?.error || 'Failed to close tab')
       
     } catch (error) {
       console.error('❌ Failed to close tab:', error)
@@ -165,9 +178,13 @@ export class BrowserEngine {
     try {
       console.log(`🌐 Switching to tab: ${tabId}`)
       
+      if (!window.electronAPI || !window.electronAPI.switchTab) {
+        throw new Error('Switch tab API not available')
+      }
+      
       const result = await window.electronAPI.switchTab(tabId)
       
-      if (result.success) {
+      if (result && result.success) {
         // Update state
         this.state.tabs = this.state.tabs.map(tab => ({
           ...tab,
@@ -191,7 +208,7 @@ export class BrowserEngine {
         return true
       }
 
-      return false
+      throw new Error(result?.error || 'Failed to switch tab')
       
     } catch (error) {
       console.error('❌ Failed to switch tab:', error)
@@ -204,6 +221,10 @@ export class BrowserEngine {
     try {
       console.log(`🌐 Navigating to: ${url}`)
       
+      if (!window.electronAPI || !window.electronAPI.navigateTo) {
+        throw new Error('Navigate API not available')
+      }
+      
       this.state.isLoading = true
       this.state.error = null
 
@@ -215,7 +236,7 @@ export class BrowserEngine {
 
       const result = await window.electronAPI.navigateTo(url)
       
-      if (result.success) {
+      if (result && result.success) {
         this.state.currentUrl = url
         
         // Update active tab
@@ -236,7 +257,7 @@ export class BrowserEngine {
         console.log(`✅ Navigated to: ${url}`)
         return true
       } else {
-        this.state.error = result.error || 'Navigation failed'
+        this.state.error = result?.error || 'Navigation failed'
         return false
       }
       
@@ -253,14 +274,18 @@ export class BrowserEngine {
     try {
       console.log('🌐 Going back')
       
+      if (!window.electronAPI || !window.electronAPI.goBack) {
+        throw new Error('Go back API not available')
+      }
+      
       const result = await window.electronAPI.goBack()
       
-      if (result.success) {
+      if (result && result.success) {
         console.log('✅ Went back')
         return true
       }
 
-      return false
+      throw new Error(result?.error || 'Failed to go back')
       
     } catch (error) {
       console.error('❌ Failed to go back:', error)
@@ -272,14 +297,18 @@ export class BrowserEngine {
     try {
       console.log('🌐 Going forward')
       
+      if (!window.electronAPI || !window.electronAPI.goForward) {
+        throw new Error('Go forward API not available')
+      }
+      
       const result = await window.electronAPI.goForward()
       
-      if (result.success) {
+      if (result && result.success) {
         console.log('✅ Went forward')
         return true
       }
 
-      return false
+      throw new Error(result?.error || 'Failed to go forward')
       
     } catch (error) {
       console.error('❌ Failed to go forward:', error)
@@ -291,14 +320,18 @@ export class BrowserEngine {
     try {
       console.log('🌐 Reloading page')
       
+      if (!window.electronAPI || !window.electronAPI.reload) {
+        throw new Error('Reload API not available')
+      }
+      
       const result = await window.electronAPI.reload()
       
-      if (result.success) {
+      if (result && result.success) {
         console.log('✅ Page reloaded')
         return true
       }
 
-      return false
+      throw new Error(result?.error || 'Failed to reload')
       
     } catch (error) {
       console.error('❌ Failed to reload:', error)
@@ -308,8 +341,12 @@ export class BrowserEngine {
 
   async getCurrentUrl(): Promise<string> {
     try {
+      if (!window.electronAPI || !window.electronAPI.getCurrentUrl) {
+        return this.state.currentUrl
+      }
+
       const result = await window.electronAPI.getCurrentUrl()
-      if (result.success && result.url) {
+      if (result && result.success && result.url) {
         this.state.currentUrl = result.url
         return result.url
       }
@@ -322,8 +359,12 @@ export class BrowserEngine {
 
   async getPageTitle(): Promise<string> {
     try {
+      if (!window.electronAPI || !window.electronAPI.getPageTitle) {
+        return 'Untitled'
+      }
+
       const result = await window.electronAPI.getPageTitle()
-      if (result.success && result.title) {
+      if (result && result.success && result.title) {
         // Update active tab title
         if (this.state.activeTabId) {
           this.state.tabs = this.state.tabs.map(tab => 
@@ -342,103 +383,113 @@ export class BrowserEngine {
   }
 
   private setupEventListeners(): void {
-    // Browser events from main process (using the main onBrowserEvent listener)
-    window.electronAPI.onBrowserEvent((event: import('../types/electron.d.ts').BrowserEvent) => {
-      // Convert to our local BrowserEvent type and handle
-      const localEvent: BrowserEvent = {
-        type: event.type as any, // Type assertion for compatibility
-        tabId: event.tabId,
-        url: event.url,
-        title: event.title,
-        loading: event.loading,
-        error: event.error
+    try {
+      // Browser events from main process
+      if (window.electronAPI && window.electronAPI.onBrowserEvent) {
+        window.electronAPI.onBrowserEvent((event: import('../types/electron.d.ts').BrowserEvent) => {
+          // Convert to our local BrowserEvent type and handle
+          const localEvent: BrowserEvent = {
+            type: event.type as any, // Type assertion for compatibility
+            tabId: event.tabId,
+            url: event.url,
+            title: event.title,
+            loading: event.loading,
+            error: event.error
+          }
+          this.handleBrowserEvent(localEvent)
+        })
       }
-      this.handleBrowserEvent(localEvent)
-    })
+    } catch (error) {
+      console.warn('Failed to setup browser event listeners:', error)
+    }
   }
 
   private handleBrowserEvent(event: BrowserEvent): void {
     console.log('🌐 Browser event:', event.type)
 
-    switch (event.type) {
-      case 'tab-created':
-        if (event.tabId && event.url) {
-          const tab: BrowserTab = {
-            id: event.tabId,
-            title: 'New Tab',
-            url: event.url,
-            isLoading: false,
-            isActive: true,
-            canGoBack: false,
-            canGoForward: false
+    try {
+      switch (event.type) {
+        case 'tab-created':
+          if (event.tabId && event.url) {
+            const tab: BrowserTab = {
+              id: event.tabId,
+              title: 'New Tab',
+              url: event.url,
+              isLoading: false,
+              isActive: true,
+              canGoBack: false,
+              canGoForward: false
+            }
+            this.state.tabs = this.state.tabs.map(t => ({ ...t, isActive: false })).concat(tab)
+            this.state.activeTabId = tab.id
+            this.state.currentUrl = tab.url
           }
-          this.state.tabs = this.state.tabs.map(t => ({ ...t, isActive: false })).concat(tab)
-          this.state.activeTabId = tab.id
-          this.state.currentUrl = tab.url
-        }
-        break
+          break
 
-      case 'tab-closed':
-        if (event.tabId) {
-          this.state.tabs = this.state.tabs.filter(tab => tab.id !== event.tabId)
-          if (event.tabId === this.state.activeTabId) {
-            const remainingTabs = this.state.tabs
-            if (remainingTabs.length > 0) {
-              this.state.activeTabId = remainingTabs[0].id
-              this.state.currentUrl = remainingTabs[0].url
-            } else {
-              this.state.activeTabId = null
-              this.state.currentUrl = ''
+        case 'tab-closed':
+          if (event.tabId) {
+            this.state.tabs = this.state.tabs.filter(tab => tab.id !== event.tabId)
+            if (event.tabId === this.state.activeTabId) {
+              const remainingTabs = this.state.tabs
+              if (remainingTabs.length > 0) {
+                this.state.activeTabId = remainingTabs[0].id
+                this.state.currentUrl = remainingTabs[0].url
+              } else {
+                this.state.activeTabId = null
+                this.state.currentUrl = ''
+              }
             }
           }
-        }
-        break
+          break
 
-      case 'tab-switched':
-        if (event.tabId) {
-          this.state.tabs = this.state.tabs.map(tab => ({
-            ...tab,
-            isActive: tab.id === event.tabId
-          }))
-          this.state.activeTabId = event.tabId
+        case 'tab-switched':
+          if (event.tabId) {
+            this.state.tabs = this.state.tabs.map(tab => ({
+              ...tab,
+              isActive: tab.id === event.tabId
+            }))
+            this.state.activeTabId = event.tabId
+            if (event.url) {
+              this.state.currentUrl = event.url
+            }
+          }
+          break
+
+        case 'navigation-started':
+          this.state.isLoading = true
           if (event.url) {
             this.state.currentUrl = event.url
           }
-        }
-        break
+          break
 
-      case 'navigation-started':
-        this.state.isLoading = true
-        if (event.url) {
-          this.state.currentUrl = event.url
-        }
-        break
+        case 'navigation-completed':
+          this.state.isLoading = false
+          if (event.url) {
+            this.state.currentUrl = event.url
+          }
+          break
 
-      case 'navigation-completed':
-        this.state.isLoading = false
-        if (event.url) {
-          this.state.currentUrl = event.url
-        }
-        break
+        case 'page-title-updated':
+          if (event.tabId && event.title) {
+            this.state.tabs = this.state.tabs.map(tab => 
+              tab.id === event.tabId 
+                ? { ...tab, title: event.title! }
+                : tab
+            )
+          }
+          break
 
-      case 'page-title-updated':
-        if (event.tabId && event.title) {
-          this.state.tabs = this.state.tabs.map(tab => 
-            tab.id === event.tabId 
-              ? { ...tab, title: event.title! }
-              : tab
-          )
-        }
-        break
+        case 'error':
+          this.state.error = event.error?.description || 'Unknown error'
+          this.state.isLoading = false
+          break
+      }
 
-      case 'error':
-        this.state.error = event.error?.description || 'Unknown error'
-        this.state.isLoading = false
-        break
+      // Emit event to listeners
+      this.emitEvent(event)
+    } catch (error) {
+      console.error('❌ Error handling browser event:', error)
     }
-
-    // Emit event to listeners
-    this.emitEvent(event)
   }
 
   private emitEvent(event: BrowserEvent): void {
@@ -482,7 +533,6 @@ export class BrowserEngine {
   getActiveTab(): BrowserTab | null {
     return this.state.tabs.find(tab => tab.id === this.state.activeTabId) || null
   }
-
 
   isLoading(): boolean {
     return this.state.isLoading
