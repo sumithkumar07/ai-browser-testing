@@ -1041,7 +1041,7 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       // PHASE 1: Pre-processing and intent detection
       const intentPatterns = this.detectTaskIntent(lowerTask)
       
-      // PHASE 2: Enhanced Research keywords with context-aware weighted scoring
+      // PHASE 2: Enhanced keyword sets with better context understanding
       const researchKeywords = {
         // Ultra-high priority research terms (weight: 8)
         'research comprehensive': 8, 'investigate thoroughly': 8, 'deep dive': 8,
@@ -1056,103 +1056,203 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
         'overview': 3, 'summary': 3, 'understanding': 3, 'knowledge': 3
       }
       
-      // Enhanced Navigation keywords with weighted scoring
+      // Enhanced Navigation keywords with URL pattern detection
       const navigationKeywords = {
-        // High priority navigation terms (weight: 5)
-        'navigate': 5, 'go to': 5, 'visit': 5, 'open': 5,
-        // Medium priority navigation terms (weight: 3)  
-        'browse': 3, 'website': 3, 'url': 3, 'page': 3, 'site': 3,
-        // Low priority navigation terms (weight: 2)
-        'link': 2, 'redirect': 2, 'access': 2
+        // Ultra-high priority navigation terms (weight: 8)
+        'navigate to': 8, 'go to website': 8, 'visit site': 8, 'open webpage': 8,
+        // High priority navigation terms (weight: 6)
+        'navigate': 6, 'go to': 6, 'visit': 6, 'open': 6, 'browse to': 6,
+        // Medium priority navigation terms (weight: 4)  
+        'browse': 4, 'website': 4, 'url': 4, 'page': 4, 'site': 4, 'webpage': 4,
+        // Context-enhanced terms (weight: 3)
+        'link': 3, 'redirect': 3, 'access': 3, 'load page': 3, 'show page': 3
       }
       
-      // Enhanced Shopping keywords with weighted scoring
+      // Enhanced Shopping keywords with product category intelligence
       const shoppingKeywords = {
-        // High priority shopping terms (weight: 5)
-        'buy': 5, 'purchase': 5, 'shopping': 5, 'compare': 5, 'price': 5, 'prices': 5,
-        'best price': 5, 'find price': 5, 'compare price': 5,
-        // Medium priority shopping terms (weight: 3)
-        'shop': 3, 'cost': 3, 'product': 3, 'deal': 3, 'discount': 3, 'sale': 3,
-        'find best': 3, 'best deal': 3, 'cheapest': 3, 'affordable': 3,
-        // Low priority shopping terms (weight: 2) + Product categories
-        'cheap': 2, 'review': 2, 'rating': 2, 'order': 2, 'checkout': 2, 
-        'laptop': 4, 'phone': 4, 'computer': 4, 'tablet': 4, 'electronics': 4,
-        'camera': 3, 'headphones': 3, 'speaker': 3, 'keyboard': 3, 'mouse': 3,
-        'monitor': 3, 'tv': 3, 'gaming': 3, 'smartphone': 4, 'iphone': 4, 'android': 4
+        // Ultra-high priority shopping terms (weight: 8)
+        'compare prices': 8, 'find best price': 8, 'price comparison': 8, 'shopping research': 8,
+        // High priority shopping terms (weight: 6)
+        'buy': 6, 'purchase': 6, 'shopping': 6, 'compare': 6, 'price': 6, 'prices': 6,
+        'best price': 6, 'find price': 6, 'product search': 6,
+        // Medium priority shopping terms (weight: 4)
+        'shop': 4, 'cost': 4, 'product': 4, 'deal': 4, 'discount': 4, 'sale': 4,
+        'find best': 4, 'best deal': 4, 'cheapest': 4, 'affordable': 4, 'budget': 4,
+        // Product categories with higher weights (weight: 5)
+        'laptop': 5, 'phone': 5, 'computer': 5, 'tablet': 5, 'electronics': 5,
+        'smartphone': 5, 'iphone': 5, 'android': 5, 'macbook': 5, 'gaming': 5,
+        // Additional product categories (weight: 4)
+        'camera': 4, 'headphones': 4, 'speaker': 4, 'keyboard': 4, 'mouse': 4,
+        'monitor': 4, 'tv': 4, 'watch': 4, 'accessories': 4, 'gadgets': 4,
+        // Shopping context terms (weight: 3)
+        'cheap': 3, 'review': 3, 'rating': 3, 'order': 3, 'checkout': 3, 'cart': 3
       }
       
-      // Enhanced Communication keywords with weighted scoring
+      // Enhanced Communication keywords with intent recognition
       const communicationKeywords = {
-        // High priority communication terms (weight: 5)
-        'email': 5, 'compose': 5, 'write': 5, 'send': 5, 'contact': 5,
-        // Medium priority communication terms (weight: 3)
-        'message': 3, 'form': 3, 'fill': 3, 'submit': 3, 'social': 3, 'post': 3,
-        // Low priority communication terms (weight: 2)
-        'tweet': 2, 'linkedin': 2, 'facebook': 2, 'reply': 2, 'respond': 2
+        // Ultra-high priority communication terms (weight: 8)
+        'compose email': 8, 'write email': 8, 'send message': 8, 'create email': 8,
+        // High priority communication terms (weight: 6)
+        'email': 6, 'compose': 6, 'write': 6, 'send': 6, 'contact': 6, 'message': 6,
+        // Medium priority communication terms (weight: 4)
+        'form': 4, 'fill': 4, 'submit': 4, 'social': 4, 'post': 4, 'communication': 4,
+        // Social platform specific (weight: 4)
+        'tweet': 4, 'linkedin': 4, 'facebook': 4, 'instagram': 4, 'discord': 4,
+        // Context terms (weight: 3)
+        'reply': 3, 'respond': 3, 'draft': 3, 'template': 3, 'newsletter': 3
       }
       
-      // Enhanced Automation keywords with weighted scoring
+      // Enhanced Automation keywords with workflow recognition
       const automationKeywords = {
-        // High priority automation terms (weight: 5)
-        'automate': 5, 'automation': 5, 'workflow': 5, 'schedule': 5,
-        // Medium priority automation terms (weight: 3)
-        'repeat': 3, 'batch': 3, 'routine': 3, 'process': 3, 'sequence': 3,
-        // Low priority automation terms (weight: 2)
-        'steps': 2, 'tasks': 2, 'macro': 2, 'script': 2
+        // Ultra-high priority automation terms (weight: 8)
+        'automate workflow': 8, 'create automation': 8, 'automatic process': 8,
+        // High priority automation terms (weight: 6)
+        'automate': 6, 'automation': 6, 'workflow': 6, 'schedule': 6, 'automatic': 6,
+        // Medium priority automation terms (weight: 4)
+        'repeat': 4, 'batch': 4, 'routine': 4, 'process': 4, 'sequence': 4, 'recurring': 4,
+        // Context terms (weight: 3)
+        'steps': 3, 'tasks': 3, 'macro': 3, 'script': 3, 'schedule': 3, 'timer': 3
       }
       
-      // Enhanced Analysis keywords with weighted scoring
+      // Enhanced Analysis keywords with content type recognition
       const analysisKeywords = {
-        // High priority analysis terms (weight: 5)
-        'analyze': 5, 'analysis': 5, 'summarize': 5, 'summary': 5, 'extract': 5,
-        // Medium priority analysis terms (weight: 3)
-        'insights': 3, 'review': 3, 'evaluate': 3, 'assess': 3, 'interpret': 3,
-        // Low priority analysis terms (weight: 2)
-        'examine': 2, 'breakdown': 2, 'understand': 2, 'explain': 2
+        // Ultra-high priority analysis terms (weight: 8)
+        'analyze content': 8, 'content analysis': 8, 'deep analysis': 8, 'data analysis': 8,
+        // High priority analysis terms (weight: 6)
+        'analyze': 6, 'analysis': 6, 'summarize': 6, 'summary': 6, 'extract': 6,
+        // Medium priority analysis terms (weight: 4)
+        'insights': 4, 'review': 4, 'evaluate': 4, 'assess': 4, 'interpret': 4, 'report': 4,
+        // Context terms (weight: 3)
+        'examine': 3, 'breakdown': 3, 'understand': 3, 'explain': 3, 'metrics': 3, 'statistics': 3
       }
 
-      // Calculate enhanced scores using weighted keywords
-      const researchScore = this.calculateEnhancedKeywordScore(lowerTask, researchKeywords)
-      const navigationScore = this.calculateEnhancedKeywordScore(lowerTask, navigationKeywords)
-      const shoppingScore = this.calculateEnhancedKeywordScore(lowerTask, shoppingKeywords)
-      const communicationScore = this.calculateEnhancedKeywordScore(lowerTask, communicationKeywords)
-      const automationScore = this.calculateEnhancedKeywordScore(lowerTask, automationKeywords)
-      const analysisScore = this.calculateEnhancedKeywordScore(lowerTask, analysisKeywords)
+      // PHASE 3: Calculate enhanced scores using weighted keywords
+      const baseScores = {
+        research: this.calculateEnhancedKeywordScore(lowerTask, researchKeywords),
+        navigation: this.calculateEnhancedKeywordScore(lowerTask, navigationKeywords),
+        shopping: this.calculateEnhancedKeywordScore(lowerTask, shoppingKeywords),
+        communication: this.calculateEnhancedKeywordScore(lowerTask, communicationKeywords),
+        automation: this.calculateEnhancedKeywordScore(lowerTask, automationKeywords),
+        analysis: this.calculateEnhancedKeywordScore(lowerTask, analysisKeywords)
+      }
 
-      // Apply contextual bonuses for better accuracy
-      const contextualScores = this.applyContextualBonuses(lowerTask, {
-        research: researchScore,
-        navigation: navigationScore,
-        shopping: shoppingScore,
-        communication: communicationScore,
-        automation: automationScore,
-        analysis: analysisScore
+      // PHASE 4: Apply advanced contextual bonuses and pattern recognition
+      const contextualScores = this.applyAdvancedContextualBonuses(lowerTask, originalTask, baseScores, intentPatterns)
+
+      // PHASE 5: Enhanced decision making with confidence calculation
+      const decision = this.makeEnhancedAgentDecision(contextualScores, originalTask, lowerTask)
+
+      return decision
+    }
+
+    // NEW: Advanced intent detection for better accuracy
+    this.detectTaskIntent = (lowerTask) => {
+      return {
+        hasURL: /https?:\/\/|www\.|\.com|\.org|\.net/.test(lowerTask),
+        hasEmail: /@|gmail|outlook|email/.test(lowerTask),
+        hasPrice: /\$|\bprice\b|\bcost\b|\bdollar/.test(lowerTask),
+        hasComparison: /vs\b|versus|compare|better|best/.test(lowerTask),
+        hasCreation: /create|make|build|generate|compose/.test(lowerTask),
+        hasMultiple: /multiple|several|many|list of|various/.test(lowerTask),
+        hasTime: /daily|weekly|schedule|time|when|recurring/.test(lowerTask),
+        hasQuestion: /what|how|why|where|which|who/.test(lowerTask),
+        isImperative: /^(go|open|navigate|visit|find|search|buy|create)/.test(lowerTask)
+      }
+    }
+
+    // ENHANCED: Advanced contextual bonuses with pattern recognition  
+    this.applyAdvancedContextualBonuses = (lowerTask, originalTask, baseScores, intentPatterns) => {
+      const bonusedScores = { ...baseScores }
+      
+      // URL and Navigation Pattern Bonuses
+      if (intentPatterns.hasURL) {
+        bonusedScores.navigation += 8 // Strong navigation intent
+      }
+      
+      // E-commerce and Shopping Pattern Bonuses
+      if (intentPatterns.hasPrice || intentPatterns.hasComparison) {
+        bonusedScores.shopping += 6
+      }
+      
+      // Specific platform bonuses
+      const platformBonuses = {
+        'amazon|ebay|walmart|target|bestbuy': () => bonusedScores.shopping += 7,
+        'gmail|outlook|yahoo|mail': () => bonusedScores.communication += 7,
+        'github|stackoverflow|documentation': () => bonusedScores.research += 5,
+        'facebook|twitter|linkedin|instagram': () => bonusedScores.communication += 6
+      }
+      
+      Object.entries(platformBonuses).forEach(([pattern, bonus]) => {
+        if (new RegExp(pattern, 'i').test(lowerTask)) bonus()
       })
+      
+      // Research intent enhancement
+      if (intentPatterns.hasQuestion || intentPatterns.hasMultiple) {
+        bonusedScores.research += 4
+      }
+      
+      // Communication intent enhancement  
+      if (intentPatterns.hasEmail || intentPatterns.hasCreation) {
+        if (lowerTask.includes('email') || lowerTask.includes('message')) {
+          bonusedScores.communication += 6
+        }
+      }
+      
+      // Analysis intent for current page
+      if (lowerTask.includes('this page') || lowerTask.includes('current page') || lowerTask.includes('analyze content')) {
+        bonusedScores.analysis += 7
+      }
+      
+      // Automation pattern detection
+      if (intentPatterns.hasTime || lowerTask.includes('automatically') || lowerTask.includes('every')) {
+        bonusedScores.automation += 5
+      }
+      
+      // Advanced task complexity bonuses
+      if (originalTask.length > 80) {
+        // Long, complex tasks likely need research
+        bonusedScores.research += 3
+      }
+      
+      return bonusedScores
+    }
 
-      // Determine primary agent with minimum threshold
-      const minThreshold = 2
+    // ENHANCED: Smarter agent decision making
+    this.makeEnhancedAgentDecision = (contextualScores, originalTask, lowerTask) => {
+      // Higher minimum threshold for better precision
+      const minThreshold = 3
       const validScores = Object.entries(contextualScores).filter(([_, score]) => score >= minThreshold)
       
-      let primaryAgent = 'research' // Default fallback
+      let primaryAgent = 'research' // Intelligent default
       let maxScore = 0
       
       if (validScores.length > 0) {
+        // Find agent with highest score
         [primaryAgent, maxScore] = validScores.reduce((a, b) => a[1] > b[1] ? a : b)
+        
+        // Smart fallback logic for edge cases
+        if (maxScore < 5 && lowerTask.includes('help')) {
+          primaryAgent = 'research' // Default to research for general help
+        }
       }
       
       // Enhanced complexity determination
-      const complexity = this.determineComplexity(task, lowerTask, contextualScores)
+      const complexity = this.determineEnhancedComplexity(originalTask, lowerTask, contextualScores)
       
-      // Enhanced supporting agents calculation
+      // Smarter supporting agents calculation
       const supportingAgents = Object.entries(contextualScores)
         .filter(([agent, score]) => agent !== primaryAgent && score >= minThreshold)
         .sort(([, a], [, b]) => b - a)
-        .slice(0, 2)
+        .slice(0, complexity === 'high' ? 3 : 2) // More agents for complex tasks
         .map(([agent]) => agent)
 
-      // Calculate confidence score (0-100)
+      // Enhanced confidence calculation with normalization
       const totalScore = Object.values(contextualScores).reduce((sum, score) => sum + score, 0)
-      const confidence = totalScore > 0 ? Math.min(100, Math.round((maxScore / totalScore) * 100)) : 0
+      let confidence = totalScore > 0 ? Math.min(100, Math.round((maxScore / totalScore) * 100)) : 0
+      
+      // Boost confidence for clear intent patterns
+      if (maxScore >= 8) confidence = Math.min(100, confidence + 10)
+      if (maxScore >= 10) confidence = Math.min(100, confidence + 15)
 
       return {
         primaryAgent,
@@ -1160,8 +1260,48 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
         complexity,
         scores: contextualScores,
         confidence,
-        needsMultipleAgents: supportingAgents.length > 0 && (complexity === 'high' || maxScore < 8)
+        needsMultipleAgents: supportingAgents.length > 0 && (complexity === 'high' || maxScore < 10),
+        taskLength: originalTask.length,
+        intentStrength: maxScore
       }
+    }
+
+    // ENHANCED: Better complexity determination
+    this.determineEnhancedComplexity = (originalTask, lowerTask, scores) => {
+      let complexityScore = 0
+      
+      // Length-based complexity with better thresholds
+      if (originalTask.length > 150) complexityScore += 3
+      else if (originalTask.length > 80) complexityScore += 2
+      else if (originalTask.length > 40) complexityScore += 1
+      
+      // Multi-agent indicators with weighted scoring
+      const activeAgents = Object.values(scores).filter(score => score >= 3).length
+      const strongAgents = Object.values(scores).filter(score => score >= 6).length
+      
+      if (strongAgents > 2) complexityScore += 3
+      else if (activeAgents > 2) complexityScore += 2
+      else if (activeAgents > 1) complexityScore += 1
+      
+      // Enhanced complexity keywords
+      const highComplexityKeywords = ['comprehensive', 'detailed', 'thorough', 'complete', 'full analysis', 'in-depth']
+      const mediumComplexityKeywords = ['multiple', 'several', 'various', 'different', 'compare', 'analyze']
+      const lowComplexityKeywords = ['simple', 'quick', 'basic', 'just', 'only', 'briefly']
+      
+      if (highComplexityKeywords.some(keyword => lowerTask.includes(keyword))) complexityScore += 3
+      else if (mediumComplexityKeywords.some(keyword => lowerTask.includes(keyword))) complexityScore += 2
+      
+      if (lowComplexityKeywords.some(keyword => lowerTask.includes(keyword))) complexityScore -= 2
+      
+      // Question complexity
+      const questionWords = (lowerTask.match(/\b(what|how|why|where|which|who)\b/g) || []).length
+      if (questionWords > 2) complexityScore += 2
+      else if (questionWords > 0) complexityScore += 1
+      
+      // Return complexity level with better thresholds
+      if (complexityScore >= 6) return 'high'
+      if (complexityScore <= 1) return 'low'
+      return 'medium'
     }
 
     // Enhanced keyword scoring with weighted keywords
