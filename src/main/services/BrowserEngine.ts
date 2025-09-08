@@ -40,6 +40,7 @@ export class BrowserEngine {
   private isInitialized: boolean = false
   private state: BrowserState
   private eventListeners: Map<string, ((event: BrowserEvent) => void)[]> = new Map()
+  private browserEventListener: ((event: ElectronBrowserEvent) => void) | null = null
 
   private constructor() {
     this.state = {
