@@ -1726,6 +1726,10 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       if (lowerTask.includes('what does this') || lowerTask.includes('explain this')) {
         bonusedScores.analysis += 8 // NEW
       }
+      // FIX: Better handling for "what does" questions
+      if (lowerTask.includes('what does') && lowerTask.includes('mean')) {
+        bonusedScores.analysis += 10 // STRONGER bonus for analysis intent
+      }
       
       // IMPROVED Automation pattern detection
       if (intentPatterns.hasTime || lowerTask.includes('automatically') || lowerTask.includes('every')) {
