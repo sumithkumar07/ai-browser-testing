@@ -1140,6 +1140,141 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       }
     })
 
+    // Enhanced Backend-Only IPC Handlers - ZERO UI IMPACT
+    
+    // Performance monitoring handlers
+    ipcMain.handle('get-agent-performance-stats', async (event, agentId, days) => {
+      try {
+        if (!this.performanceMonitor) {
+          return { success: false, error: 'Performance monitoring not available' }
+        }
+        
+        const stats = await this.performanceMonitor.getPerformanceStats(agentId, days)
+        return { success: true, data: stats }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-agent-health-status', async (event, agentId) => {
+      try {
+        if (!this.performanceMonitor) {
+          return { success: false, error: 'Performance monitoring not available' }
+        }
+        
+        const health = await this.performanceMonitor.getAgentHealthStatus(agentId)
+        return { success: true, data: health }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Background task handlers
+    ipcMain.handle('schedule-background-task', async (event, type, payload, options) => {
+      try {
+        if (!this.taskScheduler) {
+          return { success: false, error: 'Task scheduler not available' }
+        }
+        
+        const taskId = await this.taskScheduler.scheduleTask(type, payload, options)
+        return { success: true, taskId }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-task-stats', async () => {
+      try {
+        if (!this.taskScheduler) {
+          return { success: false, error: 'Task scheduler not available' }
+        }
+        
+        const stats = await this.taskScheduler.getTaskStats()
+        return { success: true, data: stats }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Database operations handlers  
+    ipcMain.handle('save-bookmark-enhanced', async (event, bookmark) => {
+      try {
+        if (!this.databaseService) {
+          return { success: false, error: 'Database service not available' }
+        }
+        
+        const enhancedBookmark = {
+          id: bookmark.id || `bookmark_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          title: bookmark.title,
+          url: bookmark.url,
+          description: bookmark.description || '',
+          tags: bookmark.tags || [],
+          createdAt: bookmark.createdAt || Date.now(),
+          updatedAt: Date.now(),
+          visitCount: bookmark.visitCount || 0,
+          lastVisited: bookmark.lastVisited || Date.now(),
+          favicon: bookmark.favicon,
+          category: bookmark.category
+        }
+        
+        await this.databaseService.saveBookmark(enhancedBookmark)
+        return { success: true, data: enhancedBookmark }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-bookmarks-enhanced', async (event, limit) => {
+      try {
+        if (!this.databaseService) {
+          return { success: false, error: 'Database service not available' }
+        }
+        
+        const bookmarks = await this.databaseService.getBookmarks(limit)
+        return { success: true, data: bookmarks }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('save-history-enhanced', async (event, entry) => {
+      try {
+        if (!this.databaseService) {
+          return { success: false, error: 'Database service not available' }
+        }
+        
+        const historyEntry = {
+          id: entry.id || `history_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          url: entry.url,
+          title: entry.title,
+          visitedAt: entry.visitedAt || Date.now(),
+          duration: entry.duration || 0,
+          pageType: entry.pageType || 'general',
+          exitType: entry.exitType || 'navigation',
+          referrer: entry.referrer,
+          searchQuery: entry.searchQuery
+        }
+        
+        await this.databaseService.saveHistoryEntry(historyEntry)
+        return { success: true, data: historyEntry }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-history-enhanced', async (event, limit) => {
+      try {
+        if (!this.databaseService) {
+          return { success: false, error: 'Database service not available' }
+        }
+        
+        const history = await this.databaseService.getHistory(limit)
+        return { success: true, data: history }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
     console.log('✅ IPC handlers setup complete')
   }
 
