@@ -1304,25 +1304,65 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       return 'medium'
     }
 
-    // Enhanced keyword scoring with weighted keywords
+    // ENHANCED keyword scoring with phrase matching and context awareness
     this.calculateEnhancedKeywordScore = (text, weightedKeywords) => {
       let totalScore = 0
       
       for (const [keyword, weight] of Object.entries(weightedKeywords)) {
-        // Handle multi-word keywords
+        // Handle multi-word keywords with phrase matching
         if (keyword.includes(' ')) {
+          // Exact phrase matching
           if (text.includes(keyword)) {
-            totalScore += weight * 2 // Bonus for phrase matches
+            totalScore += weight * 2.5 // Higher bonus for phrase matches
+          }
+          // Partial phrase matching (words appear but not consecutively)
+          const words = keyword.split(' ')
+          if (words.every(word => text.includes(word))) {
+            totalScore += weight * 1.5 // Partial bonus for scattered words
           }
         } else {
-          // Word boundary matching for single words
-          const regex = new RegExp(`\\b${keyword}\\b`, 'gi')
+          // Enhanced single word matching with context
+          const regex = new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi')
           const matches = text.match(regex) || []
+          
+          // Base score for matches
           totalScore += matches.length * weight
+          
+          // Context bonuses for important keywords
+          if (matches.length > 0) {
+            // Proximity bonus - check if keyword appears near other related terms
+            const contextWindow = 50 // characters around the keyword
+            const keywordIndex = text.indexOf(keyword)
+            if (keywordIndex !== -1) {
+              const contextText = text.substring(
+                Math.max(0, keywordIndex - contextWindow),
+                Math.min(text.length, keywordIndex + keyword.length + contextWindow)
+              )
+              
+              // Award bonus for keywords appearing in context
+              if (weight >= 6 && this.hasRelevantContext(contextText, keyword)) {
+                totalScore += weight * 0.5 // Context bonus
+              }
+            }
+          }
         }
       }
       
-      return totalScore
+      return Math.round(totalScore * 10) / 10 // Round to 1 decimal place
+    }
+
+    // NEW: Context relevance checker
+    this.hasRelevantContext = (contextText, keyword) => {
+      const contextKeywords = {
+        'research': ['information', 'data', 'study', 'analysis', 'findings'],
+        'navigate': ['website', 'url', 'page', 'browser', 'visit'],
+        'price': ['cost', 'buy', 'purchase', 'money', 'dollar'],
+        'email': ['send', 'compose', 'message', 'contact', 'mail'],
+        'analyze': ['content', 'data', 'insights', 'review', 'examine']
+      }
+      
+      const relevantTerms = contextKeywords[keyword] || []
+      return relevantTerms.some(term => contextText.includes(term))
     }
 
     // REAL Agent Status - Connected to Enhanced Agent System
