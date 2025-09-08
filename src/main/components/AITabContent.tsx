@@ -37,7 +37,7 @@ const AITabContent: React.FC<AITabContentProps> = ({ tab, onContentChange }) => 
         clearTimeout(saveTimeoutRef.current)
       }
     }
-  }, [content, tab.content])
+  }, [content, tab.content, saveContent])
 
   // Cleanup timeout on unmount
   useEffect(() => {
