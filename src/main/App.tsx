@@ -46,9 +46,9 @@ const App: React.FC = () => {
       const browserController = BrowserController.getInstance()
       await browserController.initialize()
 
-      // Initialize Agent Framework - PERFORMANCE: Lazy load
+      // Initialize Agent Framework - PERFORMANCE: Dynamic import
       logger.debug('Initializing Agent Framework')
-      const { default: AgentFrameworkClass } = await IntegratedAgentFramework
+      const { default: AgentFrameworkClass } = await import('./services/IntegratedAgentFramework')
       const agentFramework = AgentFrameworkClass.getInstance()
       await agentFramework.initialize()
 
