@@ -1,5 +1,5 @@
 // Enhanced AI Sidebar with Agent Integration
-import React, { useState, useEffect, useRef, useMemo } from 'react'
+import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react'
 import DOMPurify from 'dompurify'
 import { AIMessage, AIResponse, AgentStatus } from '../types/electron'
 
