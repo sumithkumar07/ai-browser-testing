@@ -124,6 +124,7 @@ export class IntegratedAgentFramework {
   /**
    * Check if task requires complex coordination
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private isComplexTask(input: string): boolean {
     const complexityIndicators = [
       'comprehensive', 'detailed', 'multiple', 'across', 'integrate', 
