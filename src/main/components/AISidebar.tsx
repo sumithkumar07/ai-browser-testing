@@ -26,6 +26,51 @@ const AISidebar: React.FC<AISidebarProps> = ({
     initializeAI()
   }, [])
 
+  // PERFORMANCE: Memoize updateAgentStatusMessage
+  const updateAgentStatusMessage = useCallback((status: AgentStatus) => {
+    setMessages(prevMessages => {
+      // Remove previous agent status messages
+      const filtered = prevMessages.filter(msg => !msg.agentStatus)
+      
+      // Add new agent status message
+      const statusMessage: AIMessage = {
+        id: `agent_status_${Date.now()}`,
+        content: formatAgentStatus(status),
+        timestamp: Date.now(),
+        isUser: false,
+        agentStatus: status
+      }
+      
+      return [...filtered, statusMessage]
+    })
+  }, [])
+
+  // PERFORMANCE: Memoize formatAgentStatus to prevent unnecessary re-renders
+  const formatAgentStatus = useCallback((status: AgentStatus): string => {
+    const statusEmoji = {
+      idle: '⏸️',
+      active: '⏳',
+      completed: '✅',
+      error: '❌'
+    }
+
+    let message = `${statusEmoji[status.status]} **${status.name}**: ${status.status.toUpperCase()}`
+    
+    if (status.currentTask) {
+      message += `\n📋 Task: ${status.currentTask}`
+    }
+    
+    if (status.progress !== undefined && status.progress !== null) {
+      message += `\n📊 Progress: ${Math.round(status.progress)}%`
+    }
+    
+    if (status.details && status.details.length > 0) {
+      message += '\n\n**Details:**\n' + status.details.map(detail => `• ${detail}`).join('\n')
+    }
+    
+    return message
+  }, [])
+
   useEffect(() => {
     scrollToBottom()
   }, [messages])
