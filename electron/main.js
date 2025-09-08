@@ -24,6 +24,13 @@ class KAiroBrowserManager {
     this.tabCounter = 0
     this.isInitialized = false
     this.aiTabs = new Map() // Store AI tab data
+    
+    // Enhanced Agentic Capabilities
+    this.agentMemoryService = null
+    this.agentCoordinationService = null
+    this.autonomousPlanningEngine = null
+    this.enhancedAgentFramework = null
+    this.isAgenticMode = true // Enable enhanced agentic features
   }
 
   async initialize() {
