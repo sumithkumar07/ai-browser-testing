@@ -25,6 +25,12 @@ class KAiroBrowserManager {
     this.isInitialized = false
     this.aiTabs = new Map() // Store AI tab data
     
+    // Enhanced Backend Services - ZERO UI IMPACT
+    this.databaseService = null
+    this.performanceMonitor = null
+    this.taskScheduler = null
+    this.memoryService = null
+    
     // Enhanced Agentic Capabilities
     this.agentMemoryService = null
     this.agentCoordinationService = null
