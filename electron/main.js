@@ -770,23 +770,48 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       }
     })
 
-    // Data Storage Handlers
+    // REAL Data Storage Handlers - Connected to Database
     ipcMain.handle('get-data', async (event, key) => {
       try {
-        // In a real implementation, this would read from persistent storage
-        console.log('📖 Getting data for key:', key)
-        return { success: true, data: null }
+        if (!this.databaseService || !this.databaseService.db) {
+          return { success: false, error: 'Database service not available' }
+        }
+
+        const stmt = this.databaseService.db.prepare('SELECT value FROM system_config WHERE key = ?')
+        const row = stmt.get(key)
+        
+        const data = row ? JSON.parse(row.value) : null
+        console.log('📖 Retrieved real data for key:', key)
+        return { success: true, data }
       } catch (error) {
+        console.error('❌ Failed to get data:', error)
         return { success: false, error: error.message }
       }
     })
 
     ipcMain.handle('save-data', async (event, key, data) => {
       try {
-        // In a real implementation, this would save to persistent storage
-        console.log('💾 Saving data for key:', key, 'Data length:', JSON.stringify(data).length)
+        if (!this.databaseService || !this.databaseService.db) {
+          return { success: false, error: 'Database service not available' }
+        }
+
+        const stmt = this.databaseService.db.prepare(`
+          INSERT OR REPLACE INTO system_config (key, value, type, updated_at, category)
+          VALUES (?, ?, ?, ?, ?)
+        `)
+        
+        stmt.run(
+          key,
+          JSON.stringify(data),
+          typeof data,
+          Date.now(),
+          'user_data'
+        )
+        
+        console.log('💾 Saved real data for key:', key, 'Size:', JSON.stringify(data).length, 'bytes')
         return { success: true }
       } catch (error) {
+        console.error('❌ Failed to save data:', error)
         return { success: false, error: error.message }
       }
     })
