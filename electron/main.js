@@ -1608,16 +1608,21 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
         'letter': 4, 'memo': 4, 'correspondence': 4
       }
       
-      // Enhanced Automation keywords with workflow recognition
+      // IMPROVED Automation keywords with enhanced workflow recognition
       const automationKeywords = {
-        // Ultra-high priority automation terms (weight: 8)
-        'automate workflow': 8, 'create automation': 8, 'automatic process': 8,
-        // High priority automation terms (weight: 6)
-        'automate': 6, 'automation': 6, 'workflow': 6, 'schedule': 6, 'automatic': 6,
-        // Medium priority automation terms (weight: 4)
-        'repeat': 4, 'batch': 4, 'routine': 4, 'process': 4, 'sequence': 4, 'recurring': 4,
-        // Context terms (weight: 3)
-        'steps': 3, 'tasks': 3, 'macro': 3, 'script': 3, 'schedule': 3, 'timer': 3
+        // Ultra-high priority automation terms (weight: 12) - INCREASED
+        'automate workflow': 12, 'create automation': 12, 'automatic process': 12,
+        'set up automation': 12, 'automate task': 12, 'recurring task': 12,
+        // High priority automation terms (weight: 10) - INCREASED
+        'automate': 10, 'automation': 10, 'workflow': 8, 'schedule': 8, 'automatic': 8,
+        // Enhanced automation intent (weight: 8) - NEW
+        'do automatically': 8, 'run automatically': 8, 'setup recurring': 8, 'make automatic': 8,
+        // Medium priority automation terms (weight: 6) - IMPROVED
+        'repeat': 6, 'batch': 6, 'routine': 6, 'process': 6, 'sequence': 6, 'recurring': 6,
+        'scheduled': 6, 'periodic': 6, 'systematic': 6,
+        // Context terms (weight: 4) - IMPROVED
+        'steps': 4, 'tasks': 4, 'macro': 4, 'script': 4, 'timer': 4,
+        'daily': 4, 'weekly': 4, 'monthly': 4, 'regularly': 4
       }
       
       // Enhanced Analysis keywords with content type recognition
