@@ -66,41 +66,35 @@ class KAiroBrowserManager {
 
   async initializeAgenticServices() {
     try {
-      console.log('🤖 Initializing Enhanced Agentic Services...')
+      console.log('🤖 Initializing Enhanced Backend Services (ZERO UI IMPACT)...')
       
-      // Initialize agentic services
-      // Note: These would be loaded from compiled TypeScript in production
-      console.log('📚 Agent Memory Service: Enabling persistent agent memory and learning')
-      console.log('🤝 Agent Coordination Service: Enabling inter-agent communication')
-      console.log('🎯 Autonomous Planning Engine: Enabling goal-oriented task execution')
-      console.log('🧠 Enhanced Agent Framework: Enabling autonomous agent behavior')
+      // Initialize Database Service
+      this.databaseService = new DatabaseService({
+        path: process.env.DB_PATH || './data/kairo_browser.db',
+        maxSize: 100 * 1024 * 1024, // 100MB
+        backupEnabled: true
+      })
+      await this.databaseService.initialize()
       
-      // For now, we'll use placeholders that enhance the existing system
-      this.agentMemoryService = {
-        storeMemory: async (agentId, entry) => {
-          console.log(`💾 Storing memory for agent ${agentId}:`, entry.type)
-          return `mem_${Date.now()}`
-        },
-        getMemories: async (agentId, filters) => {
-          console.log(`📖 Retrieving memories for agent ${agentId}`)
-          return []
-        },
-        recordTaskOutcome: async (outcome) => {
-          console.log(`📊 Recording task outcome:`, outcome.success ? 'SUCCESS' : 'FAILURE')
-        }
-      }
+      // Initialize Performance Monitor
+      this.performanceMonitor = new AgentPerformanceMonitor(this.databaseService)
+      await this.performanceMonitor.initialize()
       
-      this.agentCoordinationService = {
-        sendMessage: async (message) => {
-          console.log(`📨 Agent message: ${message.fromAgent} → ${message.toAgent}`)
-          return `msg_${Date.now()}`
-        },
-        requestCollaboration: async (request) => {
-          console.log(`🤝 Collaboration requested: ${request.taskDescription}`)
-          return `collab_${Date.now()}`
-        },
-        registerAgent: async (agentId, skills) => {
-          console.log(`🔧 Registered agent ${agentId} with skills:`, skills)
+      // Initialize Background Task Scheduler
+      this.taskScheduler = new BackgroundTaskScheduler(this.databaseService)
+      await this.taskScheduler.initialize()
+      
+      console.log('✅ Enhanced Backend Services initialized successfully')
+      
+      // Schedule regular maintenance tasks
+      await this.scheduleMaintenanceTasks()
+      
+    } catch (error) {
+      console.error('❌ Failed to initialize enhanced backend services:', error)
+      // Continue with basic mode if backend services fail
+      this.isAgenticMode = false
+    }
+  }
         }
       }
       
