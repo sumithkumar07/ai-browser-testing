@@ -310,6 +310,7 @@ export class IntegratedAgentFramework {
   /**
    * Select appropriate agent based on intent analysis
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private selectAgent(intentAnalysis: any): Agent {
     const preferredType = intentAnalysis.agentType
     const agent = Array.from(this.agents.values()).find(a => a.type === preferredType)
