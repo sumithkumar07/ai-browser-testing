@@ -113,7 +113,20 @@ const AISidebar: React.FC<AISidebarProps> = ({
     }
   }
 
-  const addMessage = (isUser: boolean, content: string, isLoading = false, agentStatus?: AgentStatus) => {
+  // PERFORMANCE: Memoize scroll function to prevent re-creation
+  const scrollToBottom = useCallback(() => {
+    try {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    } catch (error) {
+      // Fallback for older browsers
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight
+      }
+    }
+  }, [])
+
+  // PERFORMANCE: Memoize addMessage function
+  const addMessage = useCallback((isUser: boolean, content: string, isLoading = false, agentStatus?: AgentStatus) => {
     const message: AIMessage = {
       id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       content,
@@ -123,62 +136,7 @@ const AISidebar: React.FC<AISidebarProps> = ({
       agentStatus
     }
     setMessages(prev => [...prev, message])
-  }
-
-  const updateAgentStatusMessage = (status: AgentStatus) => {
-    setMessages(prevMessages => {
-      // Remove previous agent status messages
-      const filtered = prevMessages.filter(msg => !msg.agentStatus)
-      
-      // Add new agent status message
-      const statusMessage: AIMessage = {
-        id: `agent_status_${Date.now()}`,
-        content: formatAgentStatus(status),
-        timestamp: Date.now(),
-        isUser: false,
-        agentStatus: status
-      }
-      
-      return [...filtered, statusMessage]
-    })
-  }
-
-  // FIXED: Memoize formatAgentStatus to prevent unnecessary re-renders
-  const formatAgentStatus = useMemo(() => (status: AgentStatus): string => {
-    const statusEmoji = {
-      idle: '⏸️',
-      active: '⏳',
-      completed: '✅',
-      error: '❌'
-    }
-
-    let message = `${statusEmoji[status.status]} **${status.name}**: ${status.status.toUpperCase()}`
-    
-    if (status.currentTask) {
-      message += `\n📋 Task: ${status.currentTask}`
-    }
-    
-    if (status.progress !== undefined && status.progress !== null) {
-      message += `\n📊 Progress: ${Math.round(status.progress)}%`
-    }
-    
-    if (status.details && status.details.length > 0) {
-      message += '\n\n**Details:**\n' + status.details.map(detail => `• ${detail}`).join('\n')
-    }
-    
-    return message
   }, [])
-
-  const scrollToBottom = () => {
-    try {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-    } catch (error) {
-      // Fallback for older browsers
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight
-      }
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
