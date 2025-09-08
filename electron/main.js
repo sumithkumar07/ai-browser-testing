@@ -411,7 +411,32 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
         // Analyze if AI wants to perform actions
         const actions = this.extractActionsFromResponse(enhancedResult, message)
         
-        console.log('✅ Enhanced agentic AI response generated')
+        // Record performance metrics - END
+        const endTime = Date.now()
+        if (this.performanceMonitor) {
+          await this.performanceMonitor.recordPerformanceMetric({
+            id: `perf_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            agentId: 'ai_assistant',
+            taskType: 'ai_message_processing',
+            startTime,
+            endTime,
+            duration: endTime - startTime,
+            success: true,
+            resourceUsage: {
+              cpuTime: endTime - startTime,
+              memoryUsed: 0, // Would be calculated from system metrics
+              networkRequests: 1
+            },
+            qualityScore: 8, // Default good quality score
+            metadata: {
+              messageLength: message.length,
+              responseLength: enhancedResult.length,
+              hasActions: actions.length > 0
+            }
+          })
+        }
+        
+        console.log('✅ Enhanced backend AI response generated')
         return { 
           success: true, 
           result: enhancedResult,
