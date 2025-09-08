@@ -381,28 +381,60 @@
   color: #dee2e6;
 }
 
+/* ENHANCED AI Toggle Button with Modern Design */
 .ai-toggle-button {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border: none;
-  background: #667eea;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: white;
-  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  transition: all 0.2s ease;
+  font-size: 18px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-toggle-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.ai-toggle-button:hover::before {
+  left: 100%;
 }
 
 .ai-toggle-button:hover {
-  background: #5a6fd8;
-  transform: scale(1.05);
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4c93 100%);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.ai-toggle-button:active {
+  transform: translateY(-1px) scale(1.02);
 }
 
 .ai-toggle-button.active {
-  background: #495057;
+  background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+  box-shadow: 0 6px 20px rgba(73, 80, 87, 0.4);
+}
+
+.ai-toggle-button.active:hover {
+  background: linear-gradient(135deg, #343a40 0%, #212529 100%);
 }
 
 /* Browser Window */
