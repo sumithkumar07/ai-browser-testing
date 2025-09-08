@@ -280,7 +280,10 @@ class KAiroBrowserManager {
 
     ipcMain.handle('send-ai-message', async (event, message) => {
       try {
-        console.log('💬 Processing AI message with enhanced agentic capabilities:', message)
+        console.log('💬 Processing AI message with enhanced backend capabilities:', message)
+        
+        // Record performance metrics - START
+        const startTime = Date.now()
         
         if (!this.aiService) {
           return { success: false, error: 'AI service not initialized' }
