@@ -1,19 +1,21 @@
 // KAiro Browser Main Application Component
 // Layout Structure: LOCKED - Do not modify layout proportions or structure
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense, lazy } from 'react'
 import BrowserWindow from './components/BrowserWindow'
-import AISidebar from './components/AISidebar'
 import TabBar from './components/TabBar'
 import NavigationBar from './components/NavigationBar'
 import LoadingSpinner from './components/LoadingSpinner'
 import ErrorBoundary from '../core/errors/ErrorBoundary'
-import IntegratedAgentFramework from './services/IntegratedAgentFramework'
 import { BrowserController } from './services/BrowserController'
 import { Tab, BrowserEvent, AgentStatus } from '../core/types'
 import { createLogger } from '../core/logger/Logger'
 import { APP_CONSTANTS } from '../core/utils/Constants'
 import { appEvents } from '../core/utils/EventEmitter'
 import './styles/App.css'
+
+// PERFORMANCE: Lazy load heavy components to reduce initial bundle size
+const AISidebar = lazy(() => import('./components/AISidebar'))
+const IntegratedAgentFramework = lazy(() => import('./services/IntegratedAgentFramework'))
 
 const logger = createLogger('App')
 
