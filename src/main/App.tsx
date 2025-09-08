@@ -15,7 +15,6 @@ import './styles/App.css'
 
 // PERFORMANCE: Lazy load heavy components to reduce initial bundle size
 const AISidebar = lazy(() => import('./components/AISidebar'))
-const IntegratedAgentFramework = lazy(() => import('./services/IntegratedAgentFramework'))
 
 const logger = createLogger('App')
 
