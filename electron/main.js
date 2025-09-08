@@ -1020,11 +1020,11 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       // Enhanced Shopping keywords with weighted scoring
       const shoppingKeywords = {
         // High priority shopping terms (weight: 5)
-        'buy': 5, 'purchase': 5, 'shopping': 5, 'compare': 5, 'price': 5,
+        'buy': 5, 'purchase': 5, 'shopping': 5, 'compare': 5, 'price': 5, 'prices': 5,
         // Medium priority shopping terms (weight: 3)
         'shop': 3, 'cost': 3, 'product': 3, 'deal': 3, 'discount': 3, 'sale': 3,
         // Low priority shopping terms (weight: 2)
-        'cheap': 2, 'review': 2, 'rating': 2, 'order': 2, 'checkout': 2
+        'cheap': 2, 'review': 2, 'rating': 2, 'order': 2, 'checkout': 2, 'laptop': 2
       }
       
       // Enhanced Communication keywords with weighted scoring
