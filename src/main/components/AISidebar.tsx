@@ -36,6 +36,14 @@ const AISidebar: React.FC<AISidebarProps> = ({
     }
   }, [agentStatus])
 
+  // Update context when current URL changes
+  useEffect(() => {
+    if (currentUrl && messages.length > 0) {
+      // Add context awareness when URL changes
+      console.log('URL context updated:', currentUrl)
+    }
+  }, [currentUrl, messages.length])
+
   const initializeAI = async () => {
     try {
       // Check if electronAPI exists first
