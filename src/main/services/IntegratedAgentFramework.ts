@@ -372,9 +372,6 @@ export class IntegratedAgentFramework {
   async cleanup(): Promise<void> {
     logger.info('Cleaning up Integrated Agent Framework')
 
-    await this.agentSystem.cleanup()
-    await this.aiService.cleanup()
-
     this.agents.clear()
     this.eventListeners.clear()
     this.isInitialized = false
