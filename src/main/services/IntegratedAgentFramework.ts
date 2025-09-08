@@ -62,8 +62,7 @@ export class IntegratedAgentFramework {
 
       // Emit initialization event
       appEvents.emit('app:initialized', { 
-        timestamp: Date.now(),
-        agentCount: this.agents.size 
+        timestamp: Date.now()
       })
 
     } catch (error) {
