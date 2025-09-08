@@ -844,44 +844,105 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* ENHANCED AI Connection Status with Better Visual Feedback */
 .ai-connection-status {
-  height: 30px;
+  height: 36px;
   display: flex;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 24px;
   font-size: 12px;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   justify-content: space-between;
+  transition: all 0.3s ease;
 }
 
 .ai-connection-indicator {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: #6c757d;
+  transition: all 0.4s ease;
+  position: relative;
+}
+
+.ai-connection-indicator::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  transition: all 0.4s ease;
 }
 
 .ai-connection-status.connected .ai-connection-indicator {
   background: #28a745;
   animation: pulse 2s infinite;
+  box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+}
+
+.ai-connection-status.connected .ai-connection-indicator::after {
+  border: 2px solid rgba(40, 167, 69, 0.3);
+  animation: ripple 2s infinite;
 }
 
 .ai-connection-status.disconnected .ai-connection-indicator {
   background: #dc3545;
+  box-shadow: 0 0 8px rgba(220, 53, 69, 0.4);
 }
 
 .ai-connection-status.loading .ai-connection-indicator {
   background: #ffc107;
   animation: pulse 1s infinite;
+  box-shadow: 0 0 8px rgba(255, 193, 7, 0.5);
 }
 
+/* ENHANCED Agent Status Indicator */
 .agent-status-indicator {
   font-size: 11px;
-  background: #667eea;
+  font-weight: 600;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.agent-status-indicator.processing {
+  background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+  animation: glow 2s infinite;
+}
+
+.agent-status-indicator.ready {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.agent-status-indicator.error {
+  background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
 }
 
 @keyframes pulse {
