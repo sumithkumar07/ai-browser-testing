@@ -508,4 +508,5 @@ const AISidebar: React.FC<AISidebarProps> = ({
   )
 }
 
-export default AISidebar
+// PERFORMANCE: Memoize the entire component to prevent unnecessary re-renders
+export default memo(AISidebar)
