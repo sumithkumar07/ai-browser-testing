@@ -1625,16 +1625,21 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
         'daily': 4, 'weekly': 4, 'monthly': 4, 'regularly': 4
       }
       
-      // Enhanced Analysis keywords with content type recognition
+      // IMPROVED Analysis keywords with enhanced content recognition
       const analysisKeywords = {
-        // Ultra-high priority analysis terms (weight: 8)
-        'analyze content': 8, 'content analysis': 8, 'deep analysis': 8, 'data analysis': 8,
-        // High priority analysis terms (weight: 6)
-        'analyze': 6, 'analysis': 6, 'summarize': 6, 'summary': 6, 'extract': 6,
-        // Medium priority analysis terms (weight: 4)
-        'insights': 4, 'review': 4, 'evaluate': 4, 'assess': 4, 'interpret': 4, 'report': 4,
-        // Context terms (weight: 3)
-        'examine': 3, 'breakdown': 3, 'understand': 3, 'explain': 3, 'metrics': 3, 'statistics': 3
+        // Ultra-high priority analysis terms (weight: 12) - INCREASED
+        'analyze content': 12, 'content analysis': 12, 'deep analysis': 12, 'data analysis': 12,
+        'analyze this page': 12, 'summarize this': 12, 'break down': 12,
+        // High priority analysis terms (weight: 10) - INCREASED
+        'analyze': 10, 'analysis': 10, 'summarize': 8, 'summary': 8, 'extract': 8,
+        // Enhanced analysis intent (weight: 8) - NEW
+        'what does this mean': 8, 'explain this': 8, 'interpret this': 8, 'make sense of': 8,
+        // Medium priority analysis terms (weight: 6) - IMPROVED
+        'insights': 6, 'review': 6, 'evaluate': 6, 'assess': 6, 'interpret': 6, 'report': 6,
+        'understand': 6, 'breakdown': 6, 'examine': 6,
+        // Context terms (weight: 4) - IMPROVED
+        'explain': 4, 'metrics': 4, 'statistics': 4, 'trends': 4, 'patterns': 4,
+        'key points': 4, 'main ideas': 4, 'conclusions': 4
       }
 
       // PHASE 3: Calculate enhanced scores using weighted keywords
