@@ -1632,8 +1632,9 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
         'analyze this page': 12, 'summarize this': 12, 'break down': 12,
         // High priority analysis terms (weight: 10) - INCREASED
         'analyze': 10, 'analysis': 10, 'summarize': 8, 'summary': 8, 'extract': 8,
-        // Enhanced analysis intent (weight: 8) - NEW
-        'what does this mean': 8, 'explain this': 8, 'interpret this': 8, 'make sense of': 8,
+        // Enhanced analysis intent (weight: 10) - INCREASED
+        'what does this mean': 10, 'explain this': 10, 'interpret this': 10, 'make sense of': 10,
+        'what does': 8, 'mean': 6, // FIX: Added separate weights
         // Medium priority analysis terms (weight: 6) - IMPROVED
         'insights': 6, 'review': 6, 'evaluate': 6, 'assess': 6, 'interpret': 6, 'report': 6,
         'understand': 6, 'breakdown': 6, 'examine': 6,
