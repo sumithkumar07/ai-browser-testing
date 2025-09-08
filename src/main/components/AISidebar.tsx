@@ -300,18 +300,29 @@ const AISidebar: React.FC<AISidebarProps> = ({
       )
     }
 
-    // FIXED: XSS Vulnerability - Sanitize content with DOMPurify
+    // SECURITY: Enhanced XSS prevention with comprehensive sanitization
     try {
-      const content = message.content
+      // First, escape any potential HTML in the raw content
+      const escapedContent = message.content
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;')
+      
+      // Then apply markdown-style formatting to the escaped content
+      const formattedContent = escapedContent
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
         .replace(/`(.*?)`/g, '<code>$1</code>')
         .replace(/\n/g, '<br>')
 
-      // Sanitize the content before rendering
-      const sanitizedContent = DOMPurify.sanitize(content, {
-        ALLOWED_TAGS: ['strong', 'em', 'code', 'br', 'p', 'div', 'span'],
-        ALLOWED_ATTR: []
+      // Final sanitization with DOMPurify - very restrictive whitelist
+      const sanitizedContent = DOMPurify.sanitize(formattedContent, {
+        ALLOWED_TAGS: ['strong', 'em', 'code', 'br', 'p'],
+        ALLOWED_ATTR: [],
+        FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed'],
+        FORBID_ATTR: ['onclick', 'onload', 'onerror', 'javascript:', 'data:']
       })
 
       return (
@@ -321,6 +332,8 @@ const AISidebar: React.FC<AISidebarProps> = ({
         />
       )
     } catch (error) {
+      console.warn('Content sanitization error:', error)
+      // Fallback: render as plain text if sanitization fails
       return (
         <div className="message-content">
           {message.content}
