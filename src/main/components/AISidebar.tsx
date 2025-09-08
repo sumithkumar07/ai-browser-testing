@@ -185,12 +185,34 @@ const AISidebar: React.FC<AISidebarProps> = ({
     
     if (!inputValue.trim() || isLoading || connectionStatus !== 'connected') return
 
-    const userMessage = inputValue.trim()
+    // SECURITY: Input validation and sanitization
+    const sanitizedInput = inputValue.trim()
+    
+    // Validate input length (prevent extremely long inputs)
+    if (sanitizedInput.length > 5000) {
+      addMessage(false, '⚠️ Message too long. Please limit your message to 5000 characters.')
+      return
+    }
+
+    // Basic content filtering (prevent potential injection attempts)
+    const suspiciousPatterns = [
+      /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+      /javascript:/gi,
+      /data:text\/html/gi,
+      /on\w+\s*=/gi
+    ]
+    
+    const hasSuspiciousContent = suspiciousPatterns.some(pattern => pattern.test(sanitizedInput))
+    if (hasSuspiciousContent) {
+      addMessage(false, '⚠️ Message contains potentially unsafe content. Please rephrase your request.')
+      return
+    }
+
     setInputValue('')
     setIsLoading(true)
 
     // Add user message
-    addMessage(true, userMessage)
+    addMessage(true, sanitizedInput)
 
     try {
       // Check if electronAPI exists
@@ -201,31 +223,40 @@ const AISidebar: React.FC<AISidebarProps> = ({
       // Add loading message
       addMessage(false, '🤖 Processing your request...', true)
 
-      // Send to AI service
-      const result: AIResponse = await window.electronAPI.sendAIMessage(userMessage)
+      // Send to AI service with sanitized input
+      const result: AIResponse = await window.electronAPI.sendAIMessage(sanitizedInput)
       
       // Remove loading message
       setMessages(prev => prev.filter(msg => !msg.isLoading))
 
       if (result && result.success) {
-        addMessage(false, result.result || 'Task initiated successfully')
+        // SECURITY: Sanitize AI response before displaying
+        const sanitizedResponse = result.result ? result.result.slice(0, 10000) : 'Task initiated successfully' // Limit response length
+        addMessage(false, sanitizedResponse)
         
         // Execute agent task if this is a complex request
-        if (shouldExecuteAgentTask(userMessage)) {
+        if (shouldExecuteAgentTask(sanitizedInput)) {
           addMessage(false, '🔄 Executing agent task...')
           try {
-            onAgentTask(userMessage)
+            onAgentTask(sanitizedInput)
           } catch (agentError) {
             addMessage(false, `⚠️ Agent task warning: ${agentError instanceof Error ? agentError.message : 'Unknown error'}`)
           }
         }
         
-        // Execute actions if any
+        // Execute actions if any (with additional validation)
         if (result.actions && Array.isArray(result.actions) && result.actions.length > 0) {
           for (const action of result.actions) {
             try {
+              // Validate action before execution
               if (action.type === 'navigate' && action.target && window.electronAPI.navigateTo) {
-                await window.electronAPI.navigateTo(action.target)
+                // Validate URL format
+                const urlPattern = /^https?:\/\/.+/i
+                if (urlPattern.test(action.target)) {
+                  await window.electronAPI.navigateTo(action.target)
+                } else {
+                  addMessage(false, `⚠️ Invalid URL format: ${action.target}`)
+                }
               }
             } catch (actionError) {
               addMessage(false, `⚠️ Action warning: ${actionError instanceof Error ? actionError.message : 'Action failed'}`)
