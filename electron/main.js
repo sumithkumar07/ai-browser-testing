@@ -1039,6 +1039,30 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       }
     })
 
+    // Debug Handler (preserved)
+    ipcMain.handle('debug-browser-view', async () => {
+      try {
+        return {
+          success: true,
+          data: {
+            totalTabs: this.browserViews.size,
+            activeTabId: this.activeTabId,
+            tabIds: Array.from(this.browserViews.keys()),
+            isInitialized: this.isInitialized,
+            hasAI: !!this.aiService,
+            agenticMode: this.isAgenticMode,
+            enhancedServices: {
+              memory: !!this.agentMemoryService,
+              coordination: !!this.agentCoordinationService,
+              planning: !!this.autonomousPlanningEngine
+            }
+          }
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
     console.log('✅ IPC handlers setup complete')
   }
 
