@@ -27,8 +27,9 @@ export default defineConfig({
   base: './',
   define: {
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-    'process.env.GROQ_API_KEY': JSON.stringify(process.env.GROQ_API_KEY),
     'process.env.APP_NAME': JSON.stringify(process.env.APP_NAME),
     'process.env.APP_VERSION': JSON.stringify(process.env.APP_VERSION)
+    // SECURITY: GROQ_API_KEY is intentionally excluded from frontend build
+    // The API key should only be used in the backend Electron main process
   }
 })
