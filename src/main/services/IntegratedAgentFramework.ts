@@ -7,7 +7,7 @@ import { createLogger } from '../../core/logger/Logger'
 import { appEvents } from '../../core/utils/EventEmitter'
 import { validateAgentTask } from '../../core/utils/Validators'
 import ConversationManager from '../../core/services/ConversationManager'
-import { AgentStatus, AgentCapability, AgentTask } from '../../core/types'
+import { AgentCapability, AgentTask } from '../../core/types'
 
 const logger = createLogger('IntegratedAgentFramework')
 
