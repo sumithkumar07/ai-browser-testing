@@ -1676,59 +1676,84 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       }
     }
 
-    // ENHANCED: Advanced contextual bonuses with pattern recognition  
+    // ENHANCED: Advanced contextual bonuses with IMPROVED pattern recognition  
     this.applyAdvancedContextualBonuses = (lowerTask, originalTask, baseScores, intentPatterns) => {
       const bonusedScores = { ...baseScores }
       
-      // URL and Navigation Pattern Bonuses
+      // IMPROVED URL and Navigation Pattern Bonuses
       if (intentPatterns.hasURL) {
-        bonusedScores.navigation += 8 // Strong navigation intent
+        bonusedScores.navigation += 15 // INCREASED - Strong navigation intent
       }
       
-      // E-commerce and Shopping Pattern Bonuses
+      // IMPROVED E-commerce and Shopping Pattern Bonuses
       if (intentPatterns.hasPrice || intentPatterns.hasComparison) {
-        bonusedScores.shopping += 6
+        bonusedScores.shopping += 10 // INCREASED
       }
       
-      // Specific platform bonuses
+      // ENHANCED Specific platform bonuses with more platforms
       const platformBonuses = {
-        'amazon|ebay|walmart|target|bestbuy': () => bonusedScores.shopping += 7,
-        'gmail|outlook|yahoo|mail': () => bonusedScores.communication += 7,
-        'github|stackoverflow|documentation': () => bonusedScores.research += 5,
-        'facebook|twitter|linkedin|instagram': () => bonusedScores.communication += 6
+        'amazon|ebay|walmart|target|bestbuy|etsy|shopify': () => bonusedScores.shopping += 12, // INCREASED
+        'gmail|outlook|yahoo|mail|email': () => bonusedScores.communication += 12, // INCREASED
+        'github|stackoverflow|documentation|docs|wiki': () => bonusedScores.research += 8, // INCREASED
+        'facebook|twitter|linkedin|instagram|tiktok|youtube': () => bonusedScores.communication += 10, // INCREASED
+        'google|bing|duckduckgo|search': () => bonusedScores.research += 6, // NEW
+        'news|cnn|bbc|reuters|nytimes': () => bonusedScores.research += 7 // NEW
       }
       
       Object.entries(platformBonuses).forEach(([pattern, bonus]) => {
         if (new RegExp(pattern, 'i').test(lowerTask)) bonus()
       })
       
-      // Research intent enhancement
+      // IMPROVED Research intent enhancement
       if (intentPatterns.hasQuestion || intentPatterns.hasMultiple) {
-        bonusedScores.research += 4
+        bonusedScores.research += 8 // INCREASED from 4
       }
       
-      // Communication intent enhancement  
+      // ENHANCED Communication intent enhancement  
       if (intentPatterns.hasEmail || intentPatterns.hasCreation) {
         if (lowerTask.includes('email') || lowerTask.includes('message')) {
-          bonusedScores.communication += 6
+          bonusedScores.communication += 10 // INCREASED from 6
+        }
+        if (lowerTask.includes('write') || lowerTask.includes('compose')) {
+          bonusedScores.communication += 6 // NEW
         }
       }
       
-      // Analysis intent for current page
+      // ENHANCED Analysis intent for current page
       if (lowerTask.includes('this page') || lowerTask.includes('current page') || lowerTask.includes('analyze content')) {
-        bonusedScores.analysis += 7
+        bonusedScores.analysis += 12 // INCREASED from 7
+      }
+      if (lowerTask.includes('what does this') || lowerTask.includes('explain this')) {
+        bonusedScores.analysis += 8 // NEW
       }
       
-      // Automation pattern detection
+      // IMPROVED Automation pattern detection
       if (intentPatterns.hasTime || lowerTask.includes('automatically') || lowerTask.includes('every')) {
-        bonusedScores.automation += 5
+        bonusedScores.automation += 8 // INCREASED from 5
+      }
+      if (lowerTask.includes('schedule') || lowerTask.includes('recurring') || lowerTask.includes('repeat')) {
+        bonusedScores.automation += 6 // NEW
       }
       
-      // Advanced task complexity bonuses
+      // ENHANCED task complexity bonuses
       if (originalTask.length > 80) {
         // Long, complex tasks likely need research
-        bonusedScores.research += 3
+        bonusedScores.research += 5 // INCREASED from 3
       }
+      
+      // NEW: Action verb bonuses for better intent detection
+      const actionVerbs = {
+        'go|visit|navigate|open|browse': () => bonusedScores.navigation += 6,
+        'buy|purchase|shop|order': () => bonusedScores.shopping += 8,
+        'find|search|look|discover': () => bonusedScores.research += 5,
+        'write|compose|create|draft': () => bonusedScores.communication += 6,
+        'analyze|examine|review|study': () => bonusedScores.analysis += 6,
+        'automate|schedule|repeat|setup': () => bonusedScores.automation += 6
+      }
+      
+      Object.entries(actionVerbs).forEach(([pattern, bonus]) => {
+        if (new RegExp(`\\b(${pattern})\\b`, 'i').test(lowerTask)) bonus()
+      })
       
       return bonusedScores
     }
