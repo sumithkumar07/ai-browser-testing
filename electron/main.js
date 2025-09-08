@@ -1613,16 +1613,18 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
         // Ultra-high priority automation terms (weight: 12) - INCREASED
         'automate workflow': 12, 'create automation': 12, 'automatic process': 12,
         'set up automation': 12, 'automate task': 12, 'recurring task': 12,
+        'daily routine': 12, 'create routine': 12, // FIX: Added routine creation
         // High priority automation terms (weight: 10) - INCREASED
         'automate': 10, 'automation': 10, 'workflow': 8, 'schedule': 8, 'automatic': 8,
         // Enhanced automation intent (weight: 8) - NEW
         'do automatically': 8, 'run automatically': 8, 'setup recurring': 8, 'make automatic': 8,
+        'create daily': 8, 'setup workflow': 8, // FIX: Added creation patterns
         // Medium priority automation terms (weight: 6) - IMPROVED
-        'repeat': 6, 'batch': 6, 'routine': 6, 'process': 6, 'sequence': 6, 'recurring': 6,
+        'repeat': 6, 'batch': 6, 'routine': 8, 'process': 6, 'sequence': 6, 'recurring': 6, // INCREASED routine weight
         'scheduled': 6, 'periodic': 6, 'systematic': 6,
         // Context terms (weight: 4) - IMPROVED
         'steps': 4, 'tasks': 4, 'macro': 4, 'script': 4, 'timer': 4,
-        'daily': 4, 'weekly': 4, 'monthly': 4, 'regularly': 4
+        'daily': 6, 'weekly': 4, 'monthly': 4, 'regularly': 4 // INCREASED daily weight
       }
       
       // IMPROVED Analysis keywords with enhanced content recognition
