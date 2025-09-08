@@ -1669,6 +1669,27 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
     return automationKeywords.some(keyword => message.toLowerCase().includes(keyword))
   }
 
+  // Original action extraction method (preserved)
+  extractActionsFromResponse(response, originalMessage) {
+    const actions = []
+    
+    // Simple pattern matching for navigation actions
+    const urlRegex = /(?:navigate to|go to|visit|open)\s+(https?:\/\/[^\s]+)/gi
+    const matches = originalMessage.match(urlRegex)
+    
+    if (matches) {
+      matches.forEach(match => {
+        const url = match.split(' ').pop()
+        actions.push({
+          type: 'navigate',
+          target: url
+        })
+      })
+    }
+    
+    return actions
+  }
+
   setupBrowserViewListeners(browserView, tabId) {
     // Navigation events
     browserView.webContents.on('did-start-loading', () => {
