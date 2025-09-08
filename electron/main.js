@@ -1754,6 +1754,8 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
         return { success: false, error: error.message }
       }
     })
+    
+    // Enhanced Backend-Only IPC Handlers - ZERO UI IMPACT
 
     console.log('✅ IPC handlers setup complete')
   }
