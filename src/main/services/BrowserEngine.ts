@@ -229,8 +229,8 @@ export class BrowserEngine {
       this.state.error = null
 
       // Handle options if provided
-      const timeout = options.timeout || 30000 // 30 second default timeout
-      const replace = options.replace || false
+      const _timeout = options.timeout || 30000 // 30 second default timeout
+      const _replace = options.replace || false
 
       // TODO: Implement timeout and replace functionality
       // For now, we acknowledge the options but don't use them yet
