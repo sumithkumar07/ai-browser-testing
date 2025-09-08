@@ -44,6 +44,11 @@ class KAiroBrowserManager {
       // Initialize AI service
       await this.initializeAIService()
       
+      // Initialize Enhanced Agentic Services
+      if (this.isAgenticMode) {
+        await this.initializeAgenticServices()
+      }
+      
       // Setup IPC handlers
       this.setupIPCHandlers()
       
@@ -53,6 +58,70 @@ class KAiroBrowserManager {
     } catch (error) {
       console.error('❌ Failed to initialize KAiro Browser Manager:', error)
       throw error
+    }
+  }
+
+  async initializeAgenticServices() {
+    try {
+      console.log('🤖 Initializing Enhanced Agentic Services...')
+      
+      // Initialize agentic services
+      // Note: These would be loaded from compiled TypeScript in production
+      console.log('📚 Agent Memory Service: Enabling persistent agent memory and learning')
+      console.log('🤝 Agent Coordination Service: Enabling inter-agent communication')
+      console.log('🎯 Autonomous Planning Engine: Enabling goal-oriented task execution')
+      console.log('🧠 Enhanced Agent Framework: Enabling autonomous agent behavior')
+      
+      // For now, we'll use placeholders that enhance the existing system
+      this.agentMemoryService = {
+        storeMemory: async (agentId, entry) => {
+          console.log(`💾 Storing memory for agent ${agentId}:`, entry.type)
+          return `mem_${Date.now()}`
+        },
+        getMemories: async (agentId, filters) => {
+          console.log(`📖 Retrieving memories for agent ${agentId}`)
+          return []
+        },
+        recordTaskOutcome: async (outcome) => {
+          console.log(`📊 Recording task outcome:`, outcome.success ? 'SUCCESS' : 'FAILURE')
+        }
+      }
+      
+      this.agentCoordinationService = {
+        sendMessage: async (message) => {
+          console.log(`📨 Agent message: ${message.fromAgent} → ${message.toAgent}`)
+          return `msg_${Date.now()}`
+        },
+        requestCollaboration: async (request) => {
+          console.log(`🤝 Collaboration requested: ${request.taskDescription}`)
+          return `collab_${Date.now()}`
+        },
+        registerAgent: async (agentId, skills) => {
+          console.log(`🔧 Registered agent ${agentId} with skills:`, skills)
+        }
+      }
+      
+      this.autonomousPlanningEngine = {
+        createGoal: async (goalData) => {
+          console.log(`🎯 Created autonomous goal: ${goalData.description}`)
+          return `goal_${Date.now()}`
+        },
+        createExecutionPlan: async (goalId) => {
+          console.log(`📋 Created execution plan for goal: ${goalId}`)
+          return `plan_${Date.now()}`
+        },
+        executeAutonomously: async (planId) => {
+          console.log(`⚡ Executing plan autonomously: ${planId}`)
+          // This would run in background in production
+        }
+      }
+      
+      console.log('✅ Enhanced Agentic Services initialized (placeholder mode)')
+      
+    } catch (error) {
+      console.error('❌ Failed to initialize agentic services:', error)
+      // Continue with basic mode if agentic services fail
+      this.isAgenticMode = false
     }
   }
 
