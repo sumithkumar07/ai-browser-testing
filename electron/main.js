@@ -1452,7 +1452,175 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       }
     })
 
-    // Enhanced Backend-Only IPC Handlers - ZERO UI IMPACT
+    // Enhanced Autonomous Goal Execution Handlers
+    ipcMain.handle('create-autonomous-goal', async (event, goalData) => {
+      try {
+        console.log('🎯 Creating autonomous goal:', goalData.description)
+        
+        if (!this.isAgenticMode || !this.agentCoordinationService) {
+          return { success: false, error: 'Advanced agentic features not available' }
+        }
+        
+        const goalId = await this.agentCoordinationService.createAutonomousGoal(
+          goalData.initiatorAgent || 'ai_assistant',
+          goalData.description,
+          goalData.type || 'research',
+          goalData.priority || 5,
+          goalData.deadline
+        )
+        
+        return { 
+          success: true, 
+          goalId,
+          message: 'Autonomous goal created and execution started'
+        }
+        
+      } catch (error) {
+        console.error('❌ Failed to create autonomous goal:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-autonomous-goals', async (event, agentId) => {
+      try {
+        if (!this.isAgenticMode || !this.agentCoordinationService) {
+          return { success: false, error: 'Advanced agentic features not available' }
+        }
+        
+        const goals = await this.agentCoordinationService.getActiveAutonomousGoals(agentId)
+        return { success: true, data: goals }
+        
+      } catch (error) {
+        console.error('❌ Failed to get autonomous goals:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-goal-progress', async () => {
+      try {
+        if (!this.isAgenticMode || !this.agentCoordinationService) {
+          return { success: false, error: 'Advanced agentic features not available' }
+        }
+        
+        const progress = await this.agentCoordinationService.monitorGoalProgress()
+        return { success: true, data: progress }
+        
+      } catch (error) {
+        console.error('❌ Failed to get goal progress:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Enhanced Agent Memory and Learning Handlers
+    ipcMain.handle('get-agent-insights', async (event, agentId) => {
+      try {
+        if (!this.isAgenticMode || !this.agentMemoryService) {
+          return { success: false, error: 'Agent memory not available' }
+        }
+        
+        const insights = await this.agentMemoryService.getAgentInsights(agentId || 'ai_assistant')
+        return { success: true, data: insights }
+        
+      } catch (error) {
+        console.error('❌ Failed to get agent insights:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-cross-agent-learnings', async (event, agentId) => {
+      try {
+        if (!this.isAgenticMode || !this.agentMemoryService) {
+          return { success: false, error: 'Agent memory not available' }
+        }
+        
+        const learnings = await this.agentMemoryService.getKnowledge(agentId || 'ai_assistant', 'cross_agent_learnings')
+        return { success: true, data: learnings }
+        
+      } catch (error) {
+        console.error('❌ Failed to get cross-agent learnings:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Enhanced Agent Collaboration Handlers
+    ipcMain.handle('request-agent-collaboration', async (event, collaborationData) => {
+      try {
+        console.log('🤝 Requesting agent collaboration:', collaborationData.taskDescription)
+        
+        if (!this.isAgenticMode || !this.agentCoordinationService) {
+          return { success: false, error: 'Agent coordination not available' }
+        }
+        
+        const collaborationId = await this.agentCoordinationService.requestCollaboration({
+          requesterId: collaborationData.requesterId || 'user_agent',
+          taskDescription: collaborationData.taskDescription,
+          requiredSkills: collaborationData.requiredSkills || ['research'],
+          estimatedDuration: collaborationData.estimatedDuration || 120,
+          priority: collaborationData.priority || 5,
+          resourceRequirements: collaborationData.resourceRequirements || []
+        })
+        
+        return {
+          success: true,
+          collaborationId,
+          message: 'Agent collaboration requested successfully'
+        }
+        
+      } catch (error) {
+        console.error('❌ Failed to request agent collaboration:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-agent-teams', async () => {
+      try {
+        if (!this.isAgenticMode || !this.agentCoordinationService) {
+          return { success: false, error: 'Agent coordination not available' }
+        }
+        
+        // Get all active teams (this would need to be implemented in AgentCoordinationService)
+        const teams = [] // Placeholder - would get from agentCoordinationService.getActiveTeams()
+        return { success: true, data: teams }
+        
+      } catch (error) {
+        console.error('❌ Failed to get agent teams:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Enhanced System Status Handlers
+    ipcMain.handle('get-enhanced-system-status', async () => {
+      try {
+        return {
+          success: true,
+          data: {
+            agenticMode: this.isAgenticMode,
+            services: {
+              memoryService: !!this.agentMemoryService,
+              coordinationService: !!this.agentCoordinationService,
+              performanceMonitor: !!this.performanceMonitor,
+              taskScheduler: !!this.taskScheduler,
+              databaseService: !!this.databaseService
+            },
+            capabilities: {
+              autonomousGoals: this.isAgenticMode && !!this.agentCoordinationService,
+              advancedMemoryLearning: this.isAgenticMode && !!this.agentMemoryService,
+              crossAgentCollaboration: this.isAgenticMode && !!this.agentCoordinationService,
+              performanceOptimization: this.isAgenticMode && !!this.performanceMonitor,
+              backgroundTaskExecution: this.isAgenticMode && !!this.taskScheduler
+            },
+            stats: this.isAgenticMode ? {
+              activeGoals: this.agentCoordinationService ? 
+                await this.agentCoordinationService.monitorGoalProgress().then(p => p.activeGoals).catch(() => 0) : 0,
+              backgroundTasks: this.taskScheduler ? 
+                await this.taskScheduler.getTaskStats().then(s => s.pending + s.running).catch(() => 0) : 0
+            } : null
+          }
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
     
     // Performance monitoring handlers
     ipcMain.handle('get-agent-performance-stats', async (event, agentId, days) => {
