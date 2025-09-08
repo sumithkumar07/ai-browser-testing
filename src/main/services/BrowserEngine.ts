@@ -232,6 +232,9 @@ export class BrowserEngine {
       const timeout = options.timeout || 30000 // 30 second default timeout
       const replace = options.replace || false
 
+      // TODO: Implement timeout and replace functionality
+      // For now, we acknowledge the options but don't use them yet
+
       // Emit navigation started event
       this.emitEvent({
         type: 'navigation-started',
