@@ -123,6 +123,14 @@ function analyzeAgentTaskTest(task) {
     scores.analysis += 12;
   }
   
+  if (/what does.*mean/.test(lowerTask)) {
+    scores.analysis += 10;
+  }
+  
+  if (/daily.*routine/.test(lowerTask)) {
+    scores.automation += 10;
+  }
+  
   // Find the agent with highest score
   let primaryAgent = 'research'; // default
   let maxScore = 0;
