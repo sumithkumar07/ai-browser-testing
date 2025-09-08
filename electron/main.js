@@ -306,13 +306,314 @@ class KAiroBrowserManager {
           return { success: false, error: 'AI service not initialized' }
         }
 
-        // Enhanced agentic processing
-        if (this.isAgenticMode) {
-          const agenticResponse = await this.processWithAgenticCapabilities(message)
-          if (agenticResponse) {
-            return agenticResponse
+  async processWithAgenticCapabilities(message) {
+    try {
+      console.log('🤖 Processing with advanced agentic capabilities:', message)
+      
+      if (!this.isAgenticMode || !this.agentCoordinationService) {
+        return null // Fall back to standard processing
+      }
+
+      // PHASE 1: Advanced Task Analysis
+      const taskAnalysis = this.analyzeAgentTask(message)
+      console.log('📊 Advanced Task Analysis:', taskAnalysis)
+
+      // PHASE 2: Multi-Agent Coordination for Complex Tasks
+      if (taskAnalysis.needsMultipleAgents || taskAnalysis.complexity === 'high') {
+        return await this.executeCoordinatedMultiAgentTask(message, taskAnalysis)
+      }
+
+      // PHASE 3: Enhanced Single Agent Execution
+      if (taskAnalysis.confidence >= 80) {
+        return await this.executeEnhancedAgentTask(message, taskAnalysis)
+      }
+
+      return null // Fall back to standard processing
+    } catch (error) {
+      console.error('❌ Advanced agentic processing failed:', error)
+      return null
+    }
+  }
+
+  async executeCoordinatedMultiAgentTask(message, taskAnalysis) {
+    try {
+      console.log('🤝 Executing coordinated multi-agent task')
+      
+      const primaryAgent = taskAnalysis.primaryAgent
+      const supportingAgents = taskAnalysis.supportingAgents
+      
+      // Create coordination plan
+      const coordinationPlan = {
+        taskId: `coordinated_${Date.now()}`,
+        primaryAgent,
+        supportingAgents,
+        phases: this.createCoordinationPhases(message, taskAnalysis),
+        startTime: Date.now()
+      }
+
+      console.log('📋 Coordination Plan:', coordinationPlan)
+
+      // Execute phases sequentially with coordination
+      let results = []
+      for (const phase of coordinationPlan.phases) {
+        const phaseResult = await this.executeCoordinationPhase(phase, message, results)
+        results.push(phaseResult)
+      }
+
+      // Synthesize final coordinated response
+      const coordinatedResponse = await this.synthesizeCoordinatedResponse(results, message, taskAnalysis)
+      
+      return {
+        success: true,
+        result: coordinatedResponse,
+        coordination: {
+          agentsUsed: [primaryAgent, ...supportingAgents],
+          phases: results.length,
+          totalExecutionTime: Date.now() - coordinationPlan.startTime
+        }
+      }
+
+    } catch (error) {
+      console.error('❌ Multi-agent coordination failed:', error)
+      return null
+    }
+  }
+
+  createCoordinationPhases(message, taskAnalysis) {
+    const phases = []
+    const primaryAgent = taskAnalysis.primaryAgent
+    const supportingAgents = taskAnalysis.supportingAgents
+
+    // Phase 1: Primary agent analysis
+    phases.push({
+      type: 'primary_analysis',
+      agent: primaryAgent,
+      description: `Primary ${primaryAgent} agent analysis`,
+      priority: 1
+    })
+
+    // Phase 2: Supporting agent contributions
+    supportingAgents.forEach((agent, index) => {
+      phases.push({
+        type: 'supporting_contribution',
+        agent: agent,
+        description: `Supporting ${agent} agent contribution`,
+        priority: 2 + index
+      })
+    })
+
+    // Phase 3: Cross-agent synthesis
+    if (supportingAgents.length > 1) {
+      phases.push({
+        type: 'synthesis',
+        agent: 'coordination',
+        description: 'Cross-agent synthesis and optimization',
+        priority: 10
+      })
+    }
+
+    return phases
+  }
+
+  async executeCoordinationPhase(phase, message, previousResults) {
+    try {
+      console.log(`🔄 Executing coordination phase: ${phase.description}`)
+
+      const phaseStartTime = Date.now()
+      let result = null
+
+      switch (phase.type) {
+        case 'primary_analysis':
+          result = await this.executeSpecializedAgent(phase.agent, message, { 
+            role: 'primary',
+            context: 'multi-agent-coordination'
+          })
+          break
+
+        case 'supporting_contribution':
+          const context = this.buildSupportingAgentContext(previousResults)
+          result = await this.executeSpecializedAgent(phase.agent, message, {
+            role: 'supporting',
+            context: context,
+            focusArea: this.determineSupportingAgentFocus(phase.agent, message)
+          })
+          break
+
+        case 'synthesis':
+          result = await this.synthesizePhaseResults(previousResults, message)
+          break
+      }
+
+      return {
+        phase: phase.description,
+        agent: phase.agent,
+        result: result,
+        executionTime: Date.now() - phaseStartTime,
+        success: !!result
+      }
+
+    } catch (error) {
+      console.error(`❌ Coordination phase failed: ${phase.description}`, error)
+      return {
+        phase: phase.description,
+        agent: phase.agent,
+        result: null,
+        error: error.message,
+        success: false
+      }
+    }
+  }
+
+  buildSupportingAgentContext(previousResults) {
+    if (previousResults.length === 0) return 'initial-analysis'
+    
+    const primaryResult = previousResults.find(r => r.phase.includes('Primary'))
+    if (primaryResult && primaryResult.result) {
+      return `Building upon primary analysis: ${primaryResult.result.substring(0, 200)}...`
+    }
+    
+    return 'supporting-analysis'
+  }
+
+  determineSupportingAgentFocus(agentType, message) {
+    const focusAreas = {
+      'research': 'data gathering and source verification',
+      'navigation': 'website and resource identification',
+      'shopping': 'price comparison and product analysis',
+      'communication': 'content creation and messaging optimization',
+      'automation': 'workflow creation and process optimization',
+      'analysis': 'data interpretation and insights extraction'
+    }
+    
+    return focusAreas[agentType] || 'general analysis'
+  }
+
+  async synthesizePhaseResults(results, message) {
+    try {
+      const successfulResults = results.filter(r => r.success && r.result)
+      
+      if (successfulResults.length === 0) {
+        return 'No results to synthesize'
+      }
+
+      // Create synthesis prompt
+      const synthesisPrompt = `
+## Multi-Agent Task Synthesis
+
+**Original Request**: ${message}
+
+**Agent Contributions**:
+${successfulResults.map(r => `
+**${r.agent.toUpperCase()} Agent**: ${r.result.substring(0, 300)}...
+`).join('\n')}
+
+**Synthesis Instructions**:
+1. Integrate all agent contributions into a comprehensive response
+2. Identify complementary insights and remove redundancies  
+3. Create actionable recommendations combining all perspectives
+4. Ensure the final response addresses the original request completely
+
+Please provide a well-structured, comprehensive response that leverages all agent contributions:
+`
+
+      // Use AI service for synthesis
+      const synthesisResponse = await this.aiService.chat.completions.create({
+        messages: [
+          { role: 'system', content: 'You are an expert AI coordinator that synthesizes multiple agent contributions into comprehensive, actionable responses.' },
+          { role: 'user', content: synthesisPrompt }
+        ],
+        model: 'llama-3.3-70b-versatile',
+        temperature: 0.7,
+        max_tokens: 2048
+      })
+
+      return synthesisResponse.choices[0].message.content
+
+    } catch (error) {
+      console.error('❌ Phase synthesis failed:', error)
+      return 'Synthesis temporarily unavailable'
+    }
+  }
+
+  async synthesizeCoordinatedResponse(results, message, taskAnalysis) {
+    try {
+      const allResults = results.filter(r => r.success && r.result)
+      
+      if (allResults.length === 0) {
+        return `I attempted to coordinate multiple agents for your request, but encountered difficulties. Let me try a different approach.`
+      }
+
+      // Enhanced coordination summary
+      const coordinationSummary = `
+🤖 **Multi-Agent Coordination Complete**
+
+**Task Analysis**: ${taskAnalysis.confidence}% confidence | ${taskAnalysis.complexity} complexity
+**Agents Coordinated**: ${taskAnalysis.primaryAgent} (primary) + ${taskAnalysis.supportingAgents.join(', ')} (supporting)
+**Execution Time**: ${allResults.reduce((sum, r) => sum + r.executionTime, 0)}ms
+
+## Coordinated Response:
+
+${allResults.map(r => r.result).join('\n\n---\n\n')}
+
+## Next Steps:
+Based on this coordinated analysis, I recommend:
+1. Review the comprehensive findings above
+2. Let me know if you'd like me to dive deeper into any specific aspect
+3. I can execute any recommended actions or create follow-up research
+
+*This response was generated through advanced multi-agent coordination for enhanced accuracy and completeness.*
+`
+
+      return coordinationSummary
+
+    } catch (error) {
+      console.error('❌ Coordinated response synthesis failed:', error)
+      return 'Coordination completed but response synthesis encountered an issue. Please try again.'
+    }
+  }
+
+  async executeEnhancedAgentTask(message, taskAnalysis) {
+    try {
+      console.log('⚡ Executing enhanced single agent task')
+      
+      // Enhanced context for single agent execution
+      const enhancedContext = {
+        confidence: taskAnalysis.confidence,
+        complexity: taskAnalysis.complexity,
+        supportingAgents: taskAnalysis.supportingAgents,
+        executionMode: 'enhanced-single-agent'
+      }
+
+      const result = await this.executeSpecializedAgent(taskAnalysis.primaryAgent, message, enhancedContext)
+      
+      if (result) {
+        const enhancedResult = `
+🎯 **Enhanced ${taskAnalysis.primaryAgent.toUpperCase()} Agent Response**
+*Confidence: ${taskAnalysis.confidence}% | Complexity: ${taskAnalysis.complexity}*
+
+${result}
+
+---
+*Enhanced with advanced task analysis and optimized execution.*
+`
+        return {
+          success: true,
+          result: enhancedResult,
+          enhancement: {
+            agent: taskAnalysis.primaryAgent,
+            confidence: taskAnalysis.confidence,
+            complexity: taskAnalysis.complexity
           }
         }
+      }
+
+      return null
+
+    } catch (error) {
+      console.error('❌ Enhanced agent execution failed:', error)
+      return null
+    }
+  }
 
         // Get current page context with enhanced content extraction
         const context = await this.getEnhancedPageContext()
