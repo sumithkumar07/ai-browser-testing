@@ -109,6 +109,34 @@ class KAiroBrowserManager {
     }
   }
 
+  async scheduleMaintenanceTasks() {
+    try {
+      console.log('🧹 Scheduling maintenance tasks...')
+      
+      // Schedule daily data cleanup
+      await this.taskScheduler.scheduleTask('data_maintenance', {
+        type: 'cleanup_expired_memories'
+      }, {
+        priority: 3,
+        scheduledFor: Date.now() + (24 * 60 * 60 * 1000) // 24 hours from now
+      })
+      
+      // Schedule weekly history cleanup
+      await this.taskScheduler.scheduleTask('data_maintenance', {
+        type: 'cleanup_old_history',
+        daysToKeep: 90
+      }, {
+        priority: 2,
+        scheduledFor: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days from now
+      })
+      
+      console.log('✅ Maintenance tasks scheduled')
+      
+    } catch (error) {
+      console.error('❌ Failed to schedule maintenance tasks:', error)
+    }
+  }
+
   async startAutonomousGoalMonitoring() {
     try {
       console.log('🎯 Starting autonomous goal monitoring...')
