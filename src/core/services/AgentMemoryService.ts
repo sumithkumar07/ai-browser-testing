@@ -587,7 +587,7 @@ class AgentMemoryService {
   }
 
   // Context Retrieval for Enhanced Decision Making
-  async getRelevantContext(agentId: string, currentTask: string, contextType: string): Promise<any[]> {
+  async getRelevantContext(agentId: string, currentTask: string, contextType: string): Promise<any> {
     const memories = await this.getMemories(agentId, {
       tags: [contextType],
       minImportance: 5,
