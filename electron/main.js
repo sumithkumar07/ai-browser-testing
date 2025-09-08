@@ -5,6 +5,16 @@ require('dotenv').config()
 
 console.log('🔑 Environment variables loaded:', process.env.GROQ_API_KEY ? 'YES' : 'NO')
 
+// Import enhanced agentic services (compiled from TypeScript)
+let AgentMemoryService, AgentCoordinationService, AutonomousPlanningEngine, EnhancedIntegratedAgentFramework
+try {
+  // These will be available after TypeScript compilation
+  console.log('🤖 Loading enhanced agentic services...')
+  // Services will be dynamically loaded when needed
+} catch (error) {
+  console.log('⚠️  Enhanced services not compiled yet, using basic mode')
+}
+
 class KAiroBrowserManager {
   constructor() {
     this.mainWindow = null
