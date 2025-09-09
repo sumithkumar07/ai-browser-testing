@@ -163,8 +163,9 @@ const AISidebar: React.FC<AISidebarProps> = ({
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     } catch (error) {
       // Fallback for older browsers
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight
+      const element = messagesEndRef.current
+      if (element && element.scrollTop !== undefined) {
+        element.scrollTop = element.scrollHeight
       }
     }
   }, [])
