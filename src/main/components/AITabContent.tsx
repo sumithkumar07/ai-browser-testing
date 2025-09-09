@@ -63,16 +63,22 @@ const AITabContent: React.FC<AITabContentProps> = ({ tab, onContentChange }) => 
   }, [tab.id, loadTabContent])
 
   useEffect(() => {
-    // Auto-save content changes with debouncing
+    // Enhanced Auto-save content changes with debouncing and error handling
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current)
     }
 
-    saveTimeoutRef.current = setTimeout(() => {
+    saveTimeoutRef.current = setTimeout(async () => {
       if (content !== tab.content) {
-        saveContent()
+        try {
+          await saveContent()
+          console.log('✅ AI tab content auto-saved successfully')
+        } catch (error) {
+          console.error('❌ Auto-save failed:', error)
+          setSaveStatus('error')
+        }
       }
-    }, 1000) // Save after 1 second of no changes
+    }, 1000) // Auto-save after 1 second of no changes
 
     return () => {
       if (saveTimeoutRef.current) {
