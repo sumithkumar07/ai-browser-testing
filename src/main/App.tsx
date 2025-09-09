@@ -28,7 +28,34 @@ const App: React.FC = () => {
   const [agentStatus, setAgentStatus] = useState<AgentStatus | null>(null)
 
   useEffect(() => {
-    initializeApp()
+    let cleanup: (() => void) | null = null
+    
+    const initializeAndSetupCleanup = async () => {
+      await initializeApp()
+      
+      // Setup cleanup function for event listeners
+      cleanup = () => {
+        // Cleanup agent framework event listeners
+        import('./services/IntegratedAgentFramework').then(({ default: AgentFrameworkClass }) => {
+          const agentFramework = AgentFrameworkClass.getInstance()
+          agentFramework.removeEventListener('agent-update', (status: AgentStatus) => {
+            setAgentStatus(status)
+          })
+        }).catch(console.error)
+        
+        // Cleanup app events
+        appEvents.removeAllListeners('app:initialized')
+        appEvents.removeAllListeners('app:error')
+      }
+    }
+    
+    initializeAndSetupCleanup()
+    
+    return () => {
+      if (cleanup) {
+        cleanup()
+      }
+    }
   }, [])
 
   const initializeApp = async () => {
