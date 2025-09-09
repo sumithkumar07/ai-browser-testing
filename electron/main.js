@@ -1345,7 +1345,8 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
           actions: actions,
           agenticMode: this.isAgenticMode,
           responseTime: duration,
-          timestamp: endTime
+          timestamp: endTime,
+          connectionStatus: this.connectionState
         }
         
       } catch (error) {
