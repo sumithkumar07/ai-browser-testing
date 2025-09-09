@@ -938,31 +938,47 @@ class KAiroBrowserManager {
       }
     })
 
-    // FIXED: Properly structured send-ai-message handler
+    // ENHANCED: Properly structured send-ai-message handler with comprehensive error handling
     ipcMain.handle('send-ai-message', async (event, message) => {
       try {
         console.log('💬 Processing AI message with enhanced backend capabilities:', message)
+        
+        // Input validation
+        if (!message || typeof message !== 'string' || message.trim().length === 0) {
+          return { success: false, error: 'Message cannot be empty' }
+        }
+
+        if (message.length > 10000) {
+          return { success: false, error: 'Message too long (max 10,000 characters)' }
+        }
         
         // Record performance metrics - START
         const startTime = Date.now()
         
         if (!this.aiService) {
-          return { success: false, error: 'AI service not initialized' }
+          return { success: false, error: 'AI service not initialized - please check GROQ API key configuration' }
         }
 
         // Try agentic processing first
-        const agenticResult = await this.processWithAgenticCapabilities(message)
+        let agenticResult = null
+        try {
+          agenticResult = await this.processWithAgenticCapabilities(message)
+        } catch (agenticError) {
+          console.warn('⚠️ Agentic processing failed, falling back to standard AI:', agenticError.message)
+        }
+        
         let enhancedResult
         
         if (agenticResult && agenticResult.success) {
           enhancedResult = agenticResult.result
         } else {
-          // Fall back to standard AI processing
-          // Get current page context with enhanced content extraction
-          const context = await this.getEnhancedPageContext()
-          
-          // Create enhanced system prompt with agentic capabilities
-          const systemPrompt = `You are KAiro, an advanced autonomous AI browser assistant with sophisticated agentic capabilities and persistent memory.
+          // Fall back to standard AI processing with enhanced error handling
+          try {
+            // Get current page context with enhanced content extraction
+            const context = await this.getEnhancedPageContext()
+            
+            // Create enhanced system prompt with agentic capabilities
+            const systemPrompt = `You are KAiro, an advanced autonomous AI browser assistant with sophisticated agentic capabilities and persistent memory.
 
 🧠 **ENHANCED AGENTIC CAPABILITIES**:
 - **Autonomous Goal Execution**: I can work independently toward long-term goals
@@ -980,33 +996,94 @@ CURRENT CONTEXT:
 
 Page Content Context: ${context.extractedText ? context.extractedText.substring(0, 800) + '...' : 'Ready to assist with autonomous task execution.'}`
 
-          const response = await this.aiService.chat.completions.create({
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: message }
-            ],
-            model: 'llama-3.3-70b-versatile',
-            temperature: 0.7,
-            max_tokens: 3072
-          })
+            // ENHANCED: Better model handling with retry logic
+            let response
+            try {
+              response = await this.aiService.chat.completions.create({
+                messages: [
+                  { role: 'system', content: systemPrompt },
+                  { role: 'user', content: message }
+                ],
+                model: 'llama-3.3-70b-versatile',
+                temperature: 0.7,
+                max_tokens: 3072,
+                top_p: 0.9,
+                frequency_penalty: 0.1,
+                presence_penalty: 0.1
+              })
+            } catch (modelError) {
+              console.warn('⚠️ Primary model failed, trying fallback model:', modelError.message)
+              
+              // Fallback to older model
+              response = await this.aiService.chat.completions.create({
+                messages: [
+                  { role: 'system', content: 'You are KAiro, an AI browser assistant.' },
+                  { role: 'user', content: message }
+                ],
+                model: 'llama3-8b-8192',
+                temperature: 0.7,
+                max_tokens: 2048
+              })
+            }
 
-          enhancedResult = response.choices[0].message.content
+            if (!response || !response.choices || response.choices.length === 0) {
+              throw new Error('Empty response from AI service')
+            }
+
+            enhancedResult = response.choices[0].message.content
+            
+            if (!enhancedResult || enhancedResult.trim().length === 0) {
+              throw new Error('AI service returned empty response')
+            }
+            
+          } catch (aiError) {
+            console.error('❌ AI processing failed:', aiError.message)
+            
+            // Provide helpful error messages based on error type
+            let userFriendlyError = 'AI service temporarily unavailable'
+            
+            if (aiError.message.includes('rate limit')) {
+              userFriendlyError = 'Rate limit exceeded. Please wait a moment and try again.'
+            } else if (aiError.message.includes('quota')) {
+              userFriendlyError = 'API quota exceeded. Please check your GROQ account.'
+            } else if (aiError.message.includes('invalid')) {
+              userFriendlyError = 'Invalid request. Please rephrase your message.'
+            } else if (aiError.message.includes('network') || aiError.message.includes('timeout')) {
+              userFriendlyError = 'Network error. Please check your internet connection.'
+            }
+            
+            return { 
+              success: false, 
+              error: userFriendlyError,
+              details: aiError.message // For debugging
+            }
+          }
         }
         
         // Enhance response with agentic capabilities
-        enhancedResult = await this.enhanceResponseWithAgenticCapabilities(enhancedResult, message, context)
+        try {
+          const context = await this.getEnhancedPageContext()
+          enhancedResult = await this.enhanceResponseWithAgenticCapabilities(enhancedResult, message, context)
+        } catch (enhanceError) {
+          console.warn('⚠️ Response enhancement failed:', enhanceError.message)
+          // Continue with unenhanced result
+        }
         
         // Record interaction for learning
         if (this.isAgenticMode && this.agentMemoryService) {
-          await this.agentMemoryService.recordTaskOutcome({
-            taskId: `task_${Date.now()}`,
-            agentId: 'ai_assistant',
-            success: true,
-            result: enhancedResult,
-            strategies: ['enhanced_agentic_processing'],
-            timeToComplete: 2,
-            userSatisfaction: 0.9
-          })
+          try {
+            await this.agentMemoryService.recordTaskOutcome({
+              taskId: `task_${Date.now()}`,
+              agentId: 'ai_assistant',
+              success: true,
+              result: enhancedResult,
+              strategies: ['enhanced_agentic_processing'],
+              timeToComplete: (Date.now() - startTime) / 1000,
+              userSatisfaction: 0.9
+            })
+          } catch (memoryError) {
+            console.warn('⚠️ Failed to record task outcome:', memoryError.message)
+          }
         }
         
         // Analyze if AI wants to perform actions
@@ -1014,40 +1091,56 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
         
         // Record performance metrics - END
         const endTime = Date.now()
+        const duration = endTime - startTime
+        
         if (this.performanceMonitor) {
-          await this.performanceMonitor.recordPerformanceMetric({
-            id: `perf_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            agentId: 'ai_assistant',
-            taskType: 'ai_message_processing',
-            startTime,
-            endTime,
-            duration: endTime - startTime,
-            success: true,
-            resourceUsage: {
-              cpuTime: endTime - startTime,
-              memoryUsaged: 0, // Would be calculated from system metrics
-              networkRequests: 1
-            },
-            qualityScore: 8, // Default good quality score
-            metadata: {
-              messageLength: message.length,
-              responseLength: enhancedResult.length,
-              hasActions: actions.length > 0
-            }
-          })
+          try {
+            await this.performanceMonitor.recordPerformanceMetric({
+              id: `perf_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+              agentId: 'ai_assistant',
+              taskType: 'ai_message_processing',
+              startTime,
+              endTime,
+              duration,
+              success: true,
+              resourceUsage: {
+                cpuTime: duration,
+                memoryUsage: 0, // Would be calculated from system metrics
+                networkRequests: 1
+              },
+              qualityScore: 8, // Default good quality score
+              metadata: {
+                messageLength: message.length,
+                responseLength: enhancedResult.length,
+                hasActions: actions.length > 0,
+                model: 'llama-3.3-70b-versatile'
+              }
+            })
+          } catch (perfError) {
+            console.warn('⚠️ Failed to record performance metrics:', perfError.message)
+          }
         }
         
-        console.log('✅ Enhanced backend AI response generated')
+        console.log(`✅ Enhanced backend AI response generated in ${duration}ms`)
         return { 
           success: true, 
           result: enhancedResult,
           actions: actions,
-          agenticMode: this.isAgenticMode
+          agenticMode: this.isAgenticMode,
+          responseTime: duration,
+          timestamp: endTime
         }
         
       } catch (error) {
         console.error('❌ AI message processing failed:', error)
-        return { success: false, error: error.message }
+        
+        // Enhanced error response with context
+        return { 
+          success: false, 
+          error: 'An unexpected error occurred while processing your message',
+          details: error.message,
+          timestamp: Date.now()
+        }
       }
     })
 
