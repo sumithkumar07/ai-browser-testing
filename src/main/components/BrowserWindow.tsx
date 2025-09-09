@@ -14,7 +14,8 @@ interface BrowserWindowProps {
 const BrowserWindow: React.FC<BrowserWindowProps> = ({
   activeTabId,
   tabs,
-  onCreateAITab
+  onCreateAITab,
+  onContentChange
 }) => {
   const [browserEngine] = useState(() => BrowserEngine.getInstance())
   const [isLoading, setIsLoading] = useState(false)
