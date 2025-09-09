@@ -2,7 +2,7 @@
 // Phase 2: Agent Browser Controller - Comprehensive Implementation
 
 import { createLogger } from '../../core/logger/Logger'
-import { validateUrl, validateTabId } from '../../core/utils/Validators'
+import { validateUrl } from '../../core/utils/Validators'
 
 const logger = createLogger('BrowserController')
 
