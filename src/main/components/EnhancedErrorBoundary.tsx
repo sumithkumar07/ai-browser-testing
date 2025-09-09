@@ -253,7 +253,7 @@ class EnhancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryS
           </div>
         </div>
         
-        <style jsx>{`
+        <style>{`
           .error-boundary-container {
             display: flex;
             align-items: center;
