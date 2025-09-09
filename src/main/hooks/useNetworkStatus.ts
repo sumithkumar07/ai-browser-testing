@@ -33,7 +33,7 @@ export const useNetworkStatus = (): NetworkStatusHook => {
       const startTime = performance.now()
       
       // Try to fetch a small resource to test speed
-      const response = await fetch('/favicon.ico', {
+      await fetch('/favicon.ico', {
         method: 'GET',
         cache: 'no-cache'
       })
