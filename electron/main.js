@@ -3269,11 +3269,13 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
     })
 
     browserView.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
-      this.mainWindow.webContents.send('browser-event', {
-        type: 'error',
-        tabId: tabId,
-        error: { code: errorCode, description: errorDescription }
-      })
+      if (this.mainWindow && this.mainWindow.webContents) {
+        this.mainWindow.webContents.send('browser-event', {
+          type: 'error',
+          tabId: tabId,
+          error: { code: errorCode, description: errorDescription }
+        })
+      }
     })
   }
 
