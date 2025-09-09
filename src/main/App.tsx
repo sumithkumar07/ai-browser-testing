@@ -364,7 +364,8 @@ const App: React.FC = () => {
           <BrowserWindow
             activeTabId={activeTabId}
             tabs={tabs}
-            onCreateAITab={(title, content) => createTab(`ai://tab/${title}`, 'ai')}
+            onCreateAITab={createAITabHandler}
+            onContentChange={handleTabContentChange}
           />
           {isAISidebarOpen && (
             <AISidebar onClose={() => setIsAISidebarOpen(false)} />
