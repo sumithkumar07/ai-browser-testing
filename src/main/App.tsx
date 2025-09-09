@@ -300,6 +300,11 @@ const App: React.FC = () => {
     }
   }, [tabs])
 
+  // Use the handler in BrowserWindow
+  const createAITabHandler = useCallback((title: string, _content: string) => {
+    createTab(`ai://tab/${title}`, 'ai')
+  }, [createTab])
+
   // FIXED: Enhanced AI sidebar toggle
   const toggleAISidebar = useCallback(() => {
     setIsAISidebarOpen(prev => {
