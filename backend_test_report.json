@@ -1,0 +1,116 @@
+{
+  "timestamp": 1757426245.596361,
+  "duration": 5.279528617858887,
+  "success_rate": 96.7741935483871,
+  "passed_tests": 30,
+  "total_tests": 31,
+  "results": {
+    "environment": {
+      "env_file": true,
+      "groq_api_key": true,
+      "package_config": true,
+      "dependencies": true
+    },
+    "groq_api": {
+      "api_key_loaded": true,
+      "connectivity": true,
+      "response_time": 0.25178956985473633,
+      "token_usage": {
+        "queue_time": 0.067792047,
+        "prompt_tokens": 48,
+        "prompt_time": 0.012314305,
+        "completion_tokens": 6,
+        "completion_time": 0.023857259,
+        "total_tokens": 54,
+        "total_time": 0.036171564
+      },
+      "response_content": "API connection test successful."
+    },
+    "database": {
+      "connection": true,
+      "tables_created": [
+        "bookmarks",
+        "history",
+        "agent_memory",
+        "agent_performance",
+        "background_tasks",
+        "agent_health"
+      ],
+      "bookmark_crud": true,
+      "history_crud": true,
+      "agent_memory_crud": true,
+      "performance_crud": true
+    },
+    "agent_system": {
+      "task_analysis_accuracy": 1.0,
+      "individual_agents": {
+        "research": {
+          "success": true,
+          "response_time": 0.6668331623077393,
+          "response_length": 1083,
+          "response_preview": "As a research agent, I have compiled a comprehensive overview of the latest developments in artifici..."
+        },
+        "navigation": {
+          "success": true,
+          "response_time": 0.7677896022796631,
+          "response_length": 878,
+          "response_preview": "To navigate to the official Python website, I can provide you with the following options:\n\n1. **URL:..."
+        },
+        "shopping": {
+          "success": true,
+          "response_time": 0.6841597557067871,
+          "response_length": 845,
+          "response_preview": "As a specialized shopping agent, I've got you covered. Here are some of the best deals on wireless h..."
+        },
+        "communication": {
+          "success": true,
+          "response_time": 0.6399612426757812,
+          "response_length": 890,
+          "response_preview": "Here is a sample professional email about a meeting:\n\n**Subject: Meeting Invitation - [Meeting Topic..."
+        },
+        "automation": {
+          "success": true,
+          "response_time": 0.8780186176300049,
+          "response_length": 814,
+          "response_preview": "Here is a workflow for daily task management:\n\n**Workflow Name:** Daily Task Management\n\n**Objective..."
+        },
+        "analysis": {
+          "success": true,
+          "response_time": 0.8364226818084717,
+          "response_length": 963,
+          "response_preview": "I don't see a webpage provided. To analyze the content of a webpage, I would need the URL or the tex..."
+        }
+      },
+      "agent_success_rate": 1.0
+    },
+    "performance": {
+      "metrics_recorded": true,
+      "success_rate": 0.875,
+      "avg_duration": 1000.0,
+      "avg_quality": 8.0
+    },
+    "background_tasks": {
+      "task_scheduling": true,
+      "status_tracking": {
+        "pending": 5
+      },
+      "task_types": [
+        "agent_learning",
+        "autonomous_goal_execution",
+        "data_maintenance",
+        "price_monitoring",
+        "research_monitoring"
+      ]
+    },
+    "ipc_communication": {
+      "ai_message_handler": true,
+      "bookmark_handlers": true,
+      "agent_status_handler": true
+    },
+    "error_handling": {
+      "database_error_handling": true,
+      "api_error_handling": true,
+      "graceful_degradation": true
+    }
+  }
+}
