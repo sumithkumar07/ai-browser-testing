@@ -1322,7 +1322,7 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
               success: true,
               resourceUsage: {
                 cpuTime: duration,
-                memoryUsage: 0, // Would be calculated from system metrics
+                memoryUsage: process.memoryUsage().heapUsed,
                 networkRequests: 1
               },
               qualityScore: 8, // Default good quality score
