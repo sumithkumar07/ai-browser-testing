@@ -128,16 +128,15 @@ export const useNetworkStatus = (): NetworkStatusHook => {
     
     // Notify main process if available
     try {
-      if (window.electronAPI) {
-        await window.electronAPI.updateNetworkStatus({
-          isOnline: online,
-          isSlowConnection,
-          connectionType,
-          timestamp: now.getTime()
-        })
-      }
+      // Log network status update
+      console.log('Network status updated:', {
+        isOnline: online,
+        isSlowConnection,
+        connectionType,
+        timestamp: now.getTime()
+      })
     } catch (error) {
-      console.warn('Failed to notify main process of network status:', error)
+      console.warn('Failed to log network status:', error)
     }
   }, [getConnectionType, checkConnectionSpeed])
 
