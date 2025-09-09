@@ -1264,12 +1264,15 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
               userFriendlyError = 'Invalid request. Please rephrase your message.'
             } else if (aiError.message.includes('network') || aiError.message.includes('timeout')) {
               userFriendlyError = 'Network error. Please check your internet connection.'
+            } else if (aiError.message.includes('unauthorized') || aiError.message.includes('401')) {
+              userFriendlyError = 'API key is invalid or expired. Please check your configuration.'
             }
             
             return { 
               success: false, 
               error: userFriendlyError,
-              details: aiError.message // For debugging
+              details: aiError.message, // For debugging
+              timestamp: Date.now()
             }
           }
         }
