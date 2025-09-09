@@ -3259,11 +3259,13 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
     })
 
     browserView.webContents.on('page-title-updated', (event, title) => {
-      this.mainWindow.webContents.send('browser-event', {
-        type: 'title-updated',
-        tabId: tabId,
-        title: title
-      })
+      if (this.mainWindow && this.mainWindow.webContents) {
+        this.mainWindow.webContents.send('browser-event', {
+          type: 'title-updated',
+          tabId: tabId,
+          title: title
+        })
+      }
     })
 
     browserView.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
