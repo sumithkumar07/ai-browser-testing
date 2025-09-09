@@ -1099,6 +1099,15 @@ class KAiroBrowserManager {
         // Record performance metrics - START
         const startTime = Date.now()
         
+        // Check API availability with circuit breaker
+        if (this.apiValidator && this.apiValidator.isCircuitOpen()) {
+          return { 
+            success: false, 
+            error: 'AI service temporarily unavailable - please try again later',
+            circuitOpen: true
+          }
+        }
+        
         if (!this.aiService) {
           return { success: false, error: 'AI service not initialized - please check GROQ API key configuration' }
         }
