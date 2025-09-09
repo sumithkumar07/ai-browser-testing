@@ -1656,41 +1656,469 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
     console.log('✅ IPC handlers setup completed')
   }
 
-  // Placeholder methods - these would need full implementation
-  async createTab(url) {
-    return { success: true, tabId: `tab_${++this.tabCounter}` }
+  // ENHANCED: Real browser navigation implementation with BrowserView
+  async createTab(url = 'https://www.google.com') {
+    try {
+      const tabId = `tab_${Date.now()}_${++this.tabCounter}`
+      
+      // Create new BrowserView
+      const browserView = new BrowserView({
+        webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true,
+          enableRemoteModule: false,
+          webSecurity: true,
+          allowRunningInsecureContent: false,
+          experimentalFeatures: false,
+          scrollBounce: true,
+          backgroundThrottling: false
+        }
+      })
+
+      // Configure browser view
+      this.mainWindow.setBrowserView(browserView)
+      
+      // Set bounds (adjust for your layout - 70% width for browser, 30% for AI sidebar)
+      const bounds = this.mainWindow.getBounds()
+      browserView.setBounds({
+        x: 0,
+        y: 100, // Account for tab bar (40px) + navigation bar (60px)
+        width: Math.floor(bounds.width * 0.7), // 70% width for browser
+        height: bounds.height - 100
+      })
+
+      // Set up event listeners
+      this.setupBrowserViewEvents(browserView, tabId)
+      
+      // Load URL with error handling
+      try {
+        await browserView.webContents.loadURL(url)
+      } catch (loadError) {
+        console.warn(`⚠️ Failed to load URL ${url}, loading Google instead:`, loadError.message)
+        await browserView.webContents.loadURL('https://www.google.com')
+      }
+      
+      // Store browser view and initialize state
+      this.browserViews.set(tabId, browserView)
+      this.tabHistory = this.tabHistory || new Map()
+      this.tabState = this.tabState || new Map()
+      
+      this.tabHistory.set(tabId, [url])
+      this.tabState.set(tabId, {
+        url,
+        title: 'Loading...',
+        isLoading: true,
+        canGoBack: false,
+        canGoForward: false,
+        createdAt: Date.now()
+      })
+
+      // Set as active tab
+      this.activeTabId = tabId
+      
+      console.log(`✅ Created real browser tab: ${tabId} -> ${url}`)
+      
+      // Notify frontend
+      this.notifyTabCreated(tabId, url)
+      
+      return { 
+        success: true, 
+        tabId, 
+        url,
+        title: 'Loading...'
+      }
+      
+    } catch (error) {
+      console.error('❌ Failed to create tab:', error)
+      return { success: false, error: error.message }
+    }
   }
 
   async closeTab(tabId) {
-    return { success: true }
+    if (!this.browserViews.has(tabId)) {
+      return { success: false, error: 'Tab not found' }
+    }
+
+    try {
+      const browserView = this.browserViews.get(tabId)
+      
+      // Remove from window if active
+      if (this.activeTabId === tabId) {
+        this.mainWindow.removeBrowserView(browserView)
+        
+        // Switch to another tab
+        const remainingTabs = Array.from(this.browserViews.keys()).filter(id => id !== tabId)
+        if (remainingTabs.length > 0) {
+          await this.switchTab(remainingTabs[0])
+        } else {
+          this.activeTabId = null
+        }
+      }
+      
+      // Destroy browser view
+      browserView.destroy()
+      
+      // Clean up data
+      this.browserViews.delete(tabId)
+      if (this.tabHistory) this.tabHistory.delete(tabId)
+      if (this.tabState) this.tabState.delete(tabId)
+      
+      // Notify frontend
+      this.notifyTabClosed(tabId)
+      
+      console.log(`✅ Closed tab: ${tabId}`)
+      
+      return { success: true, tabId }
+      
+    } catch (error) {
+      console.error('❌ Tab close failed:', error)
+      return { success: false, error: error.message }
+    }
   }
 
   async switchTab(tabId) {
-    return { success: true }
+    if (!this.browserViews.has(tabId)) {
+      return { success: false, error: 'Tab not found' }
+    }
+
+    try {
+      // Hide current view
+      if (this.activeTabId && this.browserViews.has(this.activeTabId)) {
+        const currentView = this.browserViews.get(this.activeTabId)
+        this.mainWindow.removeBrowserView(currentView)
+      }
+
+      // Show new view
+      const browserView = this.browserViews.get(tabId)
+      this.mainWindow.setBrowserView(browserView)
+      
+      // Update bounds
+      this.updateBrowserViewBounds(browserView)
+      
+      // Set as active
+      this.activeTabId = tabId
+      
+      // Notify frontend
+      this.notifyTabSwitched(tabId)
+      
+      console.log(`✅ Switched to tab: ${tabId}`)
+      
+      return { success: true, tabId }
+      
+    } catch (error) {
+      console.error('❌ Tab switch failed:', error)
+      return { success: false, error: error.message }
+    }
   }
 
-  async navigateTo(url) {
-    return { success: true }
+  async navigateTo(url, tabId = this.activeTabId) {
+    if (!tabId || !this.browserViews.has(tabId)) {
+      return { success: false, error: 'No active tab' }
+    }
+
+    try {
+      const browserView = this.browserViews.get(tabId)
+      
+      // Process URL input (handle search vs navigation)
+      const processedUrl = this.processAddressBarInput(url)
+      
+      // Update state
+      if (this.tabState) {
+        const tabState = this.tabState.get(tabId) || {}
+        tabState.isLoading = true
+        tabState.url = processedUrl
+        this.tabState.set(tabId, tabState)
+      }
+      
+      // Add to history
+      if (this.tabHistory) {
+        const history = this.tabHistory.get(tabId) || []
+        history.push(processedUrl)
+        this.tabHistory.set(tabId, history)
+      }
+      
+      // Navigate
+      await browserView.webContents.loadURL(processedUrl)
+      
+      // Notify frontend
+      this.notifyNavigationStarted(tabId, processedUrl)
+      
+      console.log(`🌐 Navigating tab ${tabId} to: ${processedUrl}`)
+      
+      return { success: true, url: processedUrl, tabId }
+      
+    } catch (error) {
+      console.error('❌ Navigation failed:', error)
+      
+      // Update error state
+      if (this.tabState) {
+        const tabState = this.tabState.get(tabId)
+        if (tabState) {
+          tabState.isLoading = false
+          tabState.error = error.message
+          this.tabState.set(tabId, tabState)
+        }
+      }
+      
+      this.notifyNavigationError(tabId, error.message)
+      
+      return { success: false, error: error.message }
+    }
   }
 
-  async goBack() {
-    return { success: true }
+  async goBack(tabId = this.activeTabId) {
+    if (!tabId || !this.browserViews.has(tabId)) {
+      return { success: false, error: 'No active tab' }
+    }
+
+    try {
+      const browserView = this.browserViews.get(tabId)
+      
+      if (browserView.webContents.canGoBack()) {
+        browserView.webContents.goBack()
+        console.log(`⬅️ Going back in tab: ${tabId}`)
+        return { success: true }
+      } else {
+        return { success: false, error: 'Cannot go back' }
+      }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
   }
 
-  async goForward() {
-    return { success: true }
+  async goForward(tabId = this.activeTabId) {
+    if (!tabId || !this.browserViews.has(tabId)) {
+      return { success: false, error: 'No active tab' }
+    }
+
+    try {
+      const browserView = this.browserViews.get(tabId)
+      
+      if (browserView.webContents.canGoForward()) {
+        browserView.webContents.goForward()
+        console.log(`➡️ Going forward in tab: ${tabId}`)
+        return { success: true }
+      } else {
+        return { success: false, error: 'Cannot go forward' }
+      }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
   }
 
-  async reload() {
-    return { success: true }
+  async reload(tabId = this.activeTabId) {
+    if (!tabId || !this.browserViews.has(tabId)) {
+      return { success: false, error: 'No active tab' }
+    }
+
+    try {
+      const browserView = this.browserViews.get(tabId)
+      browserView.webContents.reload()
+      console.log(`🔄 Reloading tab: ${tabId}`)
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
   }
 
-  async getCurrentUrl() {
-    return { success: true, url: 'https://www.google.com' }
+  async getCurrentUrl(tabId = this.activeTabId) {
+    if (!tabId || !this.browserViews.has(tabId)) {
+      return { success: false, error: 'No active tab' }
+    }
+
+    try {
+      const browserView = this.browserViews.get(tabId)
+      const url = browserView.webContents.getURL()
+      return { success: true, url }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
   }
 
-  async getPageTitle() {
-    return { success: true, title: 'Google' }
+  async getPageTitle(tabId = this.activeTabId) {
+    if (!tabId || !this.browserViews.has(tabId)) {
+      return { success: false, error: 'No active tab' }
+    }
+
+    try {
+      const browserView = this.browserViews.get(tabId)
+      const title = browserView.webContents.getTitle()
+      return { success: true, title }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
+  }
+
+  // Smart URL processing
+  processAddressBarInput(input) {
+    const trimmed = input.trim()
+    
+    // Check if it's a URL
+    if (this.isValidURL(trimmed)) {
+      return this.normalizeURL(trimmed)
+    }
+    
+    // Check if it looks like a domain
+    if (this.looksLikeDomain(trimmed)) {
+      return `https://${trimmed}`
+    }
+    
+    // Treat as search query
+    return `https://www.google.com/search?q=${encodeURIComponent(trimmed)}`
+  }
+
+  isValidURL(string) {
+    try {
+      new URL(string)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  looksLikeDomain(string) {
+    return /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(string) && !string.includes(' ')
+  }
+
+  normalizeURL(url) {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return `https://${url}`
+    }
+    return url
+  }
+
+  // Browser view event handling
+  setupBrowserViewEvents(browserView, tabId) {
+    const webContents = browserView.webContents
+
+    // Page loading events
+    webContents.on('did-start-loading', () => {
+      if (this.tabState) {
+        const tabState = this.tabState.get(tabId) || {}
+        tabState.isLoading = true
+        this.tabState.set(tabId, tabState)
+      }
+      this.notifyPageLoading(tabId)
+    })
+
+    webContents.on('did-finish-load', () => {
+      if (this.tabState) {
+        const tabState = this.tabState.get(tabId) || {}
+        tabState.isLoading = false
+        tabState.url = webContents.getURL()
+        tabState.title = webContents.getTitle()
+        tabState.canGoBack = webContents.canGoBack()
+        tabState.canGoForward = webContents.canGoForward()
+        this.tabState.set(tabId, tabState)
+      }
+      this.notifyPageLoaded(tabId, webContents.getURL(), webContents.getTitle())
+    })
+
+    webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+      if (this.tabState) {
+        const tabState = this.tabState.get(tabId) || {}
+        tabState.isLoading = false
+        tabState.error = errorDescription
+        this.tabState.set(tabId, tabState)
+      }
+      this.notifyPageError(tabId, errorDescription)
+    })
+
+    // Title and URL changes
+    webContents.on('page-title-updated', (event, title) => {
+      if (this.tabState) {
+        const tabState = this.tabState.get(tabId) || {}
+        tabState.title = title
+        this.tabState.set(tabId, tabState)
+      }
+      this.notifyTitleUpdated(tabId, title)
+    })
+
+    // New window handling
+    webContents.setWindowOpenHandler(({ url }) => {
+      // Create new tab for popup windows
+      this.createTab(url)
+      return { action: 'deny' }
+    })
+
+    // Security: Prevent navigation to dangerous protocols
+    webContents.on('will-navigate', (event, navigationUrl) => {
+      const urlObj = new URL(navigationUrl)
+      if (!['http:', 'https:', 'file:'].includes(urlObj.protocol)) {
+        event.preventDefault()
+        console.warn(`🚫 Blocked navigation to: ${navigationUrl}`)
+      }
+    })
+  }
+
+  // Dynamic bounds updating
+  updateBrowserViewBounds(browserView) {
+    if (!this.mainWindow || !browserView) return
+
+    const bounds = this.mainWindow.getBounds()
+    const aiSidebarOpen = true // Assume AI sidebar is always open for now
+    
+    browserView.setBounds({
+      x: 0,
+      y: 100, // Tab bar (40px) + Navigation bar (60px)
+      width: aiSidebarOpen ? Math.floor(bounds.width * 0.7) : bounds.width,
+      height: bounds.height - 100
+    })
+  }
+
+  // Notification methods for frontend communication
+  notifyTabCreated(tabId, url) {
+    if (this.mainWindow && this.mainWindow.webContents) {
+      this.mainWindow.webContents.send('tab-created', { tabId, url })
+    }
+  }
+
+  notifyTabSwitched(tabId) {
+    if (this.mainWindow && this.mainWindow.webContents) {
+      this.mainWindow.webContents.send('tab-switched', { tabId })
+    }
+  }
+
+  notifyTabClosed(tabId) {
+    if (this.mainWindow && this.mainWindow.webContents) {
+      this.mainWindow.webContents.send('tab-closed', { tabId })
+    }
+  }
+
+  notifyNavigationStarted(tabId, url) {
+    if (this.mainWindow && this.mainWindow.webContents) {
+      this.mainWindow.webContents.send('navigation-started', { tabId, url })
+    }
+  }
+
+  notifyPageLoading(tabId) {
+    if (this.mainWindow && this.mainWindow.webContents) {
+      this.mainWindow.webContents.send('page-loading', { tabId })
+    }
+  }
+
+  notifyPageLoaded(tabId, url, title) {
+    if (this.mainWindow && this.mainWindow.webContents) {
+      this.mainWindow.webContents.send('page-loaded', { tabId, url, title })
+    }
+  }
+
+  notifyPageError(tabId, error) {
+    if (this.mainWindow && this.mainWindow.webContents) {
+      this.mainWindow.webContents.send('page-error', { tabId, error })
+    }
+  }
+
+  notifyTitleUpdated(tabId, title) {
+    if (this.mainWindow && this.mainWindow.webContents) {
+      this.mainWindow.webContents.send('page-title-updated', { tabId, title })
+    }
+  }
+
+  notifyNavigationError(tabId, error) {
+    if (this.mainWindow && this.mainWindow.webContents) {
+      this.mainWindow.webContents.send('navigation-error', { tabId, error })
+    }
   }
 
   async createMainWindow() {
