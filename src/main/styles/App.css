@@ -1,5 +1,15 @@
-/* Enhanced App.css with AI Tab Support */
+/* Enhanced App.css with Advanced Glass Morphism Design */
 /* LAYOUT STATUS: LOCKED - Do not modify layout proportions */
+
+/* Advanced Glass Morphism Variables */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.15);
+  --glass-bg-strong: rgba(255, 255, 255, 0.25);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+  --backdrop-blur: blur(10px);
+  --backdrop-blur-strong: blur(20px);
+}
 
 /* Error Boundary Styles */
 .error-boundary {
