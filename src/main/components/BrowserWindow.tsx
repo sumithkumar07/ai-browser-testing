@@ -8,6 +8,7 @@ interface BrowserWindowProps {
   activeTabId: string | null
   tabs: Tab[]
   onCreateAITab: (title: string, content: string) => void
+  onContentChange?: (tabId: string, content: string) => void
 }
 
 const BrowserWindow: React.FC<BrowserWindowProps> = ({
