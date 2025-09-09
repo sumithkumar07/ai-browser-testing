@@ -2543,7 +2543,9 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       
       // Set as active tab
       this.activeTabId = tabId
-      this.mainWindow.setBrowserView(browserView)
+      if (this.mainWindow) {
+        this.mainWindow.setBrowserView(browserView)
+      }
       
       // Position BrowserView (leaving space for tab bar and navigation)
       this.updateBrowserViewBounds(browserView)
