@@ -120,20 +120,61 @@ const BrowserWindow: React.FC<BrowserWindowProps> = ({
     }
 
     if (activeTab.type === 'ai') {
-      // Render AI Tab Content
+      // AI Tab Content with Enhanced Error Handling
       return (
         <AITabContent 
           tab={activeTab}
           onContentChange={(content) => {
-            // FIXED: Add Electron API safety check before saving content
+            // ENHANCED: Comprehensive error handling and validation
             try {
+              // Validate content before saving
+              if (typeof content !== 'string') {
+                console.error('Invalid content type:', typeof content)
+                return
+              }
+              
+              // Limit content size to prevent performance issues
+              const maxContentSize = 1024 * 1024 // 1MB limit
+              if (content.length > maxContentSize) {
+                console.warn('Content too large, truncating...')
+                content = content.substring(0, maxContentSize) + '\n\n[Content truncated due to size limit]'
+              }
+              
+              // ENHANCED: Add Electron API safety check with timeout
               if (window.electronAPI?.saveAITabContent) {
-                window.electronAPI.saveAITabContent(activeTab.id, content)
+                // Use a timeout to prevent hanging
+                const saveTimeout = setTimeout(() => {
+                  console.warn('AI tab content save timeout - operation may have failed')
+                }, 10000) // 10 second timeout
+                
+                Promise.resolve(window.electronAPI.saveAITabContent(activeTab.id, content))
+                  .then(() => {
+                    clearTimeout(saveTimeout)
+                    console.log('AI tab content saved successfully')
+                  })
+                  .catch((error) => {
+                    clearTimeout(saveTimeout)
+                    console.error('Failed to save AI tab content:', error)
+                  })
               } else {
                 console.warn('AI tab content saving not available - Electron API not found')
+                // Fallback: Try to save to localStorage as backup
+                try {
+                  const fallbackKey = `ai_tab_backup_${activeTab.id}`
+                  localStorage.setItem(fallbackKey, JSON.stringify({
+                    content,
+                    timestamp: Date.now(),
+                    tabId: activeTab.id
+                  }))
+                  console.log('AI tab content saved to localStorage as fallback')
+                } catch (storageError) {
+                  console.error('Failed to save to localStorage fallback:', storageError)
+                }
               }
             } catch (error) {
-              console.error('Failed to save AI tab content:', error)
+              console.error('Critical error in AI tab content saving:', error)
+              // Show user-friendly error message without crashing the component
+              setError('Failed to save AI tab content. Please try again.')
             }
           }}
         />
