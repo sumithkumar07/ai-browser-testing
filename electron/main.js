@@ -38,6 +38,18 @@ class KAiroBrowserManager {
     this.autonomousPlanningEngine = null
     this.enhancedAgentFramework = null
     this.isAgenticMode = true // Enable enhanced agentic features
+    
+    // Production-ready services
+    this.apiValidator = null
+    this.databaseHealthManager = null
+    this.circuitBreaker = { isOpen: false, failures: 0, lastFailure: 0 }
+    
+    // Connection state management
+    this.connectionState = {
+      api: 'unknown',
+      database: 'unknown',
+      agents: 'unknown'
+    }
   }
 
   async initialize() {
