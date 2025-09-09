@@ -1357,7 +1357,8 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
           success: false, 
           error: 'An unexpected error occurred while processing your message',
           details: error.message,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          connectionStatus: this.connectionState
         }
       }
     })
