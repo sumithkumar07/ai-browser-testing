@@ -26,13 +26,16 @@ const App: React.FC = () => {
     [tabs, activeTabId]
   )
 
-  // FIXED: Enhanced error handling function
+  // FIXED: Enhanced error handling with better user feedback
   const handleError = useCallback((error: Error, context?: string) => {
+    const errorMessage = `${context ? context + ': ' : ''}${error.message}`
     logger.error('Application error', error, { context })
-    setError(`${context ? context + ': ' : ''}${error.message}`)
+    setError(errorMessage)
     
-    // Auto-clear error after 5 seconds
-    setTimeout(() => setError(null), 5000)
+    // Auto-clear error after 8 seconds (increased from 5)
+    setTimeout(() => {
+      setError(null)
+    }, 8000)
   }, [])
 
   // FIXED: Enhanced initialization with proper error handling
