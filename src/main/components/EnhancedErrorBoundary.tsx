@@ -188,7 +188,7 @@ class EnhancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryS
   }
 
   renderErrorFallback = () => {
-    const { error, errorInfo, errorId, retryCount } = this.state
+    const { error, errorId, retryCount } = this.state
     const { maxRetries = 3 } = this.props
     
     const canRetry = retryCount < maxRetries
