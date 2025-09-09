@@ -23,23 +23,32 @@ const AISidebar: React.FC<AISidebarProps> = ({ onClose }) => {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const connectionCheckIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // FIXED: Enhanced connection status check with error handling
+  // FIXED: Enhanced connection status check with better error recovery
   const checkConnection = useCallback(async () => {
     try {
       if (!window.electronAPI?.testConnection) {
         setConnectionStatus('disconnected')
+        setError('AI service not available - Electron API missing')
         return
       }
 
       const result = await window.electronAPI.testConnection()
-      setConnectionStatus(result?.success ? 'connected' : 'disconnected')
+      const isConnected = result?.success && result?.data?.connected
       
-      if (!result?.success) {
-        logger.warn('AI connection test failed:', result?.error)
+      setConnectionStatus(isConnected ? 'connected' : 'disconnected')
+      
+      if (!isConnected) {
+        const errorMsg = result?.error || 'AI service connection failed'
+        logger.warn('AI connection test failed:', errorMsg)
+        setError(errorMsg)
+      } else {
+        setError(null) // Clear any previous errors
+        logger.debug('AI connection verified successfully')
       }
     } catch (error) {
       logger.error('Connection check error', error as Error)
       setConnectionStatus('disconnected')
+      setError(`Connection error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }, [])
 
