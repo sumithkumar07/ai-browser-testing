@@ -10,6 +10,10 @@ const { DatabaseService } = require('../src/backend/DatabaseService')
 const { AgentPerformanceMonitor } = require('../src/backend/AgentPerformanceMonitor')
 const { BackgroundTaskScheduler } = require('../src/backend/BackgroundTaskScheduler')
 
+// Import new production-ready services
+const { ApiValidator } = require('../src/core/services/ApiValidator')
+const { DatabaseHealthManager } = require('../src/core/services/DatabaseHealthManager')
+
 console.log('🤖 Enhanced backend services loaded successfully')
 
 class KAiroBrowserManager {
