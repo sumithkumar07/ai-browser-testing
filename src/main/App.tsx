@@ -335,33 +335,31 @@ const App: React.FC = () => {
   }
 
   return (
-    <ErrorBoundary onError={handleError}>
+    <ErrorBoundary onError={(error, errorInfo) => handleError(error, errorInfo.componentStack || 'Unknown context')}>
       <div className="app">
         <div className="app-header">
           <TabBar
             tabs={tabs}
             activeTabId={activeTabId}
-            onCreateTab={createTab}
-            onCloseTab={closeTab}
-            onSwitchTab={switchTab}
+            onTabClick={switchTab}
+            onTabClose={closeTab}
+            onNewTab={() => createTab()}
           />
           <NavigationBar
             currentUrl={activeTab?.url || ''}
-            canGoBack={false}
-            canGoForward={false}
-            isLoading={activeTab?.isLoading || false}
             onNavigate={navigateTo}
             onGoBack={() => window.electronAPI.goBack()}
             onGoForward={() => window.electronAPI.goForward()}
             onReload={() => window.electronAPI.reload()}
             onToggleAI={toggleAISidebar}
-            isAIOpen={isAISidebarOpen}
+            aiSidebarOpen={isAISidebarOpen}
           />
         </div>
         <div className="app-content">
           <BrowserWindow
-            tab={activeTab}
-            onContentChange={handleTabContentChange}
+            activeTabId={activeTabId}
+            tabs={tabs}
+            onCreateAITab={(title, content) => createTab(`ai://tab/${title}`, 'ai')}
           />
           {isAISidebarOpen && (
             <AISidebar onClose={() => setIsAISidebarOpen(false)} />
