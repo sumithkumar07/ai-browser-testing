@@ -86,8 +86,8 @@ class KAiroBrowserManager {
 
       // Initialize Enhanced Agent Services - FIXED: Better error handling for TypeScript imports
       try {
-        const AgentMemoryService = require('../src/core/services/AgentMemoryService.js')
-        const AgentCoordinationService = require('../src/core/services/AgentCoordinationService.js')
+        const AgentMemoryService = require('../compiled/services/AgentMemoryService.js')
+        const AgentCoordinationService = require('../compiled/services/AgentCoordinationService.js')
         
         this.agentMemoryService = AgentMemoryService.default.getInstance()
         await this.agentMemoryService.initialize()
