@@ -1412,12 +1412,14 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
         this.aiTabs.set(tabId, aiTabData)
         
         // Notify renderer about AI tab creation
-        this.mainWindow.webContents.send('browser-event', {
-          type: 'ai-tab-created',
-          tabId: tabId,
-          title: title,
-          content: content
-        })
+        if (this.mainWindow && this.mainWindow.webContents) {
+          this.mainWindow.webContents.send('browser-event', {
+            type: 'ai-tab-created',
+            tabId: tabId,
+            title: title,
+            content: content
+          })
+        }
         
         console.log(`✅ AI Tab created: ${tabId} - ${title}`)
         return { success: true, tabId: tabId, title: title }
