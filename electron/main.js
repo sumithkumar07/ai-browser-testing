@@ -1149,35 +1149,96 @@ CURRENT CONTEXT:
 
 Page Content Context: ${context.extractedText ? context.extractedText.substring(0, 800) + '...' : 'Ready to assist with autonomous task execution.'}`
 
-            // ENHANCED: Better model handling with retry logic
+            // Enhanced model handling with retry logic and validation
             let response
             try {
-              response = await this.aiService.chat.completions.create({
-                messages: [
-                  { role: 'system', content: systemPrompt },
-                  { role: 'user', content: message }
-                ],
-                model: 'llama-3.3-70b-versatile',
-                temperature: 0.7,
-                max_tokens: 3072,
-                top_p: 0.9,
-                frequency_penalty: 0.1,
-                presence_penalty: 0.1
-              })
+              // Use API validator for requests if available
+              if (this.apiValidator) {
+                response = await this.apiValidator.makeRequest('/chat/completions', {
+                  method: 'POST',
+                  body: {
+                    messages: [
+                      { role: 'system', content: systemPrompt },
+                      { role: 'user', content: message }
+                    ],
+                    model: 'llama-3.3-70b-versatile',
+                    temperature: 0.7,
+                    max_tokens: 3072,
+                    top_p: 0.9,
+                    frequency_penalty: 0.1,
+                    presence_penalty: 0.1
+                  },
+                  timeout: 45000
+                })
+                
+                if (!response.success) {
+                  throw new Error(response.error || 'API request failed')
+                }
+                
+                // Convert to expected format
+                response = {
+                  choices: [{ message: { content: response.data.choices[0].message.content } }],
+                  model: response.data.model,
+                  usage: response.data.usage
+                }
+                
+              } else {
+                // Fallback to direct API call
+                response = await this.aiService.chat.completions.create({
+                  messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: message }
+                  ],
+                  model: 'llama-3.3-70b-versatile',
+                  temperature: 0.7,
+                  max_tokens: 3072,
+                  top_p: 0.9,
+                  frequency_penalty: 0.1,
+                  presence_penalty: 0.1
+                })
+              }
+              
             } catch (modelError) {
               console.warn('⚠️ Primary model failed, trying fallback model:', modelError.message)
               
               // Fallback to older model
-              response = await this.aiService.chat.completions.create({
-                messages: [
-                  { role: 'system', content: 'You are KAiro, an AI browser assistant.' },
-                  { role: 'user', content: message }
-                ],
-                model: 'llama3-8b-8192',
-                temperature: 0.7,
-                max_tokens: 2048
-              })
+              if (this.apiValidator) {
+                response = await this.apiValidator.makeRequest('/chat/completions', {
+                  method: 'POST',
+                  body: {
+                    messages: [
+                      { role: 'system', content: 'You are KAiro, an AI browser assistant.' },
+                      { role: 'user', content: message }
+                    ],
+                    model: 'llama3-8b-8192',
+                    temperature: 0.7,
+                    max_tokens: 2048
+                  },
+                  timeout: 30000
+                })
+                
+                if (response.success) {
+                  response = {
+                    choices: [{ message: { content: response.data.choices[0].message.content } }],
+                    model: response.data.model
+                  }
+                } else {
+                  throw new Error(response.error)
+                }
+              } else {
+                response = await this.aiService.chat.completions.create({
+                  messages: [
+                    { role: 'system', content: 'You are KAiro, an AI browser assistant.' },
+                    { role: 'user', content: message }
+                  ],
+                  model: 'llama3-8b-8192',
+                  temperature: 0.7,
+                  max_tokens: 2048
+                })
+              }
             }
+
+            // Validate response structure
 
             if (!response || !response.choices || response.choices.length === 0) {
               throw new Error('Empty response from AI service')
