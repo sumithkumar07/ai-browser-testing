@@ -333,29 +333,46 @@ const AISidebar: React.FC<AISidebarProps> = ({
       )
     }
 
-    // SECURITY: Enhanced XSS prevention with comprehensive sanitization
+    // ENHANCED SECURITY: Multiple layers of XSS prevention
     try {
-      // First, escape any potential HTML in the raw content
-      const escapedContent = message.content
+      // First, validate message content length and structure
+      if (!message.content || typeof message.content !== 'string') {
+        return <div className="message-content">Invalid message content</div>
+      }
+      
+      // Truncate extremely long messages to prevent DoS
+      const maxLength = 50000
+      const content = message.content.length > maxLength 
+        ? message.content.substring(0, maxLength) + '... [Content truncated for security]'
+        : message.content
+      
+      // SECURITY: Enhanced HTML entity escaping with comprehensive coverage
+      const escapedContent = content
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#x27;')
+        .replace(/\//g, '&#x2F;')
+        .replace(/`/g, '&#x60;')
+        .replace(/=/g, '&#x3D;')
       
-      // Then apply markdown-style formatting to the escaped content
+      // Apply safe markdown-style formatting to the escaped content
       const formattedContent = escapedContent
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
         .replace(/`(.*?)`/g, '<code>$1</code>')
         .replace(/\n/g, '<br>')
 
-      // Final sanitization with DOMPurify - very restrictive whitelist
+      // SECURITY: Ultra-restrictive DOMPurify configuration
       const sanitizedContent = DOMPurify.sanitize(formattedContent, {
         ALLOWED_TAGS: ['strong', 'em', 'code', 'br', 'p'],
         ALLOWED_ATTR: [],
-        FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed'],
-        FORBID_ATTR: ['onclick', 'onload', 'onerror', 'javascript:', 'data:']
+        FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed', 'svg', 'math', 'form', 'input', 'button'],
+        FORBID_ATTR: ['onclick', 'onload', 'onerror', 'onmouseover', 'onfocus', 'onblur', 'javascript:', 'data:', 'vbscript:', 'expression('],
+        KEEP_CONTENT: false,
+        SANITIZE_DOM: true,
+        USE_PROFILES: { html: true }
       })
 
       return (
@@ -366,10 +383,10 @@ const AISidebar: React.FC<AISidebarProps> = ({
       )
     } catch (error) {
       console.warn('Content sanitization error:', error)
-      // Fallback: render as plain text if sanitization fails
+      // Ultimate fallback: render as plain text only
       return (
         <div className="message-content">
-          {message.content}
+          {typeof message.content === 'string' ? message.content.replace(/<[^>]*>/g, '') : 'Invalid content'}
         </div>
       )
     }
