@@ -3239,11 +3239,13 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
     })
 
     browserView.webContents.on('did-finish-load', () => {
-      this.mainWindow.webContents.send('browser-event', {
-        type: 'loading',
-        tabId: tabId,
-        loading: false
-      })
+      if (this.mainWindow && this.mainWindow.webContents) {
+        this.mainWindow.webContents.send('browser-event', {
+          type: 'loading',
+          tabId: tabId,
+          loading: false
+        })
+      }
     })
 
     browserView.webContents.on('did-navigate', (event, url) => {
