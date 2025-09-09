@@ -111,7 +111,7 @@ export class StartupOptimizer {
       estimatedDuration: 500,
       dependencies: ['electron-api-check'],
       execute: async () => {
-        const { BrowserController } = await import('./BrowserController')
+        const BrowserController = (await import('./BrowserController')).default
         const controller = BrowserController.getInstance()
         await controller.initialize()
       }
