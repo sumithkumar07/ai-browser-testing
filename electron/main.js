@@ -1749,6 +1749,29 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       if (intentPatterns.hasTime || lowerTask.includes('automatically') || lowerTask.includes('every')) {
         bonusedScores.automation += 8 // INCREASED from 5
       }
+      
+      // NEW: Additional accuracy improvements
+      if (lowerTask.includes('daily routine') || lowerTask.includes('schedule task')) {
+        bonusedScores.automation += 15 // Strong automation signal
+      }
+      
+      // Fix: Better handling for mixed intents
+      const topScore = Math.max(...Object.values(bonusedScores))
+      if (topScore > 0) {
+        // Normalize scores to prevent over-amplification
+        Object.keys(bonusedScores).forEach(key => {
+          if (bonusedScores[key] > topScore * 0.3 && bonusedScores[key] < topScore) {
+            bonusedScores[key] = Math.min(bonusedScores[key] * 1.1, topScore * 0.9)
+          }
+        })
+      }
+      
+      return bonusedScores
+    }
+
+    // NEW: Enhanced decision making with better confidence calculation
+    this.makeEnhancedAgentDecision = (contextualScores, originalTask, lowerTask) => {
+      }
       if (lowerTask.includes('schedule') || lowerTask.includes('recurring') || lowerTask.includes('repeat')) {
         bonusedScores.automation += 6 // NEW
       }
