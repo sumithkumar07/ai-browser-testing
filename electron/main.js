@@ -1769,44 +1769,7 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       return bonusedScores
     }
 
-    // NEW: Enhanced decision making with better confidence calculation
-    this.makeEnhancedAgentDecision = (contextualScores, originalTask, lowerTask) => {
-      }
-      if (lowerTask.includes('schedule') || lowerTask.includes('recurring') || lowerTask.includes('repeat')) {
-        bonusedScores.automation += 6 // NEW
-      }
-      // FIX: Better handling for routine creation
-      if (lowerTask.includes('daily') && lowerTask.includes('routine')) {
-        bonusedScores.automation += 10 // STRONGER bonus for automation intent
-      }
-      if (lowerTask.includes('create') && (lowerTask.includes('routine') || lowerTask.includes('workflow'))) {
-        bonusedScores.automation += 8 // NEW: creation + routine/workflow
-      }
-      
-      // ENHANCED task complexity bonuses
-      if (originalTask.length > 80) {
-        // Long, complex tasks likely need research
-        bonusedScores.research += 5 // INCREASED from 3
-      }
-      
-      // NEW: Action verb bonuses for better intent detection
-      const actionVerbs = {
-        'go|visit|navigate|open|browse': () => bonusedScores.navigation += 6,
-        'buy|purchase|shop|order': () => bonusedScores.shopping += 8,
-        'find|search|look|discover': () => bonusedScores.research += 5,
-        'write|compose|create|draft': () => bonusedScores.communication += 6,
-        'analyze|examine|review|study': () => bonusedScores.analysis += 6,
-        'automate|schedule|repeat|setup': () => bonusedScores.automation += 6
-      }
-      
-      Object.entries(actionVerbs).forEach(([pattern, bonus]) => {
-        if (new RegExp(`\\b(${pattern})\\b`, 'i').test(lowerTask)) bonus()
-      })
-      
-      return bonusedScores
-    }
-
-    // ENHANCED: IMPROVED Smarter agent decision making with better accuracy
+    // ENHANCED: Enhanced decision making with better confidence calculation
     this.makeEnhancedAgentDecision = (contextualScores, originalTask, lowerTask) => {
       // IMPROVED minimum threshold for better precision
       const minThreshold = 4 // INCREASED from 3
