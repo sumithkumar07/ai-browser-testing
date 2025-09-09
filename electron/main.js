@@ -248,6 +248,96 @@ class KAiroBrowserManager {
     }
   }
 
+  // Database recovery methods
+  async createFallbackDatabase() {
+    const fallbackPath = path.join(process.cwd(), 'data', 'kairo_browser_fallback.db')
+    this.databaseService = new DatabaseService({
+      path: fallbackPath,
+      maxSize: 100 * 1024 * 1024,
+      backupEnabled: true
+    })
+    await this.databaseService.initialize()
+  }
+
+  async createInMemoryDatabase() {
+    this.databaseService = new DatabaseService({
+      path: ':memory:',
+      maxSize: 50 * 1024 * 1024,
+      backupEnabled: false
+    })
+    await this.databaseService.initialize()
+    console.warn('⚠️ Using in-memory database - data will not persist')
+  }
+
+  async initializeMinimalDatabase() {
+    const minimalPath = path.join(process.cwd(), 'data', 'minimal.db')
+    this.databaseService = new DatabaseService({
+      path: minimalPath,
+      maxSize: 10 * 1024 * 1024,
+      backupEnabled: false
+    })
+    await this.databaseService.initialize()
+    console.warn('⚠️ Using minimal database - limited functionality')
+  }
+
+  // API health monitoring
+  startApiHealthMonitoring() {
+    setInterval(async () => {
+      if (this.apiValidator) {
+        const health = await this.apiValidator.performHealthCheck()
+        
+        if (health.isCircuitOpen && this.connectionState.api !== 'circuit_open') {
+          console.warn('⚠️ API circuit breaker opened - API unavailable')
+          this.connectionState.api = 'circuit_open'
+        } else if (!health.isCircuitOpen && this.connectionState.api === 'circuit_open') {
+          console.log('✅ API circuit breaker closed - API restored')
+          this.connectionState.api = 'connected'
+        }
+      }
+    }, 30000) // Every 30 seconds
+  }
+
+  // System health monitoring
+  startSystemHealthMonitoring() {
+    setInterval(async () => {
+      try {
+        const systemHealth = {
+          timestamp: Date.now(),
+          api: this.connectionState.api,
+          database: this.connectionState.database,
+          agents: this.connectionState.agents,
+          memory: process.memoryUsage(),
+          uptime: process.uptime()
+        }
+        
+        // Log health status periodically
+        if (Date.now() % (5 * 60 * 1000) < 30000) { // Every 5 minutes
+          console.log('🏥 System Health:', {
+            api: systemHealth.api,
+            database: systemHealth.database,
+            agents: systemHealth.agents,
+            memoryMB: Math.round(systemHealth.memory.heapUsed / 1024 / 1024),
+            uptimeMin: Math.round(systemHealth.uptime / 60)
+          })
+        }
+        
+        // Check for memory leaks
+        if (systemHealth.memory.heapUsed > 500 * 1024 * 1024) { // 500MB
+          console.warn('⚠️ High memory usage detected:', Math.round(systemHealth.memory.heapUsed / 1024 / 1024), 'MB')
+          
+          // Trigger garbage collection if available
+          if (global.gc) {
+            global.gc()
+            console.log('🧹 Garbage collection triggered')
+          }
+        }
+        
+      } catch (error) {
+        console.error('❌ System health monitoring failed:', error)
+      }
+    }, 30000) // Every 30 seconds
+  }
+
   async initializeAIService() {
     try {
       console.log('🤖 Initializing AI Service with production-ready validation...')
