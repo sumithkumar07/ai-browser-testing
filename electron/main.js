@@ -68,13 +68,36 @@ class KAiroBrowserManager {
     try {
       console.log('🤖 Initializing Enhanced Backend Services (ZERO UI IMPACT)...')
       
-      // Initialize Database Service
+      // Initialize Database Service - FIXED: Better error handling and path validation
       this.databaseService = new DatabaseService({
-        path: process.env.DB_PATH || './data/kairo_browser.db',
+        path: process.env.DB_PATH || path.join(__dirname, '../data/kairo_browser.db'),
         maxSize: 100 * 1024 * 1024, // 100MB
         backupEnabled: true
       })
-      await this.databaseService.initialize()
+      
+      try {
+        await this.databaseService.initialize()
+        console.log('✅ Database service initialized successfully')
+      } catch (dbError) {
+        console.error('❌ Database service failed to initialize:', dbError.message)
+        console.warn('🔄 Attempting to recreate database...')
+        
+        // Try to recreate database with fallback path
+        try {
+          const fallbackPath = path.join(process.cwd(), 'data', 'kairo_browser_fallback.db')
+          this.databaseService = new DatabaseService({
+            path: fallbackPath,
+            maxSize: 100 * 1024 * 1024,
+            backupEnabled: true
+          })
+          await this.databaseService.initialize()
+          console.log('✅ Database service initialized with fallback path')
+        } catch (fallbackError) {
+          console.error('❌ Database fallback also failed:', fallbackError.message)
+          console.warn('⚠️ Continuing without database service - some features may be limited')
+          this.databaseService = null
+        }
+      }
       
       // Initialize Performance Monitor
       this.performanceMonitor = new AgentPerformanceMonitor(this.databaseService)
