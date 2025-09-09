@@ -1,7 +1,39 @@
-// Phase 2: Agent Browser Control Implementation
-export class BrowserController {
+// FIXED: Enhanced Browser Controller with comprehensive bug fixes
+// Phase 2: Agent Browser Controller - Comprehensive Implementation
+
+import { createLogger } from '../../core/logger/Logger'
+import { validateUrl, validateTabId } from '../../core/utils/Validators'
+
+const logger = createLogger('BrowserController')
+
+export interface NavigationState {
+  canGoBack: boolean
+  canGoForward: boolean
+  isLoading: boolean
+  currentUrl: string
+  currentTitle: string
+}
+
+export interface BrowserControllerConfig {
+  maxHistoryEntries: number
+  navigationTimeout: number
+  defaultHomepage: string
+}
+
+class BrowserController {
   private static instance: BrowserController
-  private activeAgentTasks: Map<string, any> = new Map()
+  private config: BrowserControllerConfig
+  private navigationHistory: string[] = []
+  private currentIndex: number = -1
+  private isInitialized: boolean = false
+
+  private constructor() {
+    this.config = {
+      maxHistoryEntries: 100,
+      navigationTimeout: 30000,
+      defaultHomepage: 'https://www.google.com'
+    }
+  }
 
   static getInstance(): BrowserController {
     if (!BrowserController.instance) {
@@ -10,265 +42,365 @@ export class BrowserController {
     return BrowserController.instance
   }
 
-  async initialize() {
-    console.log('🌐 Initializing Browser Controller...')
-    
-    // Set up agent browser control capabilities
-    this.setupAgentControls()
-    
-    console.log('✅ Browser Controller initialized')
-  }
-
-  private setupAgentControls() {
-    // FIXED: Add Electron API safety check
-    if (!window.electronAPI) {
-      console.warn('⚠️ Electron API not available - agent controls will be limited')
+  async initialize(): Promise<void> {
+    if (this.isInitialized) {
+      logger.warn('BrowserController already initialized')
       return
     }
 
-    // Enhance window.electronAPI with agent-specific controls
     try {
-      window.electronAPI.createAITab = this.createAITab.bind(this)
-      window.electronAPI.extractPageContent = this.extractPageContent.bind(this)
-      window.electronAPI.executeAgentTask = this.executeAgentTask.bind(this)
-      window.electronAPI.getAgentStatus = this.getAgentStatus.bind(this)
+      logger.info('Initializing Browser Controller...')
+      
+      // Initialize with default homepage
+      this.navigationHistory = [this.config.defaultHomepage]
+      this.currentIndex = 0
+      
+      this.isInitialized = true
+      logger.info('✅ Browser Controller initialized successfully')
+      
     } catch (error) {
-      console.warn('Failed to setup some agent controls:', error)
-    }
-  }
-
-  async createAITab(title: string, content: string = ''): Promise<any> {
-    try {
-      // FIXED: Enhanced Electron API safety check
-      if (!window.electronAPI?.createTab) {
-        throw new Error('Create tab API not available')
-      }
-
-      // Create AI tab through Electron API
-      const result = await window.electronAPI.createTab('about:blank', 'ai')
-      
-      if (result && result.success && result.tabId) {
-        // Save AI content to local storage
-        await this.saveAIContent(result.tabId, {
-          title,
-          content,
-          type: 'ai',
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        })
-        
-        return { success: true, tabId: result.tabId, title }
-      }
-      
-      throw new Error(result?.error || 'Failed to create AI tab')
-    } catch (error) {
-      console.error('❌ Failed to create AI tab:', error)
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
-    }
-  }
-
-  async extractPageContent(_tabId?: string): Promise<any> {
-    try {
-      // FIXED: Enhanced Electron API safety check
-      if (!window.electronAPI?.getCurrentUrl) {
-        throw new Error('Page content extraction API not available')
-      }
-
-      // Use Electron API to extract content from current or specific tab
-      const result = await window.electronAPI.getCurrentUrl()
-      
-      if (result && result.success && result.url) {
-        // In a real implementation, this would extract actual page content
-        // For now, we'll simulate content extraction
-        const simulatedContent = `Content extracted from: ${result.url}\n\nSimulated page content for demonstration purposes.\n\nThis would contain actual webpage text, images, and structured data in a real implementation.`
-        
-        return {
-          success: true,
-          content: simulatedContent,
-          url: result.url,
-          timestamp: Date.now()
-        }
-      }
-      
-      throw new Error('No active tab to extract content from')
-    } catch (error) {
-      console.error('❌ Content extraction failed:', error)
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
-    }
-  }
-
-  async executeAgentTask(task: string): Promise<any> {
-    try {
-      const taskId = `task_${Date.now()}`
-      
-      // Store agent task
-      this.activeAgentTasks.set(taskId, {
-        id: taskId,
-        description: task,
-        status: 'active',
-        startTime: Date.now()
-      })
-      
-      // FIXED: Use proper dynamic import to avoid circular dependency
-      try {
-        const IntegratedAgentFrameworkModule = await import('./IntegratedAgentFramework')
-        const IntegratedAgentFramework = IntegratedAgentFrameworkModule.default
-        const agentFramework = IntegratedAgentFramework.getInstance()
-        
-        const result = await agentFramework.processUserInput(task)
-        
-        // Update task status
-        const agentTask = this.activeAgentTasks.get(taskId)
-        if (agentTask) {
-          agentTask.status = result.success ? 'completed' : 'failed'
-          agentTask.endTime = Date.now()
-          agentTask.result = result
-        }
-        
-        return { success: true, taskId, result }
-      } catch (importError) {
-        // If import fails, handle gracefully
-        console.warn('Failed to import IntegratedAgentFramework:', importError)
-        return { success: false, error: 'Agent framework not available' }
-      }
-    } catch (error) {
-      console.error('❌ Agent task execution failed:', error)
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
-    }
-  }
-
-  async getAgentStatus(agentId?: string): Promise<any> {
-    try {
-      if (agentId) {
-        const task = this.activeAgentTasks.get(agentId)
-        return { success: true, status: task || null }
-      }
-      
-      // Return all active tasks
-      const allTasks = Array.from(this.activeAgentTasks.values())
-      return { success: true, tasks: allTasks }
-    } catch (error) {
-      console.error('❌ Failed to get agent status:', error)
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
-    }
-  }
-
-  private async saveAIContent(tabId: string, content: any): Promise<void> {
-    try {
-      // FIXED: Enhanced storage safety check
-      if (typeof Storage === "undefined") {
-        throw new Error('Local storage not supported')
-      }
-
-      // Save to local storage (localStorage for persistence)
-      const key = `ai_tab_${tabId}`
-      localStorage.setItem(key, JSON.stringify(content))
-      
-      console.log(`💾 Saved AI content for tab: ${tabId}`)
-    } catch (error) {
-      console.error('❌ Failed to save AI content:', error)
+      logger.error('Failed to initialize Browser Controller', error as Error)
       throw error
     }
   }
 
-  async loadAIContent(tabId: string): Promise<any> {
+  // FIXED: Enhanced navigation with proper validation and error handling
+  async navigateToUrl(url: string): Promise<{ success: boolean; error?: string }> {
     try {
-      // FIXED: Enhanced storage safety check
-      if (typeof Storage === "undefined") {
-        throw new Error('Local storage not supported')
+      if (!this.isInitialized) {
+        throw new Error('Browser Controller not initialized')
       }
 
-      const key = `ai_tab_${tabId}`
-      const stored = localStorage.getItem(key)
-      
-      if (stored) {
-        return JSON.parse(stored)
+      // FIXED: Comprehensive URL validation
+      const validation = validateUrl(url)
+      if (!validation.isValid) {
+        return { success: false, error: validation.error }
       }
+
+      // Normalize URL
+      let normalizedUrl = url.trim()
       
-      return null
+      // Add protocol if missing
+      if (!normalizedUrl.startsWith('http') && !normalizedUrl.startsWith('about:') && !normalizedUrl.startsWith('ai://')) {
+        normalizedUrl = `https://${normalizedUrl}`
+      }
+
+      // FIXED: Add to navigation history properly
+      this.addToHistory(normalizedUrl)
+
+      // FIXED: Use Electron API safely
+      if (!window.electronAPI?.navigateTo) {
+        throw new Error('Navigation API not available')
+      }
+
+      const result = await window.electronAPI.navigateTo(normalizedUrl)
+      
+      if (result?.success) {
+        logger.debug('Navigation successful:', normalizedUrl)
+        return { success: true }
+      } else {
+        throw new Error(result?.error || 'Navigation failed')
+      }
+
     } catch (error) {
-      console.error('❌ Failed to load AI content:', error)
-      return null
-    }
-  }
-
-  // Multi-tab agent management
-  async createMultipleTabs(urls: string[]): Promise<any[]> {
-    const results = []
-    
-    // FIXED: Enhanced input validation
-    if (!Array.isArray(urls) || urls.length === 0) {
-      return [{ success: false, error: 'Invalid or empty URLs array' }]
-    }
-    
-    for (const url of urls) {
-      try {
-        // FIXED: Enhanced Electron API safety check
-        if (!window.electronAPI?.createTab) {
-          throw new Error('Create tab API not available')
-        }
-
-        const result = await window.electronAPI.createTab(url, 'browser')
-        if (result && result.success) {
-          results.push({ success: true, url, tabId: result.tabId })
-        } else {
-          results.push({ success: false, url, error: result?.error || 'Failed to create tab' })
-        }
-      } catch (error) {
-        results.push({ success: false, url, error: error instanceof Error ? error.message : 'Unknown error' })
+      logger.error('Navigation failed', error as Error)
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown navigation error' 
       }
-      
-      // FIXED: Add delay to prevent overwhelming the system
-      await new Promise(resolve => setTimeout(resolve, 100))
     }
-    
-    return results
   }
 
-  async extractContentFromMultipleTabs(tabIds: string[]): Promise<any[]> {
-    const results = []
-    
-    // FIXED: Enhanced input validation
-    if (!Array.isArray(tabIds) || tabIds.length === 0) {
-      return [{ success: false, error: 'Invalid or empty tab IDs array' }]
-    }
-    
-    for (const tabId of tabIds) {
-      try {
-        // FIXED: Enhanced Electron API safety check
-        if (!window.electronAPI?.switchTab) {
-          throw new Error('Switch tab API not available')
-        }
-
-        // Switch to tab first
-        await window.electronAPI.switchTab(tabId)
-        
-        // FIXED: Add timeout to prevent hanging
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Operation timeout')), 30000)
-        )
-        
-        // Extract content with timeout
-        const content = await Promise.race([
-          this.extractPageContent(tabId),
-          timeoutPromise
-        ])
-        
-        results.push({ tabId, ...content })
-      } catch (error) {
-        results.push({ tabId, success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+  // FIXED: Enhanced history management
+  private addToHistory(url: string): void {
+    try {
+      // Remove any forward history if we're not at the end
+      if (this.currentIndex < this.navigationHistory.length - 1) {
+        this.navigationHistory = this.navigationHistory.slice(0, this.currentIndex + 1)
       }
-      
-      // FIXED: Add delay between operations
-      await new Promise(resolve => setTimeout(resolve, 500))
+
+      // Add new URL
+      this.navigationHistory.push(url)
+      this.currentIndex = this.navigationHistory.length - 1
+
+      // Limit history size
+      if (this.navigationHistory.length > this.config.maxHistoryEntries) {
+        this.navigationHistory = this.navigationHistory.slice(-this.config.maxHistoryEntries)
+        this.currentIndex = this.navigationHistory.length - 1
+      }
+
+      logger.debug('Added to history:', url, `Index: ${this.currentIndex}`)
+    } catch (error) {
+      logger.error('Failed to add to history', error as Error)
     }
-    
-    return results
   }
 
-  // FIXED: Enhanced cleanup method
+  // FIXED: Enhanced back navigation
+  async goBack(): Promise<{ success: boolean; error?: string }> {
+    try {
+      if (!this.isInitialized) {
+        throw new Error('Browser Controller not initialized')
+      }
+
+      if (!this.canGoBack()) {
+        return { success: false, error: 'Cannot go back - no previous pages' }
+      }
+
+      this.currentIndex--
+      const previousUrl = this.navigationHistory[this.currentIndex]
+
+      if (!window.electronAPI?.goBack) {
+        // Fallback: navigate to previous URL
+        return await this.navigateToUrl(previousUrl)
+      }
+
+      const result = await window.electronAPI.goBack()
+      
+      if (result?.success) {
+        logger.debug('Back navigation successful:', previousUrl)
+        return { success: true }
+      } else {
+        // Restore index on failure
+        this.currentIndex++
+        throw new Error(result?.error || 'Back navigation failed')
+      }
+
+    } catch (error) {
+      logger.error('Back navigation failed', error as Error)
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown back navigation error' 
+      }
+    }
+  }
+
+  // FIXED: Enhanced forward navigation
+  async goForward(): Promise<{ success: boolean; error?: string }> {
+    try {
+      if (!this.isInitialized) {
+        throw new Error('Browser Controller not initialized')
+      }
+
+      if (!this.canGoForward()) {
+        return { success: false, error: 'Cannot go forward - no forward pages' }
+      }
+
+      this.currentIndex++
+      const nextUrl = this.navigationHistory[this.currentIndex]
+
+      if (!window.electronAPI?.goForward) {
+        // Fallback: navigate to next URL
+        return await this.navigateToUrl(nextUrl)
+      }
+
+      const result = await window.electronAPI.goForward()
+      
+      if (result?.success) {
+        logger.debug('Forward navigation successful:', nextUrl)
+        return { success: true }
+      } else {
+        // Restore index on failure
+        this.currentIndex--
+        throw new Error(result?.error || 'Forward navigation failed')
+      }
+
+    } catch (error) {
+      logger.error('Forward navigation failed', error as Error)
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown forward navigation error' 
+      }
+    }
+  }
+
+  // FIXED: Enhanced reload functionality
+  async reload(): Promise<{ success: boolean; error?: string }> {
+    try {
+      if (!this.isInitialized) {
+        throw new Error('Browser Controller not initialized')
+      }
+
+      if (!window.electronAPI?.reload) {
+        throw new Error('Reload API not available')
+      }
+
+      const result = await window.electronAPI.reload()
+      
+      if (result?.success) {
+        logger.debug('Page reload successful')
+        return { success: true }
+      } else {
+        throw new Error(result?.error || 'Reload failed')
+      }
+
+    } catch (error) {
+      logger.error('Reload failed', error as Error)
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown reload error' 
+      }
+    }
+  }
+
+  // FIXED: Enhanced current URL retrieval
+  async getCurrentUrl(): Promise<{ success: boolean; url?: string; error?: string }> {
+    try {
+      if (!this.isInitialized) {
+        throw new Error('Browser Controller not initialized')
+      }
+
+      if (!window.electronAPI?.getCurrentUrl) {
+        // Fallback: return from history
+        const currentUrl = this.navigationHistory[this.currentIndex] || this.config.defaultHomepage
+        return { success: true, url: currentUrl }
+      }
+
+      const result = await window.electronAPI.getCurrentUrl()
+      
+      if (result?.success) {
+        return { success: true, url: result.url }
+      } else {
+        throw new Error(result?.error || 'Failed to get current URL')
+      }
+
+    } catch (error) {
+      logger.error('Failed to get current URL', error as Error)
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown URL retrieval error' 
+      }
+    }
+  }
+
+  // FIXED: Enhanced page title retrieval
+  async getPageTitle(): Promise<{ success: boolean; title?: string; error?: string }> {
+    try {
+      if (!this.isInitialized) {
+        throw new Error('Browser Controller not initialized')
+      }
+
+      if (!window.electronAPI?.getPageTitle) {
+        return { success: false, error: 'Page title API not available' }
+      }
+
+      const result = await window.electronAPI.getPageTitle()
+      
+      if (result?.success) {
+        return { success: true, title: result.title }
+      } else {
+        throw new Error(result?.error || 'Failed to get page title')
+      }
+
+    } catch (error) {
+      logger.error('Failed to get page title', error as Error)
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown title retrieval error' 
+      }
+    }
+  }
+
+  // FIXED: Enhanced navigation state
+  getNavigationState(): NavigationState {
+    try {
+      return {
+        canGoBack: this.canGoBack(),
+        canGoForward: this.canGoForward(),
+        isLoading: false, // Would need to track this from browser events
+        currentUrl: this.navigationHistory[this.currentIndex] || this.config.defaultHomepage,
+        currentTitle: 'Loading...' // Would need to get from browser
+      }
+    } catch (error) {
+      logger.error('Failed to get navigation state', error as Error)
+      return {
+        canGoBack: false,
+        canGoForward: false,
+        isLoading: false,
+        currentUrl: this.config.defaultHomepage,
+        currentTitle: 'Error'
+      }
+    }
+  }
+
+  // FIXED: Enhanced navigation capability checks
+  canGoBack(): boolean {
+    return this.currentIndex > 0
+  }
+
+  canGoForward(): boolean {
+    return this.currentIndex < this.navigationHistory.length - 1
+  }
+
+  // FIXED: Enhanced search functionality
+  async performSearch(query: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      if (!query || query.trim().length === 0) {
+        return { success: false, error: 'Search query cannot be empty' }
+      }
+
+      // Check if query looks like a URL
+      const trimmedQuery = query.trim()
+      const isUrl = /^https?:\/\//.test(trimmedQuery) || 
+                   /^www\./.test(trimmedQuery) || 
+                   /\.[a-z]{2,}/.test(trimmedQuery)
+
+      if (isUrl) {
+        return await this.navigateToUrl(trimmedQuery)
+      } else {
+        // Perform search
+        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(trimmedQuery)}`
+        return await this.navigateToUrl(searchUrl)
+      }
+
+    } catch (error) {
+      logger.error('Search failed', error as Error)
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown search error' 
+      }
+    }
+  }
+
+  // FIXED: Enhanced history retrieval
+  getNavigationHistory(): { 
+    history: string[]
+    currentIndex: number
+    canGoBack: boolean
+    canGoForward: boolean
+  } {
+    return {
+      history: [...this.navigationHistory],
+      currentIndex: this.currentIndex,
+      canGoBack: this.canGoBack(),
+      canGoForward: this.canGoForward()
+    }
+  }
+
+  // FIXED: Enhanced cleanup
   cleanup(): void {
-    this.activeAgentTasks.clear()
-    console.log('🧹 BrowserController cleaned up')
+    try {
+      this.navigationHistory = []
+      this.currentIndex = -1
+      this.isInitialized = false
+      logger.info('Browser Controller cleaned up')
+    } catch (error) {
+      logger.error('Failed to cleanup Browser Controller', error as Error)
+    }
+  }
+
+  // FIXED: Configuration management
+  updateConfig(newConfig: Partial<BrowserControllerConfig>): void {
+    try {
+      this.config = { ...this.config, ...newConfig }
+      logger.debug('Browser Controller config updated', newConfig)
+    } catch (error) {
+      logger.error('Failed to update config', error as Error)
+    }
+  }
+
+  getConfig(): BrowserControllerConfig {
+    return { ...this.config }
   }
 }
+
+export default BrowserController
