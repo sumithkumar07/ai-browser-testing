@@ -1,7 +1,7 @@
 // Enhanced Error Boundary - Production Ready
 // Provides comprehensive error handling and recovery for React components
 
-import React, { Component, ReactNode, ErrorInfo } from 'react'
+import { Component, ReactNode, ErrorInfo } from 'react'
 
 interface ErrorBoundaryState {
   hasError: boolean
