@@ -1745,7 +1745,11 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
     try {
       console.log('🧹 Cleaning up KAiro Browser Manager...')
       
-      // Shutdown enhanced services
+      // Shutdown enhanced services in proper order
+      if (this.databaseHealthManager) {
+        await this.databaseHealthManager.shutdown()
+      }
+      
       if (this.performanceMonitor) {
         await this.performanceMonitor.shutdown()
       }
@@ -1760,9 +1764,23 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       
       // Close browser views
       for (const [tabId, browserView] of this.browserViews) {
-        browserView.destroy()
+        try {
+          browserView.destroy()
+        } catch (error) {
+          console.warn(`⚠️ Failed to destroy browser view ${tabId}:`, error.message)
+        }
       }
       this.browserViews.clear()
+      
+      // Clear AI tabs
+      this.aiTabs.clear()
+      
+      // Reset connection state
+      this.connectionState = {
+        api: 'disconnected',
+        database: 'disconnected',
+        agents: 'disconnected'
+      }
       
       console.log('✅ Cleanup completed')
     } catch (error) {
