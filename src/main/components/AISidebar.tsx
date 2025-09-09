@@ -187,26 +187,50 @@ const AISidebar: React.FC<AISidebarProps> = ({
     
     if (!inputValue.trim() || isLoading || connectionStatus !== 'connected') return
 
-    // SECURITY: Input validation and sanitization
+    // ENHANCED SECURITY: Comprehensive input validation and sanitization
     const sanitizedInput = inputValue.trim()
     
     // Validate input length (prevent extremely long inputs)
-    if (sanitizedInput.length > 5000) {
-      addMessage(false, '⚠️ Message too long. Please limit your message to 5000 characters.')
+    if (sanitizedInput.length > 10000) {
+      addMessage(false, '⚠️ Message too long. Please limit your message to 10,000 characters.')
+      return
+    }
+    
+    // Validate minimum length
+    if (sanitizedInput.length < 1) {
+      addMessage(false, '⚠️ Please enter a message.')
       return
     }
 
-    // Basic content filtering (prevent potential injection attempts)
+    // ENHANCED: More comprehensive content filtering (prevent potential injection attempts)
     const suspiciousPatterns = [
       /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
       /javascript:/gi,
       /data:text\/html/gi,
-      /on\w+\s*=/gi
+      /on\w+\s*=/gi,
+      /vbscript:/gi,
+      /expression\s*\(/gi,
+      /url\s*\(/gi,
+      /<iframe\b[^>]*>/gi,
+      /<object\b[^>]*>/gi,
+      /<embed\b[^>]*>/gi,
+      /<form\b[^>]*>/gi,
+      /<input\b[^>]*>/gi,
+      /eval\s*\(/gi,
+      /Function\s*\(/gi
     ]
     
     const hasSuspiciousContent = suspiciousPatterns.some(pattern => pattern.test(sanitizedInput))
     if (hasSuspiciousContent) {
-      addMessage(false, '⚠️ Message contains potentially unsafe content. Please rephrase your request.')
+      addMessage(false, '⚠️ Message contains potentially unsafe content. Please rephrase your request without HTML, JavaScript, or special formatting.')
+      return
+    }
+    
+    // Additional validation for common attack vectors
+    const encodedPattern = /%[0-9a-fA-F]{2}/g
+    const encodedMatches = sanitizedInput.match(encodedPattern)
+    if (encodedMatches && encodedMatches.length > 5) {
+      addMessage(false, '⚠️ Message contains excessive encoded characters. Please use plain text.')
       return
     }
 
