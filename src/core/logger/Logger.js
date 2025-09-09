@@ -125,10 +125,5 @@ function createLogger(context) {
   return new Logger(context)
 }
 
-// Export for both CommonJS and ES modules
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { createLogger, Logger }
-} else {
-  // ES modules export
-  export { createLogger, Logger }
-}
+// ES modules export
+export { createLogger, Logger }
