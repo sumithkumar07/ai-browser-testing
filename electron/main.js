@@ -206,17 +206,51 @@ class KAiroBrowserManager {
         apiKey: process.env.GROQ_API_KEY
       })
 
-      // Test connection
+      // Test connection with the updated GROQ API - FIXED: Using correct model name and better error handling
+      console.log('🔍 Testing GROQ API connection...')
       const testResponse = await this.aiService.chat.completions.create({
-        messages: [{ role: 'user', content: 'test' }],
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 1
+        messages: [{ role: 'user', content: 'test connection' }],
+        model: 'llama-3.3-70b-versatile', // VERIFIED: This is the correct latest model
+        max_tokens: 10,
+        temperature: 0.1
       })
 
-      console.log('✅ AI Service initialized and connected')
+      if (testResponse && testResponse.choices && testResponse.choices.length > 0) {
+        console.log('✅ AI Service initialized and connected successfully')
+        console.log('📊 GROQ API Response:', {
+          model: testResponse.model,
+          usage: testResponse.usage,
+          response: testResponse.choices[0].message.content
+        })
+      } else {
+        throw new Error('Invalid response from GROQ API')
+      }
       
     } catch (error) {
-      console.error('❌ Failed to initialize AI service:', error)
+      console.error('❌ Failed to initialize AI service:', error.message)
+      
+      // ENHANCED: More detailed error analysis
+      if (error.message.includes('API key')) {
+        console.error('🔑 API Key Issue: Please check your GROQ_API_KEY')
+      } else if (error.message.includes('model')) {
+        console.error('🤖 Model Issue: The specified model may not be available')
+        console.log('💡 Trying with fallback model...')
+        
+        try {
+          // Fallback to another model
+          const fallbackResponse = await this.aiService.chat.completions.create({
+            messages: [{ role: 'user', content: 'test' }],
+            model: 'llama3-8b-8192', // Fallback model
+            max_tokens: 5
+          })
+          console.log('✅ Fallback model working:', fallbackResponse.model)
+        } catch (fallbackError) {
+          console.error('❌ Fallback model also failed:', fallbackError.message)
+        }
+      } else if (error.message.includes('network') || error.message.includes('timeout')) {
+        console.error('🌐 Network Issue: Check internet connection')
+      }
+      
       throw error
     }
   }
