@@ -268,7 +268,7 @@ class KAiroBrowserManager {
     return 'general'
   }
 
-  // FIXED: Moved this method from inside IPC handler to proper class method
+  // FIXED: Enhanced error handling for agent response enhancement
   async enhanceResponseWithAgenticCapabilities(aiResponse, originalMessage, context) {
     try {
       if (!this.isAgenticMode || !aiResponse) {
@@ -278,15 +278,15 @@ class KAiroBrowserManager {
       console.log('✨ Enhancing AI response with agentic capabilities')
 
       // PHASE 1: Response Quality Enhancement
-      const enhancedResponse = await this.enhanceResponseQuality(aiResponse, originalMessage, context)
+      let enhancedResponse = await this.enhanceResponseQuality(aiResponse, originalMessage, context)
 
       // PHASE 2: Add Contextual Actions
-      const responseWithActions = await this.addContextualActions(enhancedResponse, originalMessage, context)
+      enhancedResponse = await this.addContextualActions(enhancedResponse, originalMessage, context)
 
       // PHASE 3: Add Proactive Suggestions
-      const finalResponse = await this.addProactiveSuggestions(responseWithActions, originalMessage, context)
+      enhancedResponse = await this.addProactiveSuggestions(enhancedResponse, originalMessage, context)
 
-      return finalResponse
+      return enhancedResponse
 
     } catch (error) {
       console.error('❌ Response enhancement failed:', error)
@@ -294,23 +294,26 @@ class KAiroBrowserManager {
     }
   }
 
+  // ENHANCED: Better response quality enhancement with error handling
   async enhanceResponseQuality(response, message, context) {
     try {
       // Add response structure and formatting
       let enhanced = response
 
-      // Add context awareness
-      if (context.url && context.url !== 'about:blank') {
-        enhanced = `**Context**: Currently viewing ${context.title || context.url}\n\n${enhanced}`
+      // Add context awareness with null checks
+      if (context && context.url && context.url !== 'about:blank') {
+        const contextTitle = context.title || context.url
+        enhanced = `**Context**: Currently viewing ${contextTitle}\n\n${enhanced}`
       }
 
       // Add confidence indicators for high-quality responses
-      if (response.length > 500 && response.includes('##')) {
+      if (response && response.length > 500 && response.includes('##')) {
         enhanced += `\n\n---\n*🎯 High-confidence response generated with enhanced AI analysis*`
       }
 
-      // Add timestamp for time-sensitive information
-      if (message.toLowerCase().includes('latest') || message.toLowerCase().includes('current')) {
+      // Add timestamp for time-sensitive information with better detection
+      const timeSensitiveKeywords = ['latest', 'current', 'today', 'now', 'recent', 'update']
+      if (message && timeSensitiveKeywords.some(keyword => message.toLowerCase().includes(keyword))) {
         const timestamp = new Date().toLocaleString()
         enhanced += `\n\n*📅 Information current as of: ${timestamp}*`
       }
@@ -319,7 +322,7 @@ class KAiroBrowserManager {
 
     } catch (error) {
       console.error('❌ Response quality enhancement failed:', error)
-      return response
+      return response || 'Error enhancing response'
     }
   }
 
