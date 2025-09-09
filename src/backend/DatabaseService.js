@@ -144,13 +144,50 @@ class DatabaseService {
   async createIndexes() {
     if (!this.db) throw new Error('Database not initialized');
 
-    // Performance-critical indexes
+    // ENHANCED: Additional performance-critical indexes for better query speed
     this.db.exec('CREATE INDEX IF NOT EXISTS idx_bookmarks_url ON bookmarks(url)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_bookmarks_title ON bookmarks(title)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_bookmarks_category ON bookmarks(category)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_bookmarks_updated ON bookmarks(updated_at DESC)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_bookmarks_tags ON bookmarks(tags)');
+    
     this.db.exec('CREATE INDEX IF NOT EXISTS idx_history_url ON history(url)');
-    this.db.exec('CREATE INDEX IF NOT EXISTS idx_history_visited ON history(visited_at)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_history_visited ON history(visited_at DESC)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_history_title ON history(title)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_history_duration ON history(duration)');
+    
     this.db.exec('CREATE INDEX IF NOT EXISTS idx_agent_memory_agent ON agent_memory(agent_id)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_agent_memory_type ON agent_memory(type)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_agent_memory_importance ON agent_memory(importance DESC)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_agent_memory_created ON agent_memory(created_at DESC)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_agent_memory_expires ON agent_memory(expires_at)');
+    
     this.db.exec('CREATE INDEX IF NOT EXISTS idx_agent_performance_agent ON agent_performance(agent_id)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_agent_performance_start ON agent_performance(start_time DESC)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_agent_performance_success ON agent_performance(success)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_agent_performance_task_type ON agent_performance(task_type)');
+    
     this.db.exec('CREATE INDEX IF NOT EXISTS idx_background_tasks_status ON background_tasks(status)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_background_tasks_priority ON background_tasks(priority DESC)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_background_tasks_scheduled ON background_tasks(scheduled_for)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_background_tasks_agent ON background_tasks(agent_id)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_background_tasks_type ON background_tasks(type)');
+    
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_agent_health_status ON agent_health(status)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_agent_health_check ON agent_health(last_health_check DESC)');
+    
+    // ENHANCED: Add system config table for better data management
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS system_config (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        type TEXT NOT NULL,
+        updated_at INTEGER NOT NULL,
+        category TEXT DEFAULT 'general'
+      )
+    `);
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_system_config_category ON system_config(category)');
+    this.db.exec('CREATE INDEX IF NOT EXISTS idx_system_config_updated ON system_config(updated_at DESC)');
   }
 
   // Bookmark Operations
