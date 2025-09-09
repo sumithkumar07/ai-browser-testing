@@ -2596,10 +2596,12 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       }
       
       // Emit tab closed event
-      this.mainWindow.webContents.send('browser-event', {
-        type: 'tab-closed',
-        tabId: tabId
-      })
+      if (this.mainWindow && this.mainWindow.webContents) {
+        this.mainWindow.webContents.send('browser-event', {
+          type: 'tab-closed',
+          tabId: tabId
+        })
+      }
 
       console.log(`✅ Tab closed and cleaned up: ${tabId}`)
       return { success: true, tabId: tabId }
