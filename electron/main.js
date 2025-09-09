@@ -3229,11 +3229,13 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
   setupBrowserViewListeners(browserView, tabId) {
     // Navigation events
     browserView.webContents.on('did-start-loading', () => {
-      this.mainWindow.webContents.send('browser-event', {
-        type: 'loading',
-        tabId: tabId,
-        loading: true
-      })
+      if (this.mainWindow && this.mainWindow.webContents) {
+        this.mainWindow.webContents.send('browser-event', {
+          type: 'loading',
+          tabId: tabId,
+          loading: true
+        })
+      }
     })
 
     browserView.webContents.on('did-finish-load', () => {
