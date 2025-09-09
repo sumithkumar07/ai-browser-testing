@@ -129,7 +129,7 @@ class BrowserController {
         this.currentIndex = this.navigationHistory.length - 1
       }
 
-      logger.debug('Added to history:', url, `Index: ${this.currentIndex}`)
+      logger.debug('Added to history:', { url, index: this.currentIndex })
     } catch (error) {
       logger.error('Failed to add to history', error as Error)
     }
