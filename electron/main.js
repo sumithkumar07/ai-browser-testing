@@ -2579,7 +2579,9 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
 
       // Remove from main window if active
       if (tabId === this.activeTabId) {
-        this.mainWindow.setBrowserView(null)
+        if (this.mainWindow) {
+          this.mainWindow.setBrowserView(null)
+        }
         this.activeTabId = null
       }
       
