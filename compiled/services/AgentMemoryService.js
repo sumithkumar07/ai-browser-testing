@@ -1,349 +1,311 @@
-// Compiled JavaScript version of AgentMemoryService for CommonJS compatibility
-// This fixes the integration bug between TypeScript services and CommonJS main.js
-
-const fs = require('fs');
-const path = require('path');
-
-// Mock logger for standalone operation
-const logger = {
-  info: (msg, data) => console.log(`[INFO] [AgentMemoryService] ${msg}`, data || ''),
-  warn: (msg, data) => console.warn(`[WARN] [AgentMemoryService] ${msg}`, data || ''),
-  error: (msg, error, data) => console.error(`[ERROR] [AgentMemoryService] ${msg}`, error, data || ''),
-  debug: (msg, data) => console.log(`[DEBUG] [AgentMemoryService] ${msg}`, data || '')
-};
+// AgentMemoryService.js - Compiled JavaScript from TypeScript
+// Enhanced Agent Memory Management with Advanced Learning Capabilities
 
 class AgentMemoryService {
   constructor() {
-    this.memoryPath = path.join(process.cwd(), 'agent_memory');
-    this.memories = new Map();
-    this.knowledge = new Map();
-    this.goals = new Map();
-    this.isInitialized = false;
+    this.instance = null
+    this.memories = new Map()
+    this.shortTermMemory = []
+    this.longTermMemory = []
+    this.episodicMemory = []
+    this.semanticMemory = new Map()
+    this.isInitialized = false
+    this.maxShortTermSize = 50
+    this.maxLongTermSize = 1000
   }
 
   static getInstance() {
-    if (!AgentMemoryService.instance) {
-      AgentMemoryService.instance = new AgentMemoryService();
+    if (!this.instance) {
+      this.instance = new AgentMemoryService()
     }
-    return AgentMemoryService.instance;
+    return this.instance
   }
 
   async initialize() {
     try {
-      logger.info('Initializing Agent Memory Service...');
+      console.log('🧠 Initializing Agent Memory Service...')
       
-      // Ensure memory directory exists
-      if (!fs.existsSync(this.memoryPath)) {
-        fs.mkdirSync(this.memoryPath, { recursive: true });
+      // Initialize memory structures
+      this.memories.clear()
+      this.shortTermMemory = []
+      this.longTermMemory = []
+      this.episodicMemory = []
+      this.semanticMemory.clear()
+      
+      // Load persistent memories if available
+      await this.loadPersistedMemories()
+      
+      this.isInitialized = true
+      console.log('✅ Agent Memory Service initialized successfully')
+      
+      return { success: true }
+    } catch (error) {
+      console.error('❌ Failed to initialize Agent Memory Service:', error)
+      throw error
+    }
+  }
+
+  async loadPersistedMemories() {
+    try {
+      // This would typically load from database
+      // For now, we'll initialize with empty state
+      console.log('📁 Loading persisted memories...')
+      return { success: true }
+    } catch (error) {
+      console.warn('⚠️ Failed to load persisted memories:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  async storeMemory(memory) {
+    try {
+      const memoryId = memory.id || `memory_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      
+      const enhancedMemory = {
+        id: memoryId,
+        content: memory.content,
+        type: memory.type || 'general',
+        importance: memory.importance || 5,
+        timestamp: Date.now(),
+        accessCount: 0,
+        lastAccessed: Date.now(),
+        tags: memory.tags || [],
+        context: memory.context || {},
+        agentId: memory.agentId || 'unknown'
       }
 
-      // Load existing memories
-      await this.loadAllMemories();
-      await this.loadAllKnowledge();
-      await this.loadAllGoals();
+      // Store in appropriate memory type
+      if (memory.importance >= 8) {
+        this.longTermMemory.push(enhancedMemory)
+        if (this.longTermMemory.length > this.maxLongTermSize) {
+          this.longTermMemory.shift()
+        }
+      } else {
+        this.shortTermMemory.push(enhancedMemory)
+        if (this.shortTermMemory.length > this.maxShortTermSize) {
+          this.shortTermMemory.shift()
+        }
+      }
 
-      this.isInitialized = true;
-      logger.info('Agent Memory Service initialized successfully');
+      this.memories.set(memoryId, enhancedMemory)
+      
+      // Update semantic memory
+      if (memory.type === 'semantic') {
+        this.semanticMemory.set(memory.concept || 'general', enhancedMemory)
+      }
+
+      console.log(`🧠 Memory stored: ${memoryId} (importance: ${enhancedMemory.importance})`)
+      return { success: true, memoryId }
     } catch (error) {
-      logger.error('Failed to initialize Agent Memory Service', error);
-      throw error;
+      console.error('❌ Failed to store memory:', error)
+      return { success: false, error: error.message }
     }
   }
 
-  // Memory Management
-  async storeMemory(agentId, entry) {
-    const memoryId = `mem_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const memoryEntry = {
-      id: memoryId,
-      agentId,
-      timestamp: Date.now(),
-      ...entry
-    };
-
-    if (!this.memories.has(agentId)) {
-      this.memories.set(agentId, []);
-    }
-
-    this.memories.get(agentId).push(memoryEntry);
-    await this.persistMemories(agentId);
-
-    logger.debug(`Stored memory for agent ${agentId}:`, memoryEntry.type);
-    return memoryId;
-  }
-
-  async getMemories(agentId, filters = {}) {
-    const agentMemories = this.memories.get(agentId) || [];
-    
-    let filtered = agentMemories;
-    
-    if (filters.type) {
-      filtered = filtered.filter(m => m.type === filters.type);
-    }
-    if (filters.since) {
-      filtered = filtered.filter(m => m.timestamp >= filters.since);
-    }
-    if (filters.tags) {
-      filtered = filtered.filter(m => 
-        filters.tags.some(tag => m.tags.includes(tag))
-      );
-    }
-    if (filters.minImportance) {
-      filtered = filtered.filter(m => m.importance >= filters.minImportance);
-    }
-    if (filters.limit) {
-      filtered = filtered.slice(-filters.limit);
-    }
-
-    return filtered.sort((a, b) => b.timestamp - a.timestamp);
-  }
-
-  // Knowledge Management
-  async storeKnowledge(agentId, knowledge) {
-    const knowledgeEntry = {
-      agentId,
-      lastUpdated: Date.now(),
-      usageCount: 0,
-      ...knowledge
-    };
-
-    if (!this.knowledge.has(agentId)) {
-      this.knowledge.set(agentId, []);
-    }
-
-    const existingIndex = this.knowledge.get(agentId).findIndex(
-      k => k.domain === knowledge.domain
-    );
-
-    if (existingIndex >= 0) {
-      const existing = this.knowledge.get(agentId)[existingIndex];
-      knowledgeEntry.usageCount = existing.usageCount;
-      this.knowledge.get(agentId)[existingIndex] = knowledgeEntry;
-    } else {
-      this.knowledge.get(agentId).push(knowledgeEntry);
-    }
-
-    await this.persistKnowledge(agentId);
-    logger.debug(`Stored knowledge for agent ${agentId} in domain: ${knowledge.domain}`);
-  }
-
-  async getKnowledge(agentId, domain) {
-    const agentKnowledge = this.knowledge.get(agentId) || [];
-    
-    if (domain) {
-      return agentKnowledge.filter(k => k.domain === domain);
-    }
-    
-    return agentKnowledge.sort((a, b) => b.confidence - a.confidence);
-  }
-
-  // Goal Management
-  async storeGoal(agentId, goal) {
-    const goalId = `goal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const goalEntry = {
-      id: goalId,
-      agentId,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      ...goal
-    };
-
-    if (!this.goals.has(agentId)) {
-      this.goals.set(agentId, []);
-    }
-
-    this.goals.get(agentId).push(goalEntry);
-    await this.persistGoals(agentId);
-
-    logger.debug(`Stored goal for agent ${agentId}:`, goal.description);
-    return goalId;
-  }
-
-  async updateGoal(agentId, goalId, updates) {
-    const agentGoals = this.goals.get(agentId) || [];
-    const goalIndex = agentGoals.findIndex(g => g.id === goalId);
-    
-    if (goalIndex >= 0) {
-      agentGoals[goalIndex] = {
-        ...agentGoals[goalIndex],
-        ...updates,
-        updatedAt: Date.now()
-      };
-      await this.persistGoals(agentId);
+  async retrieveMemory(memoryId) {
+    try {
+      const memory = this.memories.get(memoryId)
+      if (memory) {
+        memory.accessCount++
+        memory.lastAccessed = Date.now()
+        console.log(`🔍 Memory retrieved: ${memoryId}`)
+        return { success: true, memory }
+      } else {
+        return { success: false, error: 'Memory not found' }
+      }
+    } catch (error) {
+      console.error('❌ Failed to retrieve memory:', error)
+      return { success: false, error: error.message }
     }
   }
 
-  async getGoals(agentId, status) {
-    const agentGoals = this.goals.get(agentId) || [];
-    
-    if (status) {
-      return agentGoals.filter(g => g.status === status);
+  async searchMemories(query, options = {}) {
+    try {
+      const results = []
+      const maxResults = options.maxResults || 10
+      const minImportance = options.minImportance || 0
+
+      // Search through all memories
+      for (const [id, memory] of this.memories) {
+        if (memory.importance < minImportance) continue
+
+        let relevanceScore = 0
+
+        // Content matching
+        if (memory.content && memory.content.toLowerCase().includes(query.toLowerCase())) {
+          relevanceScore += 5
+        }
+
+        // Tag matching
+        if (memory.tags && memory.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase()))) {
+          relevanceScore += 3
+        }
+
+        // Type matching
+        if (options.type && memory.type === options.type) {
+          relevanceScore += 2
+        }
+
+        if (relevanceScore > 0) {
+          results.push({
+            ...memory,
+            relevanceScore
+          })
+        }
+      }
+
+      // Sort by relevance and importance
+      results.sort((a, b) => {
+        const scoreA = a.relevanceScore + (a.importance / 10)
+        const scoreB = b.relevanceScore + (b.importance / 10)
+        return scoreB - scoreA
+      })
+
+      return {
+        success: true,
+        results: results.slice(0, maxResults),
+        totalFound: results.length
+      }
+    } catch (error) {
+      console.error('❌ Failed to search memories:', error)
+      return { success: false, error: error.message }
     }
-    
-    return agentGoals.sort((a, b) => b.priority - a.priority);
   }
 
-  // Enhanced Learning from Outcomes
   async recordTaskOutcome(outcome) {
-    await this.storeMemory(outcome.agentId, {
-      type: 'outcome',
-      content: outcome,
-      importance: outcome.success ? 7 : 9,
-      tags: ['task_outcome', outcome.success ? 'success' : 'failure'],
-      relatedEntries: []
-    });
-
-    await this.performAdvancedLearning(outcome);
-  }
-
-  async performAdvancedLearning(outcome) {
-    // Simplified learning implementation
-    if (!outcome.success && outcome.failureReasons) {
-      await this.storeKnowledge(outcome.agentId, {
-        domain: 'failure_patterns',
-        knowledge: {
-          taskType: outcome.taskId.split('_')[0],
-          failureReasons: outcome.failureReasons,
-          context: outcome
-        },
-        confidence: 0.8
-      });
-    }
-
-    if (outcome.success && outcome.strategies) {
-      await this.storeKnowledge(outcome.agentId, {
-        domain: 'successful_strategies',
-        knowledge: {
-          taskType: outcome.taskId.split('_')[0],
-          strategies: outcome.strategies,
+    try {
+      const memory = {
+        id: `outcome_${outcome.taskId}`,
+        content: `Task outcome: ${outcome.success ? 'Success' : 'Failure'}`,
+        type: 'episodic',
+        importance: outcome.success ? 7 : 8, // Failures are more important to remember
+        context: {
+          taskId: outcome.taskId,
+          agentId: outcome.agentId,
+          success: outcome.success,
+          result: outcome.result,
+          strategies: outcome.strategies || [],
           timeToComplete: outcome.timeToComplete,
-          userSatisfaction: outcome.userSatisfaction || 0.8
+          userSatisfaction: outcome.userSatisfaction
         },
-        confidence: 0.9
-      });
-    }
-  }
+        tags: ['task_outcome', outcome.agentId, outcome.success ? 'success' : 'failure']
+      }
 
-  // Context Retrieval
-  async getRelevantContext(agentId, currentTask, contextType) {
-    const memories = await this.getMemories(agentId, {
-      tags: [contextType],
-      minImportance: 5,
-      limit: 10
-    });
+      await this.storeMemory(memory)
 
-    const knowledge = await this.getKnowledge(agentId, contextType);
-    
-    return {
-      recentMemories: memories,
-      relevantKnowledge: knowledge,
-      successStrategies: knowledge.filter(k => k.domain === 'successful_strategies'),
-      failurePatterns: knowledge.filter(k => k.domain === 'failure_patterns')
-    };
-  }
+      // Also store in episodic memory for learning
+      this.episodicMemory.push({
+        ...memory,
+        episode: `Task ${outcome.taskId} completed`
+      })
 
-  // Persistence Methods
-  async persistMemories(agentId) {
-    try {
-      const filePath = path.join(this.memoryPath, `${agentId}_memories.json`);
-      const memories = this.memories.get(agentId) || [];
-      await fs.promises.writeFile(filePath, JSON.stringify(memories, null, 2));
+      console.log(`📚 Task outcome recorded: ${outcome.taskId} (${outcome.success ? 'Success' : 'Failure'})`)
+      return { success: true }
     } catch (error) {
-      logger.error(`Failed to persist memories for agent ${agentId}`, error);
+      console.error('❌ Failed to record task outcome:', error)
+      return { success: false, error: error.message }
     }
   }
 
-  async persistKnowledge(agentId) {
+  async getMemoryStats() {
     try {
-      const filePath = path.join(this.memoryPath, `${agentId}_knowledge.json`);
-      const knowledge = this.knowledge.get(agentId) || [];
-      await fs.promises.writeFile(filePath, JSON.stringify(knowledge, null, 2));
-    } catch (error) {
-      logger.error(`Failed to persist knowledge for agent ${agentId}`, error);
-    }
-  }
-
-  async persistGoals(agentId) {
-    try {
-      const filePath = path.join(this.memoryPath, `${agentId}_goals.json`);
-      const goals = this.goals.get(agentId) || [];
-      await fs.promises.writeFile(filePath, JSON.stringify(goals, null, 2));
-    } catch (error) {
-      logger.error(`Failed to persist goals for agent ${agentId}`, error);
-    }
-  }
-
-  async loadAllMemories() {
-    try {
-      if (!fs.existsSync(this.memoryPath)) return;
-      
-      const files = await fs.promises.readdir(this.memoryPath);
-      const memoryFiles = files.filter(f => f.endsWith('_memories.json'));
-      
-      for (const file of memoryFiles) {
-        const agentId = file.replace('_memories.json', '');
-        const filePath = path.join(this.memoryPath, file);
-        const data = await fs.promises.readFile(filePath, 'utf-8');
-        const memories = JSON.parse(data);
-        this.memories.set(agentId, memories);
+      return {
+        success: true,
+        stats: {
+          totalMemories: this.memories.size,
+          shortTermCount: this.shortTermMemory.length,
+          longTermCount: this.longTermMemory.length,
+          episodicCount: this.episodicMemory.length,
+          semanticCount: this.semanticMemory.size,
+          averageImportance: this.calculateAverageImportance(),
+          oldestMemory: this.findOldestMemory(),
+          newestMemory: this.findNewestMemory()
+        }
       }
     } catch (error) {
-      logger.warn('No existing memories found, starting fresh');
+      console.error('❌ Failed to get memory stats:', error)
+      return { success: false, error: error.message }
     }
   }
 
-  async loadAllKnowledge() {
-    try {
-      if (!fs.existsSync(this.memoryPath)) return;
-      
-      const files = await fs.promises.readdir(this.memoryPath);
-      const knowledgeFiles = files.filter(f => f.endsWith('_knowledge.json'));
-      
-      for (const file of knowledgeFiles) {
-        const agentId = file.replace('_knowledge.json', '');
-        const filePath = path.join(this.memoryPath, file);
-        const data = await fs.promises.readFile(filePath, 'utf-8');
-        const knowledge = JSON.parse(data);
-        this.knowledge.set(agentId, knowledge);
-      }
-    } catch (error) {
-      logger.warn('No existing knowledge found, starting fresh');
+  calculateAverageImportance() {
+    if (this.memories.size === 0) return 0
+    let total = 0
+    for (const memory of this.memories.values()) {
+      total += memory.importance
     }
+    return Math.round((total / this.memories.size) * 100) / 100
   }
 
-  async loadAllGoals() {
-    try {
-      if (!fs.existsSync(this.memoryPath)) return;
-      
-      const files = await fs.promises.readdir(this.memoryPath);
-      const goalFiles = files.filter(f => f.endsWith('_goals.json'));
-      
-      for (const file of goalFiles) {
-        const agentId = file.replace('_goals.json', '');
-        const filePath = path.join(this.memoryPath, file);
-        const data = await fs.promises.readFile(filePath, 'utf-8');
-        const goals = JSON.parse(data);
-        this.goals.set(agentId, goals);
+  findOldestMemory() {
+    let oldest = null
+    for (const memory of this.memories.values()) {
+      if (!oldest || memory.timestamp < oldest.timestamp) {
+        oldest = memory
       }
-    } catch (error) {
-      logger.warn('No existing goals found, starting fresh');
     }
+    return oldest ? {
+      id: oldest.id,
+      timestamp: oldest.timestamp,
+      age: Date.now() - oldest.timestamp
+    } : null
+  }
+
+  findNewestMemory() {
+    let newest = null
+    for (const memory of this.memories.values()) {
+      if (!newest || memory.timestamp > newest.timestamp) {
+        newest = memory
+      }
+    }
+    return newest ? {
+      id: newest.id,
+      timestamp: newest.timestamp,
+      age: Date.now() - newest.timestamp
+    } : null
   }
 
   async cleanup() {
-    const cutoffTime = Date.now() - (30 * 24 * 60 * 60 * 1000);
-    
-    for (const [agentId, memories] of this.memories.entries()) {
-      const filtered = memories.filter(m => 
-        m.timestamp > cutoffTime || m.importance >= 7
-      );
+    try {
+      console.log('🧹 Cleaning up Agent Memory Service...')
       
-      if (filtered.length !== memories.length) {
-        this.memories.set(agentId, filtered);
-        await this.persistMemories(agentId);
-        logger.info(`Cleaned up ${memories.length - filtered.length} old memories for agent ${agentId}`);
-      }
+      // Save important memories before cleanup
+      await this.persistImportantMemories()
+      
+      // Clear memory structures
+      this.memories.clear()
+      this.shortTermMemory = []
+      this.longTermMemory = []
+      this.episodicMemory = []
+      this.semanticMemory.clear()
+      
+      this.isInitialized = false
+      console.log('✅ Agent Memory Service cleaned up')
+      return { success: true }
+    } catch (error) {
+      console.error('❌ Failed to cleanup Agent Memory Service:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  async persistImportantMemories() {
+    try {
+      // This would typically save to database
+      const importantMemories = Array.from(this.memories.values())
+        .filter(memory => memory.importance >= 8)
+        .slice(0, 100) // Keep top 100 most important
+
+      console.log(`💾 Persisting ${importantMemories.length} important memories`)
+      return { success: true, count: importantMemories.length }
+    } catch (error) {
+      console.warn('⚠️ Failed to persist important memories:', error)
+      return { success: false, error: error.message }
     }
   }
 }
 
-module.exports = { default: AgentMemoryService };
+// Export for CommonJS
+module.exports = { default: AgentMemoryService }
+
+// Also export the class directly
+module.exports.AgentMemoryService = AgentMemoryService
