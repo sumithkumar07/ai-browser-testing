@@ -1039,17 +1039,6 @@ class AgentCoordinationService {
     return Object.fromEntries(team.sharedContext.entries())
   }
 
-  async getSharedContext(teamId: string, key?: string): Promise<any> {
-    const team = this.activeTeams.get(teamId)
-    if (!team) return null
-
-    if (key) {
-      return team.sharedContext.get(key)
-    }
-    
-    return Object.fromEntries(team.sharedContext.entries())
-  }
-
   // Initialize Default Agent Capabilities
   private async initializeAgentCapabilities(): Promise<void> {
     const defaultAgents = [
