@@ -306,7 +306,51 @@ class KAiroBrowserManager {
           return { success: false, error: 'AI service not initialized' }
         }
 
-  async processWithAgenticCapabilities(message) {
+        // Try agentic processing first
+        const agenticResult = await this.processWithAgenticCapabilities(message)
+        let enhancedResult
+        
+        if (agenticResult && agenticResult.success) {
+          enhancedResult = agenticResult.result
+        } else {
+          // Fall back to standard AI processing
+          // Get current page context with enhanced content extraction
+          const context = await this.getEnhancedPageContext()
+          
+          // Create enhanced system prompt with agentic capabilities
+          const systemPrompt = \`You are KAiro, an advanced autonomous AI browser assistant with sophisticated agentic capabilities and persistent memory.
+
+🧠 **ENHANCED AGENTIC CAPABILITIES**:
+- **Autonomous Goal Execution**: I can work independently toward long-term goals
+- **Persistent Memory**: I remember our conversations and learn from outcomes
+- **Agent Coordination**: I coordinate with specialized agents for complex tasks
+- **Proactive Behavior**: I can monitor, alert, and suggest actions proactively
+- **Multi-Step Planning**: I create and execute complex multi-step plans
+
+CURRENT CONTEXT:
+- URL: \${context.url}
+- Page Title: \${context.title}
+- Page Type: \${context.pageType}
+- Content Summary: \${context.contentSummary}
+- Available Actions: Navigate, Extract, Analyze, Create tabs, Set Goals, Monitor
+
+Page Content Context: \${context.extractedText ? context.extractedText.substring(0, 800) + '...' : 'Ready to assist with autonomous task execution.'}\`
+
+          const response = await this.aiService.chat.completions.create({
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: message }
+            ],
+            model: 'llama-3.3-70b-versatile',
+            temperature: 0.7,
+            max_tokens: 3072
+          })
+
+          enhancedResult = response.choices[0].message.content
+        }
+        
+        // Enhance response with agentic capabilities
+        enhancedResult = await this.enhanceResponseWithAgenticCapabilities(enhancedResult, message, context)
     try {
       console.log('🤖 Processing with advanced agentic capabilities:', message)
       
