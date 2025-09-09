@@ -1683,14 +1683,25 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
     this.applyAdvancedContextualBonuses = (lowerTask, originalTask, baseScores, intentPatterns) => {
       const bonusedScores = { ...baseScores }
       
-      // IMPROVED URL and Navigation Pattern Bonuses
+      // IMPROVED URL and Navigation Pattern Bonuses - FIXED ACCURACY ISSUE
       if (intentPatterns.hasURL) {
-        bonusedScores.navigation += 15 // INCREASED - Strong navigation intent
+        bonusedScores.navigation += 20 // INCREASED for better accuracy
       }
       
-      // IMPROVED E-commerce and Shopping Pattern Bonuses
+      // IMPROVED E-commerce and Shopping Pattern Bonuses - FIXED ACCURACY ISSUE
       if (intentPatterns.hasPrice || intentPatterns.hasComparison) {
-        bonusedScores.shopping += 10 // INCREASED
+        bonusedScores.shopping += 15 // INCREASED for better accuracy
+      }
+      
+      // NEW: Intent-based direct scoring for better accuracy
+      if (intentPatterns.isImperative) {
+        if (lowerTask.startsWith('go to') || lowerTask.startsWith('navigate')) {
+          bonusedScores.navigation += 25 // Strong navigation intent
+        } else if (lowerTask.startsWith('find') || lowerTask.startsWith('search')) {
+          bonusedScores.research += 20 // Strong research intent
+        } else if (lowerTask.startsWith('buy') || lowerTask.startsWith('shop')) {
+          bonusedScores.shopping += 20 // Strong shopping intent
+        }
       }
       
       // ENHANCED Specific platform bonuses with more platforms
