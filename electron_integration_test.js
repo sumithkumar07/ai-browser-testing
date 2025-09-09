@@ -349,11 +349,11 @@ class ElectronIntegrationTester {
     // Critical systems status
     console.log("🔍 CRITICAL ELECTRON SYSTEMS STATUS:");
     const criticalSystems = [
-      ("File Structure", this.testResults.file_structure.structure_complete),
-      ("Main Process Config", this.testResults.main_process.package_main),
-      ("Preload Security", this.testResults.preload_security.is_secure),
-      ("Backend Integration", this.testResults.backend_services.all_services_imported),
-      ("IPC Handlers", this.testResults.ipc_handlers.all_handlers_defined)
+      ["File Structure", this.testResults.file_structure.structure_complete],
+      ["Main Process Config", this.testResults.main_process.package_main],
+      ["Preload Security", this.testResults.preload_security.is_secure],
+      ["Backend Integration", this.testResults.backend_services.all_services_imported],
+      ["IPC Handlers", this.testResults.ipc_handlers.all_handlers_defined]
     ];
     
     for (const [systemName, status] of criticalSystems) {
