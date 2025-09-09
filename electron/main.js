@@ -2161,6 +2161,14 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
         this.mainWindow = null
       })
 
+      // Handle window resize to update browser view bounds
+      this.mainWindow.on('resize', () => {
+        // Update all browser view bounds when window is resized
+        for (const browserView of this.browserViews.values()) {
+          this.updateBrowserViewBounds(browserView)
+        }
+      })
+
       console.log('✅ Main window created successfully')
       
     } catch (error) {
