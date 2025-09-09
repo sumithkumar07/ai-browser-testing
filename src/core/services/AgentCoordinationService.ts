@@ -1003,6 +1003,14 @@ class AgentCoordinationService {
     const totalProgress = allGoals.reduce((sum, goal) => sum + goal.progress, 0)
     const averageProgress = allGoals.length > 0 ? totalProgress / allGoals.length : 0
 
+    return {
+      activeGoals,
+      completedGoals,
+      failedGoals,
+      averageProgress
+    }
+  }
+
   // Shared Context Management
   async shareContext(teamId: string, key: string, value: any): Promise<void> {
     const team = this.activeTeams.get(teamId)
