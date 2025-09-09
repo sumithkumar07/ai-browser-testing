@@ -2634,11 +2634,13 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       const url = browserView.webContents.getURL()
       
       // Emit tab switched event
-      this.mainWindow.webContents.send('browser-event', {
-        type: 'tab-switched',
-        tabId: tabId,
-        url: url
-      })
+      if (this.mainWindow && this.mainWindow.webContents) {
+        this.mainWindow.webContents.send('browser-event', {
+          type: 'tab-switched',
+          tabId: tabId,
+          url: url
+        })
+      }
 
       console.log(`✅ Switched to tab: ${tabId}`)
       return { success: true, tabId: tabId, url: url }
