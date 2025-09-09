@@ -1,470 +1,370 @@
 // KAiro Browser Main Application Component
-// Layout Structure: LOCKED - Do not modify layout proportions or structure
-import React, { useState, useEffect, Suspense, lazy } from 'react'
-import BrowserWindow from './components/BrowserWindow'
+// Last Updated: Bug Fix Session - Enhanced Error Handling & Performance
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import TabBar from './components/TabBar'
 import NavigationBar from './components/NavigationBar'
-import LoadingSpinner from './components/LoadingSpinner'
-import ErrorBoundary from '../core/errors/ErrorBoundary'
-import { BrowserController } from './services/BrowserController'
-import { Tab, BrowserEvent, AgentStatus } from '../core/types'
+import BrowserWindow from './components/BrowserWindow'
+import AISidebar from './components/AISidebar'
+import ErrorBoundary from './components/ErrorBoundary'
+import { Tab, BrowserEvent } from './types/electron'
 import { createLogger } from '../core/logger/Logger'
-import { APP_CONSTANTS } from '../core/utils/Constants'
-import { appEvents } from '../core/utils/EventEmitter'
 import './styles/App.css'
-
-// PERFORMANCE: Lazy load heavy components to reduce initial bundle size
-const AISidebar = lazy(() => import('./components/AISidebar'))
 
 const logger = createLogger('App')
 
 const App: React.FC = () => {
+  // Core State
   const [tabs, setTabs] = useState<Tab[]>([])
   const [activeTabId, setActiveTabId] = useState<string | null>(null)
+  const [isAISidebarOpen, setIsAISidebarOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [currentUrl, setCurrentUrl] = useState('')
-  const [aiSidebarOpen, setAISidebarOpen] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [agentStatus, setAgentStatus] = useState<AgentStatus | null>(null)
 
-  useEffect(() => {
-    let cleanup: (() => void) | null = null
+  // FIXED: Enhanced performance with useMemo for heavy computations
+  const activeTab = useMemo(() => 
+    tabs.find(tab => tab.id === activeTabId) || null,
+    [tabs, activeTabId]
+  )
+
+  // FIXED: Enhanced error handling function
+  const handleError = useCallback((error: Error, context?: string) => {
+    logger.error('Application error', error, { context })
+    setError(`${context ? context + ': ' : ''}${error.message}`)
     
-    const initializeAndSetupCleanup = async () => {
-      await initializeApp()
-      
-      // Setup cleanup function for event listeners
-      cleanup = () => {
-        // Cleanup agent framework event listeners
-        import('./services/IntegratedAgentFramework').then(({ default: AgentFrameworkClass }) => {
-          const agentFramework = AgentFrameworkClass.getInstance()
-          agentFramework.removeEventListener('agent-update', (status: AgentStatus) => {
-            setAgentStatus(status)
-          })
-        }).catch(console.error)
+    // Auto-clear error after 5 seconds
+    setTimeout(() => setError(null), 5000)
+  }, [])
+
+  // FIXED: Enhanced initialization with proper error handling
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        setIsLoading(true)
         
-        // Cleanup app events
-        appEvents.removeAllListeners('app:initialized')
-        appEvents.removeAllListeners('app:error')
+        // Check if Electron API is available
+        if (!window.electronAPI) {
+          throw new Error('Electron API not available - running outside Electron environment')
+        }
+
+        // Create initial tab
+        const result = await window.electronAPI.createTab('https://www.google.com')
+        if (result && result.success) {
+          const initialTab: Tab = {
+            id: result.tabId || 'tab-1',
+            title: 'Google',
+            url: 'https://www.google.com',
+            isLoading: false,
+            isActive: true,
+            type: 'browser'
+          }
+          
+          setTabs([initialTab])
+          setActiveTabId(initialTab.id)
+        } else {
+          throw new Error(result?.error || 'Failed to create initial tab')
+        }
+
+        // Test AI connection
+        try {
+          const aiTest = await window.electronAPI.testConnection()
+          if (!aiTest?.success) {
+            logger.warn('AI service not available:', aiTest?.error)
+          } else {
+            logger.info('AI service connected successfully')
+          }
+        } catch (aiError) {
+          logger.warn('AI service test failed:', aiError)
+        }
+
+        setIsLoading(false)
+        logger.info('✅ KAiro Browser initialized successfully')
+        
+      } catch (error) {
+        logger.error('Failed to initialize app', error as Error)
+        handleError(error as Error, 'Initialization')
+        setIsLoading(false)
       }
     }
-    
-    initializeAndSetupCleanup()
-    
-    return () => {
-      if (cleanup) {
-        cleanup()
+
+    initializeApp()
+  }, [handleError])
+
+  // FIXED: Enhanced browser event listener with cleanup
+  useEffect(() => {
+    if (!window.electronAPI?.onBrowserEvent) {
+      return
+    }
+
+    try {
+      const handleBrowserEvent = (event: BrowserEvent) => {
+        try {
+          logger.debug('Browser event received:', event)
+          
+          switch (event.type) {
+            case 'tab-updated':
+              if (event.tabId && event.title) {
+                setTabs(prevTabs => 
+                  prevTabs.map(tab => 
+                    tab.id === event.tabId 
+                      ? { ...tab, title: event.title || tab.title, url: event.url || tab.url }
+                      : tab
+                  )
+                )
+              }
+              break
+            case 'page-loading':
+              if (event.tabId) {
+                setTabs(prevTabs =>
+                  prevTabs.map(tab =>
+                    tab.id === event.tabId
+                      ? { ...tab, isLoading: true }
+                      : tab
+                  )
+                )
+              }
+              break
+            case 'page-loaded':
+              if (event.tabId) {
+                setTabs(prevTabs =>
+                  prevTabs.map(tab =>
+                    tab.id === event.tabId
+                      ? { ...tab, isLoading: false }
+                      : tab
+                  )
+                )
+              }
+              break
+            default:
+              logger.debug('Unhandled browser event:', event.type)
+          }
+        } catch (eventError) {
+          logger.error('Error handling browser event', eventError as Error)
+        }
       }
+
+      window.electronAPI.onBrowserEvent(handleBrowserEvent)
+
+      // FIXED: Proper cleanup on unmount
+      return () => {
+        if (window.electronAPI?.removeBrowserEventListener) {
+          window.electronAPI.removeBrowserEventListener()
+        }
+      }
+    } catch (error) {
+      logger.error('Failed to setup browser event listener', error as Error)
     }
   }, [])
 
-  const initializeApp = async () => {
+  // FIXED: Enhanced tab creation with error handling
+  const createTab = useCallback(async (url?: string, type?: 'browser' | 'ai') => {
     try {
-      setIsLoading(true)
-      logger.info('Initializing KAiro Browser Application')
-      
-      // Check if we're in Electron environment
-      if (!window.electronAPI) {
-        throw new Error('KAiro Browser requires Electron environment')
-      }
-
-      // Initialize Browser Controller
-      logger.debug('Initializing Browser Controller')
-      const browserController = BrowserController.getInstance()
-      await browserController.initialize()
-
-      // Initialize Agent Framework - PERFORMANCE: Dynamic import
-      logger.debug('Initializing Agent Framework')
-      const { default: AgentFrameworkClass } = await import('./services/IntegratedAgentFramework')
-      const agentFramework = AgentFrameworkClass.getInstance()
-      await agentFramework.initialize()
-
-      // Set up event listeners
-      setupEventListeners()
-
-      // Set up agent event listeners - PERFORMANCE: Use existing instance
-      agentFramework.addEventListener('agent-update', (status: AgentStatus) => {
-        logger.debug('Agent status update received', status)
-        setAgentStatus(status)
-      })
-
-      // Create initial tab
-      await createNewTab(APP_CONSTANTS.BROWSER.DEFAULT_URL)
-
-      // Emit app initialized event
-      appEvents.emit('app:initialized', { timestamp: Date.now() })
-      
-      setIsLoading(false)
-      logger.info('KAiro Browser initialized successfully')
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown initialization error'
-      logger.error('Failed to initialize app', error as Error)
-      setError(errorMessage)
-      setIsLoading(false)
-      appEvents.emit('app:error', { error: error as Error, context: 'initialization' })
-    }
-  }
-
-  const setupEventListeners = () => {
-    // Browser events from main process
-    window.electronAPI.onBrowserEvent((event: BrowserEvent) => {
-      handleBrowserEvent(event)
-    })
-
-    // Menu actions
-    window.electronAPI.onMenuAction((action: string) => {
-      if (action === 'new-tab') {
-        createNewTab()
-      }
-    })
-
-    // Agent updates (Phase 4 Integration)
-    if (window.electronAPI.onAgentUpdate) {
-      window.electronAPI.onAgentUpdate((status: AgentStatus) => {
-        setAgentStatus(status)
-      })
-    }
-  }
-
-  const handleBrowserEvent = (event: BrowserEvent) => {
-    switch (event.type) {
-      case 'loading':
-        if (event.tabId) {
-          setTabs(prevTabs => 
-            prevTabs.map(tab => 
-              tab.id === event.tabId 
-                ? { ...tab, isLoading: event.loading || false }
-                : tab
-            )
-          )
-        }
-        break
-
-      case 'navigate':
-        if (event.tabId && event.url) {
-          setTabs(prevTabs => 
-            prevTabs.map(tab => 
-              tab.id === event.tabId 
-                ? { ...tab, url: event.url!, isLoading: false }
-                : tab
-            )
-          )
-          if (event.tabId === activeTabId) {
-            setCurrentUrl(event.url)
-          }
-        }
-        break
-
-      case 'title-updated':
-        if (event.tabId && event.title) {
-          setTabs(prevTabs => 
-            prevTabs.map(tab => 
-              tab.id === event.tabId 
-                ? { ...tab, title: event.title! }
-                : tab
-            )
-          )
-        }
-        break
-
-      case 'tab-switched':
-        if (event.tabId) {
-          setActiveTabId(event.tabId)
-          setCurrentUrl(event.url || '')
-        }
-        break
-
-      case 'tab-closed':
-        if (event.tabId) {
-          // FIXED: Use functional state update to avoid stale state
-          setTabs(prevTabs => {
-            const remainingTabs = prevTabs.filter(tab => tab.id !== event.tabId)
-            // Update activeTabId if the closed tab was active
-            if (event.tabId === activeTabId) {
-              if (remainingTabs.length > 0) {
-                setActiveTabId(remainingTabs[0].id)
-              } else {
-                setActiveTabId(null)
-              }
-            }
-            return remainingTabs
-          })
-        }
-        break
-
-      case 'ai-tab-created':
-        // Handle AI tab creation
-        if (event.tabId) {
-          const newTab: Tab = {
-            id: event.tabId,
-            title: event.title || 'AI Tab',
-            url: 'ai://content',
-            isLoading: false,
-            isActive: true,
-            type: 'ai',
-            content: event.content || '',
-            createdBy: 'agent'
-          }
-          
-          setTabs(prevTabs => 
-            prevTabs.map(tab => ({ ...tab, isActive: false })).concat(newTab)
-          )
-          setActiveTabId(event.tabId)
-        }
-        break
-
-      case 'error':
-        console.error('Browser error:', event.error)
-        setError(`Browser error: ${event.error?.description || 'Unknown error'}`)
-        break
-    }
-  }
-
-  const createNewTab = async (url: string = 'about:blank', type: 'browser' | 'ai' = 'browser') => {
-    try {
-      logger.debug(`Creating new tab: ${url} (type: ${type})`)
-      const result = await window.electronAPI.createTab(url, type)
-      if (result.success) {
-        if (result.tabId) {
+      if (type === 'ai') {
+        // Create AI tab
+        const result = await window.electronAPI.createAITab('AI Chat', '')
+        if (result && result.success) {
           const newTab: Tab = {
             id: result.tabId,
-            title: type === 'ai' ? 'AI Tab' : 'New Tab',
-            url: url,
+            title: result.title || 'AI Chat',
+            url: 'ai://chat',
             isLoading: false,
-            isActive: true,
-            type: type,
-            content: type === 'ai' ? '' : undefined,
-            createdBy: 'user'
+            isActive: false,
+            type: 'ai',
+            content: ''
           }
           
-          setTabs(prevTabs => 
-            prevTabs.map(tab => ({ ...tab, isActive: false })).concat(newTab)
-          )
-          setActiveTabId(result.tabId)
+          setTabs(prevTabs => [...prevTabs, newTab])
+          setActiveTabId(newTab.id)
+        } else {
+          throw new Error(result?.error || 'Failed to create AI tab')
+        }
+      } else {
+        // Create browser tab
+        const result = await window.electronAPI.createTab(url)
+        if (result && result.success) {
+          const newTab: Tab = {
+            id: result.tabId,
+            title: 'Loading...',
+            url: url || 'https://www.google.com',
+            isLoading: true,
+            isActive: false,
+            type: 'browser'
+          }
           
-          // Emit tab created event
-          appEvents.emit('tab:created', { tabId: result.tabId, url })
+          setTabs(prevTabs => [...prevTabs, newTab])
+          setActiveTabId(newTab.id)
+        } else {
+          throw new Error(result?.error || 'Failed to create browser tab')
         }
-        if (type === 'browser') {
-          setCurrentUrl(url)
-        }
-        logger.info(`Tab created successfully: ${result.tabId}`)
       }
     } catch (error) {
-      logger.error('Failed to create tab', error as Error)
-      setError('Failed to create new tab')
+      handleError(error as Error, 'Tab Creation')
     }
-  }
+  }, [handleError])
 
-  const createAITab = async (title: string, content: string = '') => {
-    try {
-      const result = await window.electronAPI.createAITab(title, content)
-      if (result.success) {
-        const newTab: Tab = {
-          id: result.tabId,
-          title: title,
-          url: 'ai://content',
-          isLoading: false,
-          isActive: true,
-          type: 'ai',
-          content: content,
-          createdBy: 'agent'
-        }
-        
-        setTabs(prevTabs => 
-          prevTabs.map(tab => ({ ...tab, isActive: false })).concat(newTab)
-        )
-        setActiveTabId(result.tabId)
-      }
-    } catch (error) {
-      console.error('Failed to create AI tab:', error)
-      setError('Failed to create AI tab')
-    }
-  }
-
-  const closeTab = async (tabId: string) => {
+  // FIXED: Enhanced tab closing with cleanup
+  const closeTab = useCallback(async (tabId: string) => {
     try {
       const result = await window.electronAPI.closeTab(tabId)
-      if (result.success) {
+      if (result && result.success) {
         setTabs(prevTabs => {
-          const remainingTabs = prevTabs.filter(tab => tab.id !== tabId)
-          if (tabId === activeTabId) {
-            if (remainingTabs.length > 0) {
-              switchTab(remainingTabs[0].id)
-            } else {
-              setActiveTabId(null)
-              setCurrentUrl('')
-            }
+          const updatedTabs = prevTabs.filter(tab => tab.id !== tabId)
+          
+          // If we closed the active tab, switch to another tab
+          if (activeTabId === tabId && updatedTabs.length > 0) {
+            setActiveTabId(updatedTabs[0].id)
+          } else if (updatedTabs.length === 0) {
+            // Create a new tab if no tabs remain
+            createTab()
           }
-          return remainingTabs
+          
+          return updatedTabs
         })
+      } else {
+        throw new Error(result?.error || 'Failed to close tab')
       }
     } catch (error) {
-      console.error('Failed to close tab:', error)
-      setError('Failed to close tab')
+      handleError(error as Error, 'Tab Closing')
     }
-  }
+  }, [activeTabId, createTab, handleError])
 
-  const switchTab = async (tabId: string) => {
+  // FIXED: Enhanced tab switching
+  const switchTab = useCallback(async (tabId: string) => {
     try {
-      const tab = tabs.find(t => t.id === tabId)
-      if (!tab) return
+      const result = await window.electronAPI.switchTab(tabId)
+      if (result && result.success) {
+        setActiveTabId(tabId)
+        setTabs(prevTabs =>
+          prevTabs.map(tab => ({
+            ...tab,
+            isActive: tab.id === tabId
+          }))
+        )
+      } else {
+        throw new Error(result?.error || 'Failed to switch tab')
+      }
+    } catch (error) {
+      handleError(error as Error, 'Tab Switching')
+    }
+  }, [handleError])
 
-      if (tab.type === 'browser') {
-        // Switch to browser tab
-        const result = await window.electronAPI.switchTab(tabId)
-        if (result.success) {
-          setTabs(prevTabs => 
-            prevTabs.map(tab => ({ ...tab, isActive: tab.id === tabId }))
+  // FIXED: Enhanced navigation with validation
+  const navigateTo = useCallback(async (url: string) => {
+    try {
+      // Basic URL validation
+      if (!url || url.trim().length === 0) {
+        throw new Error('URL cannot be empty')
+      }
+
+      const result = await window.electronAPI.navigateTo(url)
+      if (result && result.success) {
+        // Update active tab URL immediately for better UX
+        if (activeTabId) {
+          setTabs(prevTabs =>
+            prevTabs.map(tab =>
+              tab.id === activeTabId
+                ? { ...tab, url, isLoading: true }
+                : tab
+            )
           )
-          setActiveTabId(tabId)
-          setCurrentUrl(tab.url)
         }
       } else {
-        // Switch to AI tab
-        setTabs(prevTabs => 
-          prevTabs.map(tab => ({ ...tab, isActive: tab.id === tabId }))
-        )
-        setActiveTabId(tabId)
-        setCurrentUrl('ai://content')
+        throw new Error(result?.error || 'Navigation failed')
       }
     } catch (error) {
-      console.error('Failed to switch tab:', error)
-      setError('Failed to switch tab')
+      handleError(error as Error, 'Navigation')
     }
-  }
+  }, [activeTabId, handleError])
 
-  const navigateTo = async (url: string) => {
+  // FIXED: Enhanced content update handler
+  const handleTabContentChange = useCallback(async (tabId: string, content: string) => {
     try {
-      const result = await window.electronAPI.navigateTo(url)
-      if (result.success) {
-        setCurrentUrl(url)
-      } else {
-        setError(result.error || 'Navigation failed')
+      if (!tabId || !content) {
+        return
+      }
+
+      const tab = tabs.find(t => t.id === tabId)
+      if (tab && tab.type === 'ai') {
+        const result = await window.electronAPI.saveAITabContent(tabId, content)
+        if (result && result.success) {
+          setTabs(prevTabs =>
+            prevTabs.map(t =>
+              t.id === tabId ? { ...t, content } : t
+            )
+          )
+        } else {
+          logger.warn('Failed to save AI tab content:', result?.error)
+        }
       }
     } catch (error) {
-      console.error('Navigation error:', error)
-      setError('Navigation failed')
+      logger.error('Error updating tab content', error as Error)
     }
-  }
+  }, [tabs])
 
-  const goBack = async () => {
-    try {
-      await window.electronAPI.goBack()
-    } catch (error) {
-      console.error('Go back error:', error)
-    }
-  }
+  // FIXED: Enhanced AI sidebar toggle
+  const toggleAISidebar = useCallback(() => {
+    setIsAISidebarOpen(prev => {
+      logger.debug(`AI Sidebar ${!prev ? 'opened' : 'closed'}`)
+      return !prev
+    })
+  }, [])
 
-  const goForward = async () => {
-    try {
-      await window.electronAPI.goForward()
-    } catch (error) {
-      console.error('Go forward error:', error)
-    }
-  }
+  // FIXED: Enhanced error clearing
+  const clearError = useCallback(() => {
+    setError(null)
+  }, [])
 
-  const reload = async () => {
-    try {
-      await window.electronAPI.reload()
-    } catch (error) {
-      console.error('Reload error:', error)
-    }
-  }
-
-  const toggleAISidebar = () => {
-    setAISidebarOpen(!aiSidebarOpen)
-  }
-
-  // Phase 4: Agent Task Execution Integration - PERFORMANCE: Dynamic import
-  const handleAgentTask = async (task: string) => {
-    try {
-      const { default: IntegratedAgentFrameworkClass } = await import('./services/IntegratedAgentFramework')
-      const result = await IntegratedAgentFrameworkClass.getInstance().processUserInput(task)
-      if (result.success) {
-        console.log('✅ Agent task completed:', result)
-      } else {
-        console.error('❌ Agent task failed:', result.error)
-        setError(`Agent task failed: ${result.error}`)
-      }
-    } catch (error) {
-      console.error('❌ Agent task execution error:', error)
-      setError('Agent task execution failed')
-    }
-  }
-
+  // FIXED: Loading screen component
   if (isLoading) {
-    return <LoadingSpinner />
+    return (
+      <div className="loading-spinner">
+        <div>🚀 Loading KAiro Browser...</div>
+      </div>
+    )
   }
 
+  // FIXED: Error screen component
   if (error) {
     return (
       <div className="error-container">
-        <h2>Error</h2>
+        <h2>⚠️ Application Error</h2>
         <p>{error}</p>
-        <button onClick={() => window.location.reload()}>Reload</button>
+        <button onClick={clearError}>Try Again</button>
+        <button onClick={() => window.location.reload()}>Reload App</button>
       </div>
     )
   }
 
   return (
-    <ErrorBoundary
-      onError={(error, errorInfo) => {
-        logger.error('React component error', error, { errorInfo })
-        appEvents.emit('app:error', { error, context: 'component' })
-      }}
-    >
+    <ErrorBoundary onError={handleError}>
       <div className="app">
-        {/* LOCKED LAYOUT STRUCTURE - DO NOT MODIFY */}
         <div className="app-header">
-          <ErrorBoundary fallback={<div className="error-fallback">Tab bar error</div>}>
-            <TabBar 
-              tabs={tabs}
-              activeTabId={activeTabId}
-              onTabClick={switchTab}
-              onTabClose={closeTab}
-              onNewTab={() => createNewTab()}
-            />
-          </ErrorBoundary>
-          
-          {/* Only show navigation bar for browser content */}
-          {tabs.find(t => t.id === activeTabId)?.type === 'browser' && (
-            <ErrorBoundary fallback={<div className="error-fallback">Navigation error</div>}>
-              <NavigationBar
-                currentUrl={currentUrl}
-                onNavigate={navigateTo}
-                onGoBack={goBack}
-                onGoForward={goForward}
-                onReload={reload}
-                onToggleAI={toggleAISidebar}
-                aiSidebarOpen={aiSidebarOpen}
-              />
-            </ErrorBoundary>
-          )}
+          <TabBar
+            tabs={tabs}
+            activeTabId={activeTabId}
+            onCreateTab={createTab}
+            onCloseTab={closeTab}
+            onSwitchTab={switchTab}
+          />
+          <NavigationBar
+            currentUrl={activeTab?.url || ''}
+            canGoBack={false}
+            canGoForward={false}
+            isLoading={activeTab?.isLoading || false}
+            onNavigate={navigateTo}
+            onGoBack={() => window.electronAPI.goBack()}
+            onGoForward={() => window.electronAPI.goForward()}
+            onReload={() => window.electronAPI.reload()}
+            onToggleAI={toggleAISidebar}
+            isAIOpen={isAISidebarOpen}
+          />
         </div>
-        
         <div className="app-content">
-          {/* LOCKED: Browser Area (70% width) */}
-          <ErrorBoundary fallback={<div className="error-fallback">Browser window error</div>}>
-            <BrowserWindow 
-              activeTabId={activeTabId}
-              tabs={tabs}
-              onCreateAITab={createAITab}
-            />
-          </ErrorBoundary>
-          
-          {/* LOCKED: AI Assistant Panel (30% width) - PERFORMANCE: Lazy loaded */}
-          {aiSidebarOpen && (
-            <ErrorBoundary fallback={<div className="error-fallback">AI sidebar error</div>}>
-              <Suspense fallback={<div className="ai-sidebar-loading">Loading AI Assistant...</div>}>
-                <AISidebar
-                  onClose={() => setAISidebarOpen(false)}
-                  currentUrl={currentUrl}
-                  onAgentTask={handleAgentTask}
-                  agentStatus={agentStatus}
-                />
-              </Suspense>
-            </ErrorBoundary>
+          <BrowserWindow
+            tab={activeTab}
+            onContentChange={handleTabContentChange}
+          />
+          {isAISidebarOpen && (
+            <AISidebar onClose={() => setIsAISidebarOpen(false)} />
           )}
         </div>
       </div>

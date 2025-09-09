@@ -1,6 +1,7 @@
 /**
  * Centralized Type Definitions
  * All TypeScript types and interfaces for KAiro Browser
+ * FIXED: Added missing AIMessage import and proper exports
  */
 
 // Import and re-export types from electron definitions
@@ -72,8 +73,6 @@ export interface AgentTask {
   metadata?: Record<string, any>
 }
 
-// AgentAction is imported from electron.d.ts - no need to redefine
-
 // AI System Types
 export interface AIConversation {
   id: string
@@ -95,7 +94,6 @@ export interface AIModel {
     outputTokens: number
   }
 }
-
 
 export interface BookmarkFolder {
   id: string
