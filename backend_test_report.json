@@ -1,6 +1,6 @@
 {
-  "timestamp": 1757429623.870734,
-  "duration": 4.640987157821655,
+  "timestamp": 1757433938.1026163,
+  "duration": 4.305806636810303,
   "success_rate": 96.7741935483871,
   "passed_tests": 30,
   "total_tests": 31,
@@ -14,17 +14,17 @@
     "groq_api": {
       "api_key_loaded": true,
       "connectivity": true,
-      "response_time": 0.20332741737365723,
+      "response_time": 0.1936655044555664,
       "token_usage": {
-        "queue_time": 0.001607529,
+        "queue_time": 0.001326346,
         "prompt_tokens": 48,
-        "prompt_time": 0.01888304,
-        "completion_tokens": 6,
-        "completion_time": 0.023409318,
-        "total_tokens": 54,
-        "total_time": 0.042292358
+        "prompt_time": 0.011645583,
+        "completion_tokens": 5,
+        "completion_time": 0.02964277,
+        "total_tokens": 53,
+        "total_time": 0.041288353
       },
-      "response_content": "API connection test successful."
+      "response_content": "API connection successful."
     },
     "database": {
       "connection": true,
@@ -46,39 +46,39 @@
       "individual_agents": {
         "research": {
           "success": true,
-          "response_time": 0.5939481258392334,
-          "response_length": 1058,
-          "response_preview": "As a research agent, I've compiled an overview of the latest developments in artificial intelligence..."
+          "response_time": 0.5914621353149414,
+          "response_length": 1061,
+          "response_preview": "As a research agent, I've compiled an overview of the latest developments in Artificial Intelligence..."
         },
         "navigation": {
           "success": true,
-          "response_time": 0.5723028182983398,
-          "response_length": 782,
-          "response_preview": "To navigate to the official Python website, follow these steps:\n\n1. Open a web browser: You can use ..."
+          "response_time": 0.51702880859375,
+          "response_length": 750,
+          "response_preview": "To navigate to the official Python website, follow these steps:\n\n1. **Open a web browser**: You can ..."
         },
         "shopping": {
           "success": true,
-          "response_time": 0.6912369728088379,
-          "response_length": 821,
-          "response_preview": "As a specialized shopping agent, I've scoured the market to bring you the best deals on wireless hea..."
+          "response_time": 0.5674684047698975,
+          "response_length": 737,
+          "response_preview": "I'd be happy to help you find the best deals on wireless headphones. Here are some top picks across ..."
         },
         "communication": {
           "success": true,
-          "response_time": 0.625922441482544,
-          "response_length": 925,
-          "response_preview": "Here is a sample professional email about a meeting:\n\nSubject: Meeting Invitation - [Meeting Topic]\n..."
+          "response_time": 0.6663956642150879,
+          "response_length": 939,
+          "response_preview": "Here is a sample professional email about a meeting:\n\nSubject: Invitation to Meeting on [Topic]\n\nDea..."
         },
         "automation": {
           "success": true,
-          "response_time": 0.6919589042663574,
-          "response_length": 879,
+          "response_time": 0.6817662715911865,
+          "response_length": 867,
           "response_preview": "Here's a workflow for daily task management:\n\n**Workflow Title:** Daily Task Management\n\n**Objective..."
         },
         "analysis": {
           "success": true,
-          "response_time": 0.7940218448638916,
-          "response_length": 941,
-          "response_preview": "I don't see a webpage provided. To perform an analysis, I would need the content of the webpage. Ple..."
+          "response_time": 0.6729443073272705,
+          "response_length": 967,
+          "response_preview": "I don't see a webpage provided. To analyze the content of a webpage, I would need the URL or the tex..."
         }
       },
       "agent_success_rate": 1.0
@@ -92,7 +92,7 @@
     "background_tasks": {
       "task_scheduling": true,
       "status_tracking": {
-        "pending": 10
+        "pending": 15
       },
       "task_types": [
         "agent_learning",
