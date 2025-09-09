@@ -87,42 +87,34 @@ export const EnhancedLoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   }
 
   const spinner = (
-    <div className={`loading-spinner ${className}`}>
-      <div className={`spinner ${sizeClasses[size]}`}>
-        <div className="spinner-ring"></div>
+    <div className={`loading-spinner ${className}`} style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '1rem'
+    }}>
+      <div className={`spinner ${sizeClasses[size]}`} style={{
+        display: 'inline-block',
+        position: 'relative'
+      }}>
+        <div className="spinner-ring" style={{
+          width: '100%',
+          height: '100%',
+          border: '2px solid rgba(255, 255, 255, 0.1)',
+          borderLeft: '2px solid #007bff',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }}></div>
       </div>
-      {message && <p className="loading-message">{message}</p>}
+      {message && <p className="loading-message" style={{
+        color: '#666',
+        fontSize: '0.9rem',
+        textAlign: 'center',
+        margin: 0
+      }}>{message}</p>}
       
-      <style jsx>{`
-        .loading-spinner {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 1rem;
-        }
-        
-        .spinner {
-          display: inline-block;
-          position: relative;
-        }
-        
-        .spinner-ring {
-          width: 100%;
-          height: 100%;
-          border: 2px solid rgba(255, 255, 255, 0.1);
-          border-left: 2px solid #007bff;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-        }
-        
-        .loading-message {
-          color: #666;
-          font-size: 0.9rem;
-          text-align: center;
-          margin: 0;
-        }
-        
+      <style>{`
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
