@@ -2622,7 +2622,9 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       }
 
       // Set as active BrowserView
-      this.mainWindow.setBrowserView(browserView)
+      if (this.mainWindow) {
+        this.mainWindow.setBrowserView(browserView)
+      }
       this.activeTabId = tabId
       
       // Update bounds
