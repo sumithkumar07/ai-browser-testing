@@ -626,6 +626,176 @@ class KAiroBrowserManager {
       }
     })
 
+    // AI Tab Management - FIXED: Missing handlers added
+    ipcMain.handle('create-ai-tab', async (event, title, content = '') => {
+      try {
+        const tabId = `ai_tab_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        
+        // Store AI tab data
+        this.aiTabs.set(tabId, {
+          id: tabId,
+          title: title || 'AI Tab',
+          content: content,
+          type: 'ai',
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        })
+        
+        console.log(`✅ AI tab created: ${tabId}`)
+        return { success: true, tabId, title }
+      } catch (error) {
+        console.error('❌ Failed to create AI tab:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('save-ai-tab-content', async (event, tabId, content) => {
+      try {
+        const aiTab = this.aiTabs.get(tabId)
+        if (aiTab) {
+          aiTab.content = content
+          aiTab.updatedAt = Date.now()
+          this.aiTabs.set(tabId, aiTab)
+          console.log(`✅ AI tab content saved: ${tabId}`)
+          return { success: true }
+        } else {
+          console.warn(`⚠️ AI tab not found: ${tabId}`)
+          return { success: false, error: 'AI tab not found' }
+        }
+      } catch (error) {
+        console.error('❌ Failed to save AI tab content:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('load-ai-tab-content', async (event, tabId) => {
+      try {
+        const aiTab = this.aiTabs.get(tabId)
+        if (aiTab) {
+          console.log(`✅ AI tab content loaded: ${tabId}`)
+          return { success: true, content: aiTab.content }
+        } else {
+          console.warn(`⚠️ AI tab not found: ${tabId}`)
+          return { success: false, error: 'AI tab not found' }
+        }
+      } catch (error) {
+        console.error('❌ Failed to load AI tab content:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    // AI Service Handlers - FIXED: Missing handlers added
+    ipcMain.handle('summarize-page', async () => {
+      try {
+        if (!this.aiService) {
+          return { success: false, error: 'AI service not initialized' }
+        }
+
+        const context = await this.getEnhancedPageContext()
+        
+        const response = await this.aiService.chat.completions.create({
+          messages: [
+            { 
+              role: 'system', 
+              content: 'You are a helpful assistant that provides concise and informative summaries of web pages.' 
+            },
+            { 
+              role: 'user', 
+              content: `Please summarize this page:\n\nURL: ${context.url}\nTitle: ${context.title}\nContent: ${context.extractedText || 'No content available'}` 
+            }
+          ],
+          model: 'llama-3.3-70b-versatile',
+          temperature: 0.3,
+          max_tokens: 500
+        })
+
+        const summary = response.choices[0].message.content
+        return { success: true, summary }
+      } catch (error) {
+        console.error('❌ Page summarization failed:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('analyze-content', async () => {
+      try {
+        if (!this.aiService) {
+          return { success: false, error: 'AI service not initialized' }
+        }
+
+        const context = await this.getEnhancedPageContext()
+        
+        const response = await this.aiService.chat.completions.create({
+          messages: [
+            { 
+              role: 'system', 
+              content: 'You are an expert content analyst. Analyze web content for key insights, themes, and actionable information.' 
+            },
+            { 
+              role: 'user', 
+              content: `Please analyze this page content:\n\nURL: ${context.url}\nTitle: ${context.title}\nContent: ${context.extractedText || 'No content available'}` 
+            }
+          ],
+          model: 'llama-3.3-70b-versatile',
+          temperature: 0.5,
+          max_tokens: 800
+        })
+
+        const analysis = response.choices[0].message.content
+        return { success: true, analysis }
+      } catch (error) {
+        console.error('❌ Content analysis failed:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-ai-context', async () => {
+      try {
+        const context = await this.getEnhancedPageContext()
+        return { success: true, context }
+      } catch (error) {
+        console.error('❌ Failed to get AI context:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Agent System - FIXED: Missing handlers added
+    ipcMain.handle('execute-agent-task', async (event, task) => {
+      try {
+        if (!this.isAgenticMode || !this.agentCoordinationService) {
+          return { success: false, error: 'Agent system not available' }
+        }
+
+        const result = await this.processWithAgenticCapabilities(task)
+        return result || { success: false, error: 'Agent task execution failed' }
+      } catch (error) {
+        console.error('❌ Agent task execution failed:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-agent-status', async (event, agentId) => {
+      try {
+        if (!this.isAgenticMode || !this.agentCoordinationService) {
+          return { success: false, error: 'Agent system not available' }
+        }
+
+        // Return mock status for now - would be implemented with real agent system
+        return { 
+          success: true, 
+          status: {
+            agentId: agentId || 'all',
+            active: true,
+            currentTask: null,
+            performance: 0.85
+          }
+        }
+      } catch (error) {
+        console.error('❌ Failed to get agent status:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
     // FIXED: Properly structured send-ai-message handler
     ipcMain.handle('send-ai-message', async (event, message) => {
       try {
