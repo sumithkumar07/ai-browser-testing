@@ -190,7 +190,45 @@ class DatabaseService {
     this.db.exec('CREATE INDEX IF NOT EXISTS idx_system_config_updated ON system_config(updated_at DESC)');
   }
 
-  // Bookmark Operations
+  // Enhanced Bookmark Operations with Search
+  async searchBookmarks(query, options = {}) {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    const limit = options.limit || 50;
+    const category = options.category;
+    
+    let searchQuery = `
+      SELECT * FROM bookmarks 
+      WHERE (title LIKE ? OR url LIKE ? OR description LIKE ? OR tags LIKE ?)
+    `;
+    
+    const searchParams = [`%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`];
+    
+    if (category) {
+      searchQuery += ' AND category = ?';
+      searchParams.push(category);
+    }
+    
+    searchQuery += ' ORDER BY updated_at DESC LIMIT ?';
+    searchParams.push(limit);
+    
+    const stmt = this.db.prepare(searchQuery);
+    const rows = stmt.all(...searchParams);
+    
+    return rows.map(row => ({
+      id: row.id,
+      title: row.title,
+      url: row.url,
+      description: row.description,
+      tags: JSON.parse(row.tags || '[]'),
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      visitCount: row.visit_count,
+      lastVisited: row.last_visited,
+      favicon: row.favicon,
+      category: row.category
+    }));
+  }
   async saveBookmark(bookmark) {
     if (!this.db) throw new Error('Database not initialized');
     
