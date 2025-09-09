@@ -11,7 +11,7 @@ import type {
   BrowserEvent, 
   AIResponse, 
   AgentAction 
-} from '../../main/types/electron.d.ts'
+} from '../../main/types/electron'
 
 export type { Tab, AIMessage, AgentStatus, BrowserEvent, AIResponse, AgentAction }
 
