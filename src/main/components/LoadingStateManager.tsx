@@ -150,7 +150,7 @@ export const EnhancedLoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 export const useAsyncLoading = () => {
   const { setLoading } = useLoading()
 
-  const withLoading = useCallback(async <T>(
+  const withLoading = useCallback(async <T,>(
     key: string,
     asyncOperation: () => Promise<T>,
     onError?: (error: Error) => void
