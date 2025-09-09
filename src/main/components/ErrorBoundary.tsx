@@ -65,7 +65,7 @@ class ErrorBoundary extends Component<Props, State> {
   private reportError(error: Error, errorInfo: ErrorInfo, errorId: string) {
     try {
       // Check if Electron API is available for error reporting
-      if (window.electronAPI && window.electronAPI.sendAIMessage) {
+      if (window.electronAPI?.sendAIMessage) {
         const errorReport = {
           errorId,
           message: error.message,
