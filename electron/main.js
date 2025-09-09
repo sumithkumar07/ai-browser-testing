@@ -589,6 +589,13 @@ class KAiroBrowserManager {
     if (lowerTask.includes('deal') || lowerTask.includes('discount') || lowerTask.includes('sale')) {
       scores.shopping = Math.max(scores.shopping, 85)
     }
+    // FIXED: Improve detection for shopping-related searches
+    if (lowerTask.includes('best') && (lowerTask.includes('laptop') || lowerTask.includes('phone') || lowerTask.includes('product'))) {
+      scores.shopping = Math.max(scores.shopping, 90)
+    }
+    if (lowerTask.includes('find') && (lowerTask.includes('deal') || lowerTask.includes('price') || lowerTask.includes('cheap'))) {
+      scores.shopping = Math.max(scores.shopping, 88)
+    }
     
     // Enhanced Communication Agent scoring
     if (lowerTask.includes('email') || lowerTask.includes('message') || lowerTask.includes('contact')) {
