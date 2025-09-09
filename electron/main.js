@@ -84,15 +84,21 @@ class KAiroBrowserManager {
       this.taskScheduler = new BackgroundTaskScheduler(this.databaseService)
       await this.taskScheduler.initialize()
 
-      // Initialize Enhanced Agent Services
-      const { default: AgentMemoryService } = require('../src/core/services/AgentMemoryService')
-      const { default: AgentCoordinationService } = require('../src/core/services/AgentCoordinationService')
-      
-      this.agentMemoryService = AgentMemoryService.getInstance()
-      await this.agentMemoryService.initialize()
-      
-      this.agentCoordinationService = AgentCoordinationService.getInstance()
-      await this.agentCoordinationService.initialize()
+      // Initialize Enhanced Agent Services - FIXED: Better error handling for TypeScript imports
+      try {
+        const AgentMemoryService = require('../src/core/services/AgentMemoryService.js')
+        const AgentCoordinationService = require('../src/core/services/AgentCoordinationService.js')
+        
+        this.agentMemoryService = AgentMemoryService.default.getInstance()
+        await this.agentMemoryService.initialize()
+        
+        this.agentCoordinationService = AgentCoordinationService.default.getInstance()
+        await this.agentCoordinationService.initialize()
+      } catch (error) {
+        console.warn('⚠️ Enhanced agent services not available, continuing with basic mode:', error.message)
+        this.agentMemoryService = null
+        this.agentCoordinationService = null
+      }
       
       console.log('✅ Enhanced Backend Services initialized successfully')
       
