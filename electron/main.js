@@ -909,6 +909,296 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       }
     })
 
+    // Additional Missing Handlers - FIXED: Added handlers that preload references
+    ipcMain.handle('analyze-image', async (event, imageData) => {
+      try {
+        // Placeholder for image analysis functionality
+        console.log('📷 Image analysis requested (placeholder)')
+        return { 
+          success: false, 
+          error: 'Image analysis not implemented yet' 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('process-pdf', async (event, filePath) => {
+      try {
+        // Placeholder for PDF processing functionality
+        console.log('📄 PDF processing requested (placeholder)')
+        return { 
+          success: false, 
+          error: 'PDF processing not implemented yet' 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('process-word-document', async (event, filePath) => {
+      try {
+        // Placeholder for Word document processing functionality
+        console.log('📝 Word document processing requested (placeholder)')
+        return { 
+          success: false, 
+          error: 'Word document processing not implemented yet' 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('process-text-document', async (event, filePath) => {
+      try {
+        // Placeholder for text document processing functionality
+        console.log('📄 Text document processing requested (placeholder)')
+        return { 
+          success: false, 
+          error: 'Text document processing not implemented yet' 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Shopping & Research handlers - FIXED: Added missing handlers
+    ipcMain.handle('search-products', async (event, query, options) => {
+      try {
+        // Placeholder for product search functionality
+        console.log('🛒 Product search requested (placeholder)')
+        return { 
+          success: false, 
+          error: 'Product search not implemented yet' 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('compare-products', async (event, products) => {
+      try {
+        // Placeholder for product comparison functionality
+        console.log('⚖️ Product comparison requested (placeholder)')
+        return { 
+          success: false, 
+          error: 'Product comparison not implemented yet' 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('add-to-cart', async (event, product, quantity) => {
+      try {
+        // Placeholder for add to cart functionality
+        console.log('🛒 Add to cart requested (placeholder)')
+        return { 
+          success: false, 
+          error: 'Add to cart not implemented yet' 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Bookmarks & History handlers - FIXED: Added missing handlers
+    ipcMain.handle('add-bookmark', async (event, bookmark) => {
+      try {
+        // Placeholder for bookmark functionality
+        console.log('🔖 Add bookmark requested (placeholder)')
+        return { 
+          success: false, 
+          error: 'Bookmark management not implemented yet' 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('remove-bookmark', async (event, bookmarkId) => {
+      try {
+        // Placeholder for bookmark removal functionality
+        console.log('🗑️ Remove bookmark requested (placeholder)')
+        return { 
+          success: false, 
+          error: 'Bookmark management not implemented yet' 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-bookmarks', async () => {
+      try {
+        // Placeholder for get bookmarks functionality
+        console.log('📚 Get bookmarks requested (placeholder)')
+        return { 
+          success: true, 
+          bookmarks: [] 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('search-bookmarks', async (event, options) => {
+      try {
+        // Placeholder for bookmark search functionality
+        console.log('🔍 Search bookmarks requested (placeholder)')
+        return { 
+          success: true, 
+          results: [] 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-history', async (event, options) => {
+      try {
+        // Placeholder for browsing history functionality
+        console.log('📜 Get history requested (placeholder)')
+        return { 
+          success: true, 
+          history: [] 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('delete-history-item', async (event, historyId) => {
+      try {
+        // Placeholder for history item deletion functionality
+        console.log('🗑️ Delete history item requested (placeholder)')
+        return { 
+          success: false, 
+          error: 'History management not implemented yet' 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('clear-history', async (event, options) => {
+      try {
+        // Placeholder for clear history functionality
+        console.log('🧹 Clear history requested (placeholder)')
+        return { 
+          success: false, 
+          error: 'History management not implemented yet' 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    // System info handlers - FIXED: Added missing handlers
+    ipcMain.handle('get-version', async () => {
+      try {
+        return { 
+          success: true, 
+          version: require('../../package.json').version 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-platform', async () => {
+      try {
+        return { 
+          success: true, 
+          platform: process.platform 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Data storage handlers - FIXED: Added missing handlers
+    ipcMain.handle('get-data', async (event, key) => {
+      try {
+        // Placeholder for data storage functionality
+        console.log(`💾 Get data requested for key: ${key} (placeholder)`)
+        return { 
+          success: false, 
+          error: 'Data storage not implemented yet' 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('save-data', async (event, key, data) => {
+      try {
+        // Placeholder for data storage functionality
+        console.log(`💾 Save data requested for key: ${key} (placeholder)`)
+        return { 
+          success: false, 
+          error: 'Data storage not implemented yet' 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Additional handlers
+    ipcMain.handle('register-shortcuts', async (event, shortcuts) => {
+      try {
+        // Placeholder for keyboard shortcuts functionality
+        console.log('⌨️ Register shortcuts requested (placeholder)')
+        return { 
+          success: false, 
+          error: 'Keyboard shortcuts not implemented yet' 
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('open-dev-tools', async () => {
+      try {
+        if (this.mainWindow && this.mainWindow.webContents) {
+          this.mainWindow.webContents.openDevTools()
+          return { success: true }
+        }
+        return { success: false, error: 'Main window not available' }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('close-dev-tools', async () => {
+      try {
+        if (this.mainWindow && this.mainWindow.webContents) {
+          this.mainWindow.webContents.closeDevTools()
+          return { success: true }
+        }
+        return { success: false, error: 'Main window not available' }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('debug-browser-view', async () => {
+      try {
+        // Debug information about browser views
+        console.log('🐛 Debug browser view requested')
+        return { 
+          success: true, 
+          debug: { 
+            activeTabs: this.browserViews.size,
+            activeTabId: this.activeTabId,
+            tabCounter: this.tabCounter
+          }
+        }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
     console.log('✅ IPC handlers setup completed')
   }
 
