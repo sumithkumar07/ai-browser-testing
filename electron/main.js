@@ -3249,11 +3249,13 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
     })
 
     browserView.webContents.on('did-navigate', (event, url) => {
-      this.mainWindow.webContents.send('browser-event', {
-        type: 'navigate',
-        tabId: tabId,
-        url: url
-      })
+      if (this.mainWindow && this.mainWindow.webContents) {
+        this.mainWindow.webContents.send('browser-event', {
+          type: 'navigate',
+          tabId: tabId,
+          url: url
+        })
+      }
     })
 
     browserView.webContents.on('page-title-updated', (event, title) => {
