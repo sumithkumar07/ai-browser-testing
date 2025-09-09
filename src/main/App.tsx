@@ -92,65 +92,76 @@ const App: React.FC = () => {
     initializeApp()
   }, [handleError])
 
-  // FIXED: Enhanced browser event listener with cleanup
+  // FIXED: Enhanced browser event listener with cleanup and performance optimization
   useEffect(() => {
     if (!window.electronAPI?.onBrowserEvent) {
       return
     }
+
+    let eventListenerRef: ((event: BrowserEvent) => void) | null = null
 
     try {
       const handleBrowserEvent = (event: BrowserEvent) => {
         try {
           logger.debug('Browser event received:', event)
           
-          switch (event.type) {
-            case 'tab-updated':
-              if (event.tabId && event.title) {
-                setTabs(prevTabs => 
-                  prevTabs.map(tab => 
-                    tab.id === event.tabId 
-                      ? { ...tab, title: event.title || tab.title, url: event.url || tab.url }
-                      : tab
+          // Use requestAnimationFrame for performance optimization
+          requestAnimationFrame(() => {
+            switch (event.type) {
+              case 'tab-updated':
+                if (event.tabId && event.title) {
+                  setTabs(prevTabs => 
+                    prevTabs.map(tab => 
+                      tab.id === event.tabId 
+                        ? { ...tab, title: event.title || tab.title, url: event.url || tab.url }
+                        : tab
+                    )
                   )
-                )
-              }
-              break
-            case 'page-loading':
-              if (event.tabId) {
-                setTabs(prevTabs =>
-                  prevTabs.map(tab =>
-                    tab.id === event.tabId
-                      ? { ...tab, isLoading: true }
-                      : tab
+                }
+                break
+              case 'page-loading':
+                if (event.tabId) {
+                  setTabs(prevTabs =>
+                    prevTabs.map(tab =>
+                      tab.id === event.tabId
+                        ? { ...tab, isLoading: true }
+                        : tab
+                    )
                   )
-                )
-              }
-              break
-            case 'page-loaded':
-              if (event.tabId) {
-                setTabs(prevTabs =>
-                  prevTabs.map(tab =>
-                    tab.id === event.tabId
-                      ? { ...tab, isLoading: false }
-                      : tab
+                }
+                break
+              case 'page-loaded':
+                if (event.tabId) {
+                  setTabs(prevTabs =>
+                    prevTabs.map(tab =>
+                      tab.id === event.tabId
+                        ? { ...tab, isLoading: false }
+                        : tab
+                    )
                   )
-                )
-              }
-              break
-            default:
-              logger.debug('Unhandled browser event:', event.type)
-          }
+                }
+                break
+              default:
+                logger.debug('Unhandled browser event:', event.type)
+            }
+          })
         } catch (eventError) {
           logger.error('Error handling browser event', eventError as Error)
         }
       }
 
+      eventListenerRef = handleBrowserEvent
       window.electronAPI.onBrowserEvent(handleBrowserEvent)
 
-      // FIXED: Proper cleanup on unmount
+      // FIXED: Enhanced cleanup with null checks
       return () => {
-        if (window.electronAPI?.removeBrowserEventListener) {
-          window.electronAPI.removeBrowserEventListener()
+        try {
+          if (eventListenerRef && window.electronAPI?.removeBrowserEventListener) {
+            window.electronAPI.removeBrowserEventListener()
+          }
+          eventListenerRef = null
+        } catch (cleanupError) {
+          logger.error('Error during event listener cleanup', cleanupError as Error)
         }
       }
     } catch (error) {
