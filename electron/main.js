@@ -212,62 +212,55 @@ class KAiroBrowserManager {
 
   async initializeAIService() {
     try {
-      console.log('🤖 Initializing AI Service...')
+      console.log('🤖 Initializing AI Service with production-ready validation...')
       
       if (!process.env.GROQ_API_KEY) {
         throw new Error('GROQ_API_KEY not found in environment variables')
       }
 
+      // Initialize API validator
+      this.apiValidator = new ApiValidator(process.env.GROQ_API_KEY, {
+        maxRetries: 3,
+        retryDelay: 1000,
+        maxRequestsPerWindow: 100
+      })
+
+      // Validate API key and test connection
+      const validation = await this.apiValidator.validateApiKey()
+      
+      if (!validation.valid) {
+        this.connectionState.api = 'failed'
+        throw new Error(`API validation failed: ${validation.error}`)
+      }
+
+      this.connectionState.api = 'connected'
+      
+      // Initialize Groq client only after validation
       this.aiService = new Groq({
         apiKey: process.env.GROQ_API_KEY
       })
 
-      // Test connection with the updated GROQ API - FIXED: Using correct model name and better error handling
-      console.log('🔍 Testing GROQ API connection...')
-      const testResponse = await this.aiService.chat.completions.create({
-        messages: [{ role: 'user', content: 'test connection' }],
-        model: 'llama-3.3-70b-versatile', // VERIFIED: This is the correct latest model
-        max_tokens: 10,
-        temperature: 0.1
-      })
-
-      if (testResponse && testResponse.choices && testResponse.choices.length > 0) {
-        console.log('✅ AI Service initialized and connected successfully')
-        console.log('📊 GROQ API Response:', {
-          model: testResponse.model,
-          usage: testResponse.usage,
-          response: testResponse.choices[0].message.content
-        })
-      } else {
-        throw new Error('Invalid response from GROQ API')
-      }
+      console.log('✅ AI Service initialized and validated successfully')
+      console.log('📊 Available models:', validation.models?.data?.length || 'Unknown')
+      
+      // Start periodic health monitoring
+      this.startApiHealthMonitoring()
       
     } catch (error) {
       console.error('❌ Failed to initialize AI service:', error.message)
+      this.connectionState.api = 'failed'
       
-      // ENHANCED: More detailed error analysis
+      // Enhanced error analysis
       if (error.message.includes('API key')) {
-        console.error('🔑 API Key Issue: Please check your GROQ_API_KEY')
-      } else if (error.message.includes('model')) {
-        console.error('🤖 Model Issue: The specified model may not be available')
-        console.log('💡 Trying with fallback model...')
-        
-        try {
-          // Fallback to another model
-          const fallbackResponse = await this.aiService.chat.completions.create({
-            messages: [{ role: 'user', content: 'test' }],
-            model: 'llama3-8b-8192', // Fallback model
-            max_tokens: 5
-          })
-          console.log('✅ Fallback model working:', fallbackResponse.model)
-        } catch (fallbackError) {
-          console.error('❌ Fallback model also failed:', fallbackError.message)
-        }
+        console.error('🔑 API Key Issue: Please check your GROQ_API_KEY in .env file')
       } else if (error.message.includes('network') || error.message.includes('timeout')) {
-        console.error('🌐 Network Issue: Check internet connection')
+        console.error('🌐 Network Issue: Check internet connection and API endpoint availability')
+      } else if (error.message.includes('rate limit')) {
+        console.error('⏱️ Rate Limit: API rate limit exceeded, implement exponential backoff')
       }
       
-      throw error
+      // Don't throw - allow app to continue in degraded mode
+      console.warn('⚠️ AI service will run in degraded mode - some features may be limited')
     }
   }
 
