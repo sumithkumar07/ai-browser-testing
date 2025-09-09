@@ -21,7 +21,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ onClose }) => {
   // Refs for DOM manipulation and cleanup
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
-  const connectionCheckIntervalRef = useRef<number | null>(null)
+  const connectionCheckIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // FIXED: Enhanced connection status check with better error recovery
   const checkConnection = useCallback(async () => {
