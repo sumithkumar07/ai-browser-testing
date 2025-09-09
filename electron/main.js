@@ -2551,11 +2551,13 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       this.updateBrowserViewBounds(browserView)
       
       // Emit tab created event
-      this.mainWindow.webContents.send('browser-event', {
-        type: 'tab-created',
-        tabId: tabId,
-        url: url
-      })
+      if (this.mainWindow && this.mainWindow.webContents) {
+        this.mainWindow.webContents.send('browser-event', {
+          type: 'tab-created',
+          tabId: tabId,
+          url: url
+        })
+      }
 
       console.log(`✅ Tab created: ${tabId}`)
       return { success: true, tabId: tabId, url: url }
