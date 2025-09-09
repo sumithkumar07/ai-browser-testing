@@ -96,7 +96,7 @@ class SecurityEnhancer {
       /\b(?:password|pass|pwd|secret|key|token)\s*[:=]\s*\S+/gi
     ],
     suspicious_commands: [
-      /\b(rm|del|format|fdisk|mkfs)\b.*[-\/]\w*[rf]/gi,
+      /\b(rm|del|format|fdisk|mkfs)\b.*[-/]\w*[rf]/gi,
       /\b(wget|curl|powershell|cmd|bash|sh)[\s]/gi,
       /\b(eval|exec|system|shell_exec)\s*\(/gi
     ]

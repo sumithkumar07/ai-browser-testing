@@ -445,48 +445,15 @@ class ConversationManager {
     return recommendations
   }
 
-  // Intent Analysis - overloaded methods
-  analyzeUserIntent(message: string): string
+  // Intent Analysis - single method overload removed to fix duplicate name error
   analyzeUserIntent(sessionId: string, message: string): Promise<{
     intent: string
     confidence: number
     suggestedAgents: string[]
     responseStrategy: string
     contextFactors: string[]
-  }>
-  analyzeUserIntent(sessionIdOrMessage: string, message?: string): string | Promise<{
-    intent: string
-    confidence: number
-    suggestedAgents: string[]
-    responseStrategy: string
-    contextFactors: string[]
   }> {
-    // If only one parameter, it's the simple string version
-    if (message === undefined) {
-      return this.analyzeUserIntentSimple(sessionIdOrMessage)
-    }
-    
-    // Two parameters: sessionId and message - return enhanced analysis
-    return this.analyzeUserIntentEnhanced(sessionIdOrMessage, message)
-  }
-
-  private analyzeUserIntentSimple(message: string): string {
-    const intentPatterns: Record<string, string[]> = {
-      research: ['research', 'find', 'search', 'investigate', 'explore', 'discover'],
-      shopping: ['buy', 'purchase', 'price', 'compare', 'shop', 'product'],
-      automation: ['automate', 'repeat', 'schedule', 'workflow', 'process'],
-      communication: ['email', 'message', 'contact', 'send', 'write', 'compose']
-    }
-
-    const lowerMessage = message.toLowerCase()
-    
-    for (const [intent, keywords] of Object.entries(intentPatterns)) {
-      if (keywords.some(keyword => lowerMessage.includes(keyword))) {
-        return intent
-      }
-    }
-
-    return 'general'
+    return this.analyzeUserIntentEnhanced(sessionId, message)
   }
 
   private async analyzeUserIntentEnhanced(sessionId: string, message: string): Promise<{
@@ -597,7 +564,7 @@ class ConversationManager {
 
   // Smart Context Building
   buildSmartContext(sessionId: string): Promise<object> {
-    return new Promise(async (resolve) => {
+    return new Promise((resolve) => {
       try {
         const context = this.conversations.get(sessionId)
         if (!context) {
@@ -617,7 +584,7 @@ class ConversationManager {
             hasContent: !!context.pageContent
           },
           conversation: {
-            intent: this.analyzeUserIntent(context.conversationHistory.map(m => m.content).join(' ')),
+            intent: this.analyzeUserIntentSimple(context.conversationHistory.map(m => m.content).join(' ')),
             topics: this.extractTopics(context.conversationHistory),
             lastUserMessage: context.conversationHistory.filter(m => m.isUser).slice(-1)[0]?.content || ''
           },
@@ -631,6 +598,25 @@ class ConversationManager {
         resolve({})
       }
     })
+  }
+
+  private analyzeUserIntentSimple(message: string): string {
+    const intentPatterns: Record<string, string[]> = {
+      research: ['research', 'find', 'search', 'investigate', 'explore', 'discover'],
+      shopping: ['buy', 'purchase', 'price', 'compare', 'shop', 'product'],
+      automation: ['automate', 'repeat', 'schedule', 'workflow', 'process'],
+      communication: ['email', 'message', 'contact', 'send', 'write', 'compose']
+    }
+
+    const lowerMessage = message.toLowerCase()
+    
+    for (const [intent, keywords] of Object.entries(intentPatterns)) {
+      if (keywords.some(keyword => lowerMessage.includes(keyword))) {
+        return intent
+      }
+    }
+
+    return 'general'
   }
 
   private extractTopics(messages: AIMessage[]): string[] {

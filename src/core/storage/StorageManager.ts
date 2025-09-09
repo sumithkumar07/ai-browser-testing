@@ -172,7 +172,7 @@ class StorageManager {
     }
 
     try {
-      let serialized = JSON.stringify(item)
+      const serialized = JSON.stringify(item)
       
       // TODO: Add encryption if needed
       if (options.encrypt) {
@@ -213,7 +213,7 @@ class StorageManager {
       }
 
       // Retrieve from storage
-      let serialized = await this.backend.getItem(fullKey)
+      const serialized = await this.backend.getItem(fullKey)
       if (!serialized) {
         return defaultValue
       }

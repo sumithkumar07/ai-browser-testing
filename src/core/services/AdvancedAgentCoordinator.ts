@@ -242,8 +242,8 @@ class AdvancedAgentCoordinator {
     let complexity: 'low' | 'medium' | 'high' | 'adaptive' = 'low'
     let priority = 5
     let estimatedDuration = 60
-    let requiredAgents: string[] = []
-    let riskFactors: string[] = []
+    const requiredAgents: string[] = []
+    const riskFactors: string[] = []
 
     // Length-based complexity
     if (lowerDesc.length > 200) {
