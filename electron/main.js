@@ -82,9 +82,9 @@ class KAiroBrowserManager {
 
   async initializeAgenticServices() {
     try {
-      console.log('🤖 Initializing Enhanced Backend Services (ZERO UI IMPACT)...')
+      console.log('🤖 Initializing Enhanced Backend Services with production resilience...')
       
-      // Initialize Database Service - FIXED: Better error handling and path validation
+      // Initialize Database Service with enhanced error handling
       this.databaseService = new DatabaseService({
         path: process.env.DB_PATH || path.join(__dirname, '../data/kairo_browser.db'),
         maxSize: 100 * 1024 * 1024, // 100MB
@@ -93,37 +93,67 @@ class KAiroBrowserManager {
       
       try {
         await this.databaseService.initialize()
+        this.connectionState.database = 'connected'
         console.log('✅ Database service initialized successfully')
+        
+        // Initialize Database Health Manager
+        this.databaseHealthManager = new DatabaseHealthManager(this.databaseService, {
+          healthCheckInterval: 60000, // 1 minute
+          backupInterval: 3600000, // 1 hour
+          maxBackups: 10
+        })
+        
+        await this.databaseHealthManager.initialize()
+        console.log('✅ Database health manager initialized')
+        
       } catch (dbError) {
         console.error('❌ Database service failed to initialize:', dbError.message)
-        console.warn('🔄 Attempting to recreate database...')
+        this.connectionState.database = 'failed'
+        console.warn('🔄 Attempting database recovery...')
         
-        // Try to recreate database with fallback path
-        try {
-          const fallbackPath = path.join(process.cwd(), 'data', 'kairo_browser_fallback.db')
-          this.databaseService = new DatabaseService({
-            path: fallbackPath,
-            maxSize: 100 * 1024 * 1024,
-            backupEnabled: true
-          })
-          await this.databaseService.initialize()
-          console.log('✅ Database service initialized with fallback path')
-        } catch (fallbackError) {
-          console.error('❌ Database fallback also failed:', fallbackError.message)
-          console.warn('⚠️ Continuing without database service - some features may be limited')
+        // Enhanced database recovery
+        const recoveryAttempts = [
+          () => this.createFallbackDatabase(),
+          () => this.createInMemoryDatabase(),
+          () => this.initializeMinimalDatabase()
+        ]
+        
+        let recovered = false
+        for (const [index, recovery] of recoveryAttempts.entries()) {
+          try {
+            console.log(`🔧 Recovery attempt ${index + 1}/3...`)
+            await recovery()
+            recovered = true
+            this.connectionState.database = 'degraded'
+            console.log('✅ Database recovered in degraded mode')
+            break
+          } catch (recoveryError) {
+            console.warn(`⚠️ Recovery attempt ${index + 1} failed:`, recoveryError.message)
+          }
+        }
+        
+        if (!recovered) {
+          console.error('❌ All database recovery attempts failed')
+          this.connectionState.database = 'failed'
           this.databaseService = null
         }
       }
       
       // Initialize Performance Monitor
-      this.performanceMonitor = new AgentPerformanceMonitor(this.databaseService)
-      await this.performanceMonitor.initialize()
+      if (this.databaseService) {
+        this.performanceMonitor = new AgentPerformanceMonitor(this.databaseService)
+        await this.performanceMonitor.initialize()
+        console.log('✅ Performance monitor initialized')
+      }
       
       // Initialize Background Task Scheduler
-      this.taskScheduler = new BackgroundTaskScheduler(this.databaseService)
-      await this.taskScheduler.initialize()
+      if (this.databaseService) {
+        this.taskScheduler = new BackgroundTaskScheduler(this.databaseService)
+        await this.taskScheduler.initialize()
+        console.log('✅ Background task scheduler initialized')
+      }
 
-      // Initialize Enhanced Agent Services - FIXED: Better error handling for TypeScript imports
+      // Initialize Enhanced Agent Services with fallback
       try {
         const AgentMemoryService = require('../compiled/services/AgentMemoryService.js')
         const AgentCoordinationService = require('../compiled/services/AgentCoordinationService.js')
@@ -133,10 +163,14 @@ class KAiroBrowserManager {
         
         this.agentCoordinationService = AgentCoordinationService.default.getInstance()
         await this.agentCoordinationService.initialize()
+        
+        this.connectionState.agents = 'connected'
+        console.log('✅ Enhanced agent services initialized')
       } catch (error) {
-        console.warn('⚠️ Enhanced agent services not available, continuing with basic mode:', error.message)
+        console.warn('⚠️ Enhanced agent services not available, using basic mode:', error.message)
         this.agentMemoryService = null
         this.agentCoordinationService = null
+        this.connectionState.agents = 'basic'
       }
       
       console.log('✅ Enhanced Backend Services initialized successfully')
@@ -147,10 +181,14 @@ class KAiroBrowserManager {
       // Start autonomous goal monitoring
       await this.startAutonomousGoalMonitoring()
       
+      // Start system health monitoring
+      this.startSystemHealthMonitoring()
+      
     } catch (error) {
       console.error('❌ Failed to initialize enhanced backend services:', error)
       // Continue with basic mode if backend services fail
       this.isAgenticMode = false
+      console.warn('⚠️ Running in basic mode - advanced features disabled')
     }
   }
 
