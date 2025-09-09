@@ -471,11 +471,11 @@ class KAiroBrowserManager {
     return actions
   }
 
-  // FIXED: Task analysis method (was incorrectly nested)
+  // FIXED: Enhanced task analysis method with improved accuracy
   analyzeAgentTask(task) {
     const lowerTask = task.toLowerCase()
     
-    // Simple task analysis - can be enhanced
+    // Enhanced task analysis with better keyword scoring and context awareness
     const scores = {
       research: 0,
       navigation: 0,
@@ -485,41 +485,117 @@ class KAiroBrowserManager {
       analysis: 0
     }
 
-    // Basic keyword scoring
-    if (lowerTask.includes('research') || lowerTask.includes('find') || lowerTask.includes('search')) {
-      scores.research = 80
+    // Enhanced Research Agent scoring
+    if (lowerTask.includes('research') || lowerTask.includes('investigate') || lowerTask.includes('study')) {
+      scores.research = 85
+      if (lowerTask.includes('deep') || lowerTask.includes('comprehensive') || lowerTask.includes('detailed')) {
+        scores.research = 95
+      }
+    }
+    if (lowerTask.includes('find') || lowerTask.includes('search') || lowerTask.includes('look up')) {
+      scores.research = Math.max(scores.research, 80)
+    }
+    if (lowerTask.includes('information') || lowerTask.includes('data') || lowerTask.includes('facts')) {
+      scores.research = Math.max(scores.research, 75)
     }
     
-    if (lowerTask.includes('go to') || lowerTask.includes('navigate') || lowerTask.includes('visit')) {
-      scores.navigation = 90
+    // Enhanced Navigation Agent scoring
+    if (lowerTask.includes('go to') || lowerTask.includes('navigate to') || lowerTask.includes('visit')) {
+      scores.navigation = 95
+    }
+    if (lowerTask.includes('open') || lowerTask.includes('browse') || lowerTask.includes('website')) {
+      scores.navigation = Math.max(scores.navigation, 85)
+    }
+    if (lowerTask.includes('url') || lowerTask.includes('link') || lowerTask.includes('page')) {
+      scores.navigation = Math.max(scores.navigation, 80)
     }
     
-    if (lowerTask.includes('buy') || lowerTask.includes('price') || lowerTask.includes('shop')) {
-      scores.shopping = 85
+    // Enhanced Shopping Agent scoring
+    if (lowerTask.includes('buy') || lowerTask.includes('purchase') || lowerTask.includes('order')) {
+      scores.shopping = 90
+    }
+    if (lowerTask.includes('price') || lowerTask.includes('cost') || lowerTask.includes('compare')) {
+      scores.shopping = Math.max(scores.shopping, 85)
+    }
+    if (lowerTask.includes('shop') || lowerTask.includes('store') || lowerTask.includes('product')) {
+      scores.shopping = Math.max(scores.shopping, 80)
+    }
+    if (lowerTask.includes('deal') || lowerTask.includes('discount') || lowerTask.includes('sale')) {
+      scores.shopping = Math.max(scores.shopping, 85)
     }
     
-    if (lowerTask.includes('email') || lowerTask.includes('write') || lowerTask.includes('compose')) {
-      scores.communication = 85
+    // Enhanced Communication Agent scoring
+    if (lowerTask.includes('email') || lowerTask.includes('message') || lowerTask.includes('contact')) {
+      scores.communication = 90
+    }
+    if (lowerTask.includes('write') || lowerTask.includes('compose') || lowerTask.includes('draft')) {
+      scores.communication = Math.max(scores.communication, 85)
+    }
+    if (lowerTask.includes('letter') || lowerTask.includes('note') || lowerTask.includes('memo')) {
+      scores.communication = Math.max(scores.communication, 80)
+    }
+    if (lowerTask.includes('social') || lowerTask.includes('post') || lowerTask.includes('tweet')) {
+      scores.communication = Math.max(scores.communication, 75)
     }
     
+    // Enhanced Automation Agent scoring
     if (lowerTask.includes('automate') || lowerTask.includes('schedule') || lowerTask.includes('routine')) {
-      scores.automation = 85
+      scores.automation = 90
+    }
+    if (lowerTask.includes('workflow') || lowerTask.includes('process') || lowerTask.includes('task')) {
+      scores.automation = Math.max(scores.automation, 80)
+    }
+    if (lowerTask.includes('repeat') || lowerTask.includes('recurring') || lowerTask.includes('regular')) {
+      scores.automation = Math.max(scores.automation, 85)
     }
     
-    if (lowerTask.includes('analyze') || lowerTask.includes('summarize') || lowerTask.includes('review')) {
-      scores.analysis = 85
+    // Enhanced Analysis Agent scoring
+    if (lowerTask.includes('analyze') || lowerTask.includes('analysis') || lowerTask.includes('examine')) {
+      scores.analysis = 90
+    }
+    if (lowerTask.includes('summarize') || lowerTask.includes('summary') || lowerTask.includes('overview')) {
+      scores.analysis = Math.max(scores.analysis, 85)
+    }
+    if (lowerTask.includes('review') || lowerTask.includes('evaluate') || lowerTask.includes('assess')) {
+      scores.analysis = Math.max(scores.analysis, 80)
+    }
+    if (lowerTask.includes('report') || lowerTask.includes('insight') || lowerTask.includes('breakdown')) {
+      scores.analysis = Math.max(scores.analysis, 85)
+    }
+
+    // Multi-agent detection - tasks that might need multiple agents
+    let needsMultipleAgents = false
+    const activeAgents = Object.entries(scores).filter(([_, score]) => score >= 70)
+    
+    if (activeAgents.length > 1) {
+      needsMultipleAgents = true
+    }
+
+    // Context-based adjustments
+    if (lowerTask.includes('comprehensive') || lowerTask.includes('complete') || lowerTask.includes('full')) {
+      needsMultipleAgents = true
+      // Boost all relevant scores slightly
+      Object.keys(scores).forEach(key => {
+        if (scores[key] >= 60) scores[key] = Math.min(scores[key] + 10, 100)
+      })
     }
 
     // Find the highest scoring agent
     const primaryAgent = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b)
     const confidence = scores[primaryAgent]
 
+    // Determine supporting agents (scores >= 60 and not primary)
+    const supportingAgents = Object.entries(scores)
+      .filter(([agent, score]) => agent !== primaryAgent && score >= 60)
+      .map(([agent, _]) => agent)
+
     return {
       primaryAgent,
       confidence,
-      complexity: confidence > 70 ? 'high' : 'medium',
-      needsMultipleAgents: confidence < 60,
-      supportingAgents: []
+      complexity: confidence >= 85 ? 'high' : (confidence >= 70 ? 'medium' : 'low'),
+      needsMultipleAgents,
+      supportingAgents,
+      allScores: scores
     }
   }
 
