@@ -103,19 +103,20 @@ class EnhancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryS
 
   reportError = async (error: Error, errorInfo: ErrorInfo) => {
     try {
-      // Try to send error to main process for logging
-      if (window.electronAPI) {
-        await window.electronAPI.logError({
-          errorId: this.state.errorId,
-          message: error.message,
-          stack: error.stack,
-          componentStack: errorInfo.componentStack,
-          timestamp: Date.now(),
-          userAgent: navigator.userAgent,
-          url: window.location.href,
-          retryCount: this.state.retryCount
-        })
-      }
+      // Log error details
+      console.error('Error Boundary caught error:', {
+        errorId: this.state.errorId,
+        message: error.message,
+        stack: error.stack,
+        componentStack: errorInfo.componentStack,
+        timestamp: Date.now(),
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+        userSettings: {
+          language: navigator.language,
+          platform: navigator.platform
+        }
+      })
     } catch (reportError) {
       console.warn('⚠️ Failed to report error to main process:', reportError)
     }
