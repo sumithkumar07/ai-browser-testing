@@ -1,5 +1,5 @@
 // src/main/services/BrowserEngine.ts
-import { BrowserEvent as ElectronBrowserEvent } from '../types/electron'
+import { BrowserEvent as ElectronBrowserEvent } from '../types/electron.d'
 
 export interface BrowserTab {
   id: string
