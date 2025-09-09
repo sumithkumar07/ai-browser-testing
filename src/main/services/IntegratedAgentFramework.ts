@@ -7,7 +7,31 @@ import { createLogger } from '../../core/logger/Logger'
 import { appEvents } from '../../core/utils/EventEmitter'
 import { validateAgentTask } from '../../core/utils/Validators'
 import ConversationManager from '../../core/services/ConversationManager'
-import type { AgentCapability, AgentTask } from '../../core/types'
+
+// Define types locally to avoid import issues
+export interface AgentCapability {
+  id: string
+  name: string
+  description: string
+  category: 'research' | 'analysis' | 'automation' | 'communication'
+  requiredPermissions: string[]
+  estimatedDuration?: number
+}
+
+export interface AgentTask {
+  id: string
+  title: string
+  description: string
+  type: string
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+  progress: number
+  createdAt: number
+  startedAt?: number
+  completedAt?: number
+  result?: any
+  error?: string
+  metadata?: Record<string, any>
+}
 
 const logger = createLogger('IntegratedAgentFramework')
 
