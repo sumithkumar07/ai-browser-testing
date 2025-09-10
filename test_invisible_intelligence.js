@@ -105,7 +105,7 @@ async function testInvisibleIntelligence() {
     await memory.initialize()
     
     const memoryResult = await memory.storeMemory('test_agent', {
-      type: 'test',
+      type: 'context',  // Use valid memory type
       content: { message: 'Testing memory storage', result: 'success' },
       importance: 4,
       tags: ['test', 'invisible_intelligence'],
