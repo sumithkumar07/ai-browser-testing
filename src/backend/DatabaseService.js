@@ -189,6 +189,13 @@ class DatabaseService {
     `);
     this.db.exec('CREATE INDEX IF NOT EXISTS idx_system_config_category ON system_config(category)');
     this.db.exec('CREATE INDEX IF NOT EXISTS idx_system_config_updated ON system_config(updated_at DESC)');
+    
+    // CRITICAL FIX: Add data_type column if it doesn't exist (backwards compatibility)
+    try {
+      this.db.exec('ALTER TABLE system_config ADD COLUMN data_type TEXT DEFAULT "string"');
+    } catch (error) {
+      // Column already exists, this is expected
+    }
   }
 
   // Enhanced Bookmark Operations with Search
