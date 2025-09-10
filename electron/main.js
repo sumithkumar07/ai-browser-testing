@@ -1285,11 +1285,12 @@ class KAiroBrowserManager {
     return actions
   }
 
-  // FIXED: Enhanced task analysis method with improved accuracy
+  // ENHANCED: Ultra-High Accuracy Task Analysis Method (Target: 95%+ accuracy)
   analyzeAgentTask(task) {
-    const lowerTask = task.toLowerCase()
+    const lowerTask = task.toLowerCase().trim()
+    const words = lowerTask.split(/\s+/)
     
-    // Enhanced task analysis with better keyword scoring and context awareness
+    // Advanced scoring system with semantic understanding
     const scores = {
       research: 0,
       navigation: 0,
@@ -1299,142 +1300,180 @@ class KAiroBrowserManager {
       analysis: 0
     }
 
-    // Enhanced Research Agent scoring
-    if (lowerTask.includes('research') || lowerTask.includes('investigate') || lowerTask.includes('study')) {
-      scores.research = 85
-      if (lowerTask.includes('deep') || lowerTask.includes('comprehensive') || lowerTask.includes('detailed')) {
-        scores.research = 95
-      }
-    }
-    if (lowerTask.includes('find') || lowerTask.includes('search') || lowerTask.includes('look up')) {
-      scores.research = Math.max(scores.research, 80)
-    }
-    if (lowerTask.includes('information') || lowerTask.includes('data') || lowerTask.includes('facts')) {
-      scores.research = Math.max(scores.research, 75)
-    }
-    
-    // Enhanced Navigation Agent scoring
-    if (lowerTask.includes('go to') || lowerTask.includes('navigate to') || lowerTask.includes('visit')) {
-      scores.navigation = 95
-    }
-    if (lowerTask.includes('open') || lowerTask.includes('browse') || lowerTask.includes('website')) {
-      scores.navigation = Math.max(scores.navigation, 85)
-    }
-    if (lowerTask.includes('url') || lowerTask.includes('link') || lowerTask.includes('page')) {
-      scores.navigation = Math.max(scores.navigation, 80)
-    }
-    
-    // Enhanced Shopping Agent scoring
-    if (lowerTask.includes('buy') || lowerTask.includes('purchase') || lowerTask.includes('order')) {
-      scores.shopping = 90
-    }
-    if (lowerTask.includes('price') || lowerTask.includes('cost') || lowerTask.includes('compare')) {
-      scores.shopping = Math.max(scores.shopping, 85)
-    }
-    if (lowerTask.includes('shop') || lowerTask.includes('store') || lowerTask.includes('product')) {
-      scores.shopping = Math.max(scores.shopping, 80)
-    }
-    if (lowerTask.includes('deal') || lowerTask.includes('discount') || lowerTask.includes('sale')) {
-      scores.shopping = Math.max(scores.shopping, 85)
-    }
-    // ENHANCED: Better detection for shopping-related searches
-    if (lowerTask.includes('best') && (lowerTask.includes('laptop') || lowerTask.includes('phone') || lowerTask.includes('product'))) {
-      scores.shopping = Math.max(scores.shopping, 95)
-    }
-    if (lowerTask.includes('find') && (lowerTask.includes('deal') || lowerTask.includes('price') || lowerTask.includes('cheap'))) {
-      scores.shopping = Math.max(scores.shopping, 93)
-    }
-    // CRITICAL FIX: Handle "find best laptop deals" pattern specifically
-    if (lowerTask.includes('find') && lowerTask.includes('best') && (lowerTask.includes('laptop') || lowerTask.includes('deals') || lowerTask.includes('phone'))) {
-      scores.shopping = 95
-      scores.research = 70 // Reduce research score for shopping-related finds
-    }
-    // Enhanced shopping product keywords
-    if (lowerTask.includes('laptop') || lowerTask.includes('computer') || lowerTask.includes('phone') || lowerTask.includes('tablet')) {
-      scores.shopping = Math.max(scores.shopping, 85)
-    }
-    
-    // Enhanced Communication Agent scoring
-    if (lowerTask.includes('email') || lowerTask.includes('message') || lowerTask.includes('contact')) {
-      scores.communication = 90
-    }
-    if (lowerTask.includes('write') || lowerTask.includes('compose') || lowerTask.includes('draft')) {
-      scores.communication = Math.max(scores.communication, 85)
-    }
-    if (lowerTask.includes('letter') || lowerTask.includes('note') || lowerTask.includes('memo')) {
-      scores.communication = Math.max(scores.communication, 80)
-    }
-    if (lowerTask.includes('social') || lowerTask.includes('post') || lowerTask.includes('tweet')) {
-      scores.communication = Math.max(scores.communication, 75)
-    }
-    
-    // Enhanced Automation Agent scoring
-    if (lowerTask.includes('automate') || lowerTask.includes('schedule') || lowerTask.includes('routine')) {
-      scores.automation = 90
-    }
-    if (lowerTask.includes('workflow') || lowerTask.includes('process') || lowerTask.includes('task')) {
-      scores.automation = Math.max(scores.automation, 80)
-    }
-    if (lowerTask.includes('repeat') || lowerTask.includes('recurring') || lowerTask.includes('regular')) {
-      scores.automation = Math.max(scores.automation, 85)
-    }
-    
-    // Enhanced Analysis Agent scoring
-    if (lowerTask.includes('analyze') || lowerTask.includes('analysis') || lowerTask.includes('examine')) {
-      scores.analysis = 95
-    }
-    if (lowerTask.includes('summarize') || lowerTask.includes('summary') || lowerTask.includes('overview')) {
-      scores.analysis = Math.max(scores.analysis, 85)
-    }
-    if (lowerTask.includes('review') || lowerTask.includes('evaluate') || lowerTask.includes('assess')) {
-      scores.analysis = Math.max(scores.analysis, 80)
-    }
-    // CRITICAL FIX: Handle "analyze this page content" pattern specifically
-    if (lowerTask.includes('analyze') && (lowerTask.includes('page') || lowerTask.includes('content') || lowerTask.includes('this'))) {
-      scores.analysis = 98
-      scores.navigation = 50 // Reduce navigation score for analysis tasks
-    }
-    // Enhanced analysis keywords
-    if (lowerTask.includes('content') || lowerTask.includes('data') || lowerTask.includes('text')) {
-      scores.analysis = Math.max(scores.analysis, 85)
-    }
-    if (lowerTask.includes('report') || lowerTask.includes('insight') || lowerTask.includes('breakdown')) {
-      scores.analysis = Math.max(scores.analysis, 85)
-    }
+    // PHASE 1: Intent Pattern Recognition with Context Awareness
 
-    // Multi-agent detection - tasks that might need multiple agents
-    let needsMultipleAgents = false
-    const activeAgents = Object.entries(scores).filter(([_, score]) => score >= 70)
-    
-    if (activeAgents.length > 1) {
-      needsMultipleAgents = true
-    }
+    // 🔍 RESEARCH AGENT - Enhanced pattern matching
+    const researchPatterns = [
+      { pattern: /^(research|investigate|study|explore|learn about)/i, score: 95 },
+      { pattern: /^(find|search for|look up|discover)/i, score: 88 },
+      { pattern: /(latest|recent|current).*(development|trend|news|update)/i, score: 92 },
+      { pattern: /(information|data|facts|details) about/i, score: 85 },
+      { pattern: /what (is|are|was|were|do|does)/i, score: 82 },
+      { pattern: /(comprehensive|detailed|thorough).*(research|study|analysis)/i, score: 95 }
+    ]
 
-    // Context-based adjustments
-    if (lowerTask.includes('comprehensive') || lowerTask.includes('complete') || lowerTask.includes('full')) {
-      needsMultipleAgents = true
-      // Boost all relevant scores slightly
-      Object.keys(scores).forEach(key => {
-        if (scores[key] >= 60) scores[key] = Math.min(scores[key] + 10, 100)
+    // 🌐 NAVIGATION AGENT - Precise URL and navigation detection
+    const navigationPatterns = [
+      { pattern: /^(go to|navigate to|visit|open)/i, score: 98 },
+      { pattern: /^(browse|check out|head to)/i, score: 95 },
+      { pattern: /(https?:\/\/|www\.|\.com|\.org|\.net)/i, score: 97 },
+      { pattern: /^(show me|take me to|redirect to)/i, score: 93 },
+      { pattern: /(website|webpage|site|url|link|page)$/i, score: 90 }
+    ]
+
+    // 🛒 SHOPPING AGENT - Advanced commercial intent detection
+    const shoppingPatterns = [
+      { pattern: /^(buy|purchase|order|get me)/i, score: 98 },
+      { pattern: /(price|cost|how much|budget|cheap|expensive)/i, score: 92 },
+      { pattern: /(best|top|recommend).*(laptop|phone|computer|tablet|product)/i, score: 96 },
+      { pattern: /(deal|discount|sale|offer|coupon)/i, score: 90 },
+      { pattern: /^(find|search).*(deal|price|cheap|affordable)/i, score: 94 },
+      { pattern: /(compare|versus|vs).*(price|product|model)/i, score: 93 },
+      { pattern: /(shop|store|marketplace|retailer|vendor)/i, score: 88 },
+      { pattern: /(laptop|computer|phone|tablet|headphone|camera|tv|monitor)/i, score: 85 }
+    ]
+
+    // 📧 COMMUNICATION AGENT - Enhanced writing and messaging detection
+    const communicationPatterns = [
+      { pattern: /^(write|compose|draft|create)/i, score: 95 },
+      { pattern: /(email|message|letter|note|memo)/i, score: 93 },
+      { pattern: /(send|contact|reach out|get in touch)/i, score: 90 },
+      { pattern: /(social media|post|tweet|status|update)/i, score: 88 },
+      { pattern: /(professional|business|formal|casual).*(email|letter|message)/i, score: 96 },
+      { pattern: /(reply|respond|answer).*(email|message)/i, score: 92 }
+    ]
+
+    // 🤖 AUTOMATION AGENT - Workflow and process detection
+    const automationPatterns = [
+      { pattern: /^(automate|schedule|set up)/i, score: 96 },
+      { pattern: /(workflow|process|routine|task)/i, score: 88 },
+      { pattern: /(repeat|recurring|regular|daily|weekly)/i, score: 92 },
+      { pattern: /(streamline|optimize|efficiency|productivity)/i, score: 85 },
+      { pattern: /(batch|bulk|mass).*(operation|process|task)/i, score: 90 }
+    ]
+
+    // 📊 ANALYSIS AGENT - Precise analysis and content processing
+    const analysisPatterns = [
+      { pattern: /^(analyze|analyse|examine|evaluate)/i, score: 98 },
+      { pattern: /(this page|current page|page content)/i, score: 96 },
+      { pattern: /(summarize|summary|overview|synopsis)/i, score: 93 },
+      { pattern: /(review|assess|critique|judge)/i, score: 90 },
+      { pattern: /(data analysis|content analysis|text analysis)/i, score: 95 },
+      { pattern: /(insight|pattern|trend|correlation)/i, score: 88 },
+      { pattern: /(report|breakdown|findings|results)/i, score: 87 }
+    ]
+
+    // PHASE 2: Apply Pattern Matching with Weighted Scoring
+    const applyPatterns = (patterns, agent) => {
+      patterns.forEach(({ pattern, score }) => {
+        if (pattern.test(lowerTask)) {
+          scores[agent] = Math.max(scores[agent], score)
+        }
       })
     }
 
-    // Find the highest scoring agent
+    applyPatterns(researchPatterns, 'research')
+    applyPatterns(navigationPatterns, 'navigation')
+    applyPatterns(shoppingPatterns, 'shopping')
+    applyPatterns(communicationPatterns, 'communication')
+    applyPatterns(automationPatterns, 'automation')
+    applyPatterns(analysisPatterns, 'analysis')
+
+    // PHASE 3: Context-Aware Conflict Resolution
+    // Handle overlapping patterns with sophisticated logic
+
+    // CRITICAL: Shopping vs Research disambiguation
+    const hasShoppingContext = /\b(buy|price|deal|cheap|expensive|cost|purchase|order|store|shop)\b/i.test(lowerTask)
+    const hasProductContext = /\b(laptop|phone|computer|tablet|headphone|camera|tv|monitor|product)\b/i.test(lowerTask)
+    
+    if (hasShoppingContext && hasProductContext) {
+      if (lowerTask.includes('find') || lowerTask.includes('best') || lowerTask.includes('compare')) {
+        scores.shopping = Math.max(scores.shopping, 94)
+        scores.research = Math.max(scores.research - 20, 0) // Reduce research score
+      }
+    }
+
+    // CRITICAL: Analysis vs Navigation disambiguation
+    const hasAnalysisContext = /\b(analyze|analyse|examine|evaluate|summarize|review)\b/i.test(lowerTask)
+    const hasPageContext = /\b(page|content|this|current)\b/i.test(lowerTask)
+    
+    if (hasAnalysisContext && hasPageContext) {
+      scores.analysis = Math.max(scores.analysis, 97)
+      scores.navigation = Math.max(scores.navigation - 30, 0) // Significantly reduce navigation
+    }
+
+    // PHASE 4: Semantic Boost Based on Word Combinations
+    const wordCombinations = {
+      'find best': { shopping: 15, research: -10 },
+      'analyze this': { analysis: 20, navigation: -15 },
+      'go to': { navigation: 25, research: -20 },
+      'write email': { communication: 20, research: -10 },
+      'automate workflow': { automation: 25, research: -15 }
+    }
+
+    Object.entries(wordCombinations).forEach(([combo, adjustments]) => {
+      if (lowerTask.includes(combo)) {
+        Object.entries(adjustments).forEach(([agent, adjustment]) => {
+          scores[agent] = Math.max(scores[agent] + adjustment, 0)
+        })
+      }
+    })
+
+    // PHASE 5: Advanced Context Processing
+    
+    // Boost confidence for clear single-intent tasks
+    const maxScore = Math.max(...Object.values(scores))
+    const scoresAbove80 = Object.values(scores).filter(s => s >= 80).length
+    
+    if (scoresAbove80 === 1 && maxScore >= 90) {
+      // Clear single intent - boost confidence
+      const primaryAgent = Object.keys(scores).find(key => scores[key] === maxScore)
+      scores[primaryAgent] = Math.min(scores[primaryAgent] + 5, 100)
+    }
+
+    // Multi-agent detection with improved logic
+    let needsMultipleAgents = false
+    const activeAgents = Object.entries(scores).filter(([_, score]) => score >= 75)
+    
+    if (activeAgents.length > 1) {
+      const [first, second] = activeAgents.sort(([,a], [,b]) => b - a)
+      // Only consider multi-agent if the second highest is within 20 points of the highest
+      if (first[1] - second[1] <= 20) {
+        needsMultipleAgents = true
+      }
+    }
+
+    // Comprehensive context boost
+    if (lowerTask.includes('comprehensive') || lowerTask.includes('complete') || lowerTask.includes('full')) {
+      needsMultipleAgents = true
+      Object.keys(scores).forEach(key => {
+        if (scores[key] >= 60) scores[key] = Math.min(scores[key] + 8, 100)
+      })
+    }
+
+    // Find the primary agent with highest confidence
     const primaryAgent = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b)
     const confidence = scores[primaryAgent]
 
-    // Determine supporting agents (scores >= 60 and not primary)
+    // Determine supporting agents with refined threshold
     const supportingAgents = Object.entries(scores)
-      .filter(([agent, score]) => agent !== primaryAgent && score >= 60)
+      .filter(([agent, score]) => agent !== primaryAgent && score >= 65)
+      .sort(([,a], [,b]) => b - a)
       .map(([agent, _]) => agent)
 
     return {
       primaryAgent,
       confidence,
-      complexity: confidence >= 85 ? 'high' : (confidence >= 70 ? 'medium' : 'low'),
+      complexity: confidence >= 90 ? 'high' : (confidence >= 75 ? 'medium' : 'low'),
       needsMultipleAgents,
       supportingAgents,
-      allScores: scores
+      allScores: scores,
+      // Add debug info for testing
+      debugInfo: {
+        originalTask: task,
+        processedTask: lowerTask,
+        topScores: Object.entries(scores).sort(([,a], [,b]) => b - a).slice(0, 3)
+      }
     }
   }
 
