@@ -6,7 +6,7 @@
 import { createLogger } from '../../core/logger/EnhancedLogger'
 import { appEvents } from '../../core/utils/EventEmitter'
 import { validateAgentTask } from '../../core/utils/Validators'
-import ConversationManager from '../../core/services/ConversationManager'
+// ConversationManager removed - using built-in conversation handling
 
 // Define types locally to avoid import issues
 export interface AgentCapability {
