@@ -76,20 +76,19 @@ class AgentMemoryService {
 
   async initialize(): Promise<void> {
     try {
-      logger.info('Initializing Agent Memory Service...')
+      logger.info('🧠 Initializing Agent Memory Service...')
       
-      // Ensure memory directory exists
-      if (!fs.existsSync(this.memoryPath)) {
-        fs.mkdirSync(this.memoryPath, { recursive: true })
+      // Browser-compatible initialization
+      // In Electron, we could use file system, but for browser compatibility
+      // we'll use a simple in-memory approach for now
+      
+      // Load existing memories from localStorage if available
+      if (typeof window !== 'undefined' && window.localStorage) {
+        await this.loadFromLocalStorage()
       }
 
-      // Load existing memories
-      await this.loadAllMemories()
-      await this.loadAllKnowledge()
-      await this.loadAllGoals()
-
       this.isInitialized = true
-      logger.info('Agent Memory Service initialized successfully')
+      logger.info('✅ Agent Memory Service initialized successfully')
     } catch (error) {
       logger.error('Failed to initialize Agent Memory Service', error as Error)
       throw error
