@@ -62,8 +62,9 @@ class AgentMemoryService {
   private goals: Map<string, AgentGoal[]> = new Map()
   private isInitialized: boolean = false
 
-  private constructor() {
-    this.memoryPath = path.join(process.cwd(), 'agent_memory')
+  constructor() {
+    // Browser-compatible storage path
+    this.memoryPath = 'agent_memory'
   }
 
   static getInstance(): AgentMemoryService {
