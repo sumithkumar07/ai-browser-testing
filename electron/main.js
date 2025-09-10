@@ -2170,6 +2170,72 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       }
     })
 
+    // ENHANCED: Backend Coordinator Handlers
+    ipcMain.handle('execute-coordinated-operation', async (event, operationType, params = {}) => {
+      try {
+        if (!this.enhancedBackendCoordinator) {
+          return { success: false, error: 'Enhanced backend coordinator not available' }
+        }
+
+        const result = await this.enhancedBackendCoordinator.executeCoordinatedOperation(operationType, params)
+        return result
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-coordinator-status', async () => {
+      try {
+        if (!this.enhancedBackendCoordinator) {
+          return { success: false, error: 'Enhanced backend coordinator not available' }
+        }
+
+        const status = this.enhancedBackendCoordinator.getCoordinatorStatus()
+        return { success: true, status }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('queue-operation', async (event, operationType, params = {}) => {
+      try {
+        if (!this.enhancedBackendCoordinator) {
+          return { success: false, error: 'Enhanced backend coordinator not available' }
+        }
+
+        this.enhancedBackendCoordinator.queueOperation(operationType, params)
+        return { success: true, message: 'Operation queued successfully' }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('perform-intelligent-search', async (event, query, options = {}) => {
+      try {
+        if (!this.enhancedBackendCoordinator) {
+          return { success: false, error: 'Enhanced backend coordinator not available' }
+        }
+
+        const result = await this.enhancedBackendCoordinator.executeCoordinatedOperation('intelligent_search', { query, ...options })
+        return result
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-predictive-assistance', async (event, userContext, recentInteractions = []) => {
+      try {
+        if (!this.enhancedBackendCoordinator) {
+          return { success: false, error: 'Enhanced backend coordinator not available' }
+        }
+
+        const result = await this.enhancedBackendCoordinator.executeCoordinatedOperation('predictive_assistance', { userContext, recentInteractions })
+        return result
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
     // Additional Missing Handlers - FIXED: Added handlers that preload references
     ipcMain.handle('analyze-image', async (event, imageData) => {
       try {
