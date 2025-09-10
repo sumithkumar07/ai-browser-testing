@@ -3033,55 +3033,31 @@ ${predictions.proactive.map(rec => `• ${rec}`).join('\n')}
       }
     })
 
-    // ENHANCED: Properly structured send-ai-message handler with comprehensive error handling
+    // PHASE 1 & 2 ACTIVATION: ENHANCED AI Message Processing with FULL feature utilization
     ipcMain.handle('send-ai-message', async (event, message) => {
       try {
-        console.log('💬 Processing AI message with enhanced backend capabilities:', message)
-        
-        // Input validation
-        if (!message || typeof message !== 'string' || message.trim().length === 0) {
-          return { success: false, error: 'Message cannot be empty' }
-        }
-
-        if (message.length > 10000) {
-          return { success: false, error: 'Message too long (max 10,000 characters)' }
-        }
-        
-        // Record performance metrics - START
-        const startTime = Date.now()
-        
-        // ZERO UI IMPACT: Predictive Performance Optimization
-        if (this.enhancedAISystem) {
-          try {
-            await this.enhancedAISystem.optimizePerformance();
-          } catch (optimizeError) {
-            console.warn('⚠️ Performance optimization failed:', optimizeError.message);
+        if (!browserManager.aiService || browserManager.connectionState.api !== 'connected') {
+          return {
+            success: false,
+            error: 'GROQ AI service not available'
           }
         }
-        
-        // Check API availability with circuit breaker
-        if (this.apiValidator && this.apiValidator.isCircuitOpen()) {
-          return { 
-            success: false, 
-            error: 'AI service temporarily unavailable - please try again later',
-            circuitOpen: true
-          }
-        }
-        
-        if (!this.aiService) {
-          return { success: false, error: 'AI service not initialized - please check GROQ API key configuration' }
-        }
 
-        // ENHANCED: Advanced NLP Feature Detection and Automatic Execution
-        const nlpFeatures = await this.detectNLPFeatures(message)
-        console.log('🧠 NLP Features detected:', nlpFeatures)
+        console.log('🚀 PHASE 1+2 ACTIVATED: Enhanced AI Message Processing:', message)
         
-        // Try agentic processing first with NLP-enhanced capabilities
-        let agenticResult = null
-        try {
-          agenticResult = await this.processWithAgenticCapabilities(message, nlpFeatures)
-        } catch (agenticError) {
-          console.warn('⚠️ Agentic processing failed, falling back to standard AI:', agenticError.message)
+        // Get enhanced page context with advanced analysis
+        const context = await browserManager.getEnhancedPageContext()
+        
+        // PHASE 1 ACTIVATION: Execute ALL Advanced Features (Zero UI Impact)
+        const advancedResults = await executePhase1Features(message, context)
+        
+        // PHASE 2 ACTIVATION: Enhanced Agent Coordination and Deep Search
+        const phase2Results = await executePhase2Enhancements(message, context, advancedResults)
+        
+        // Process with FULL Agentic Capabilities (All Services Active)
+        let agenticResponse = null
+        if (browserManager.isAgenticMode) {
+          agenticResponse = await browserManager.processWithAgenticCapabilities(message, phase2Results.executedFeatures)
         }
         
         let enhancedResult
