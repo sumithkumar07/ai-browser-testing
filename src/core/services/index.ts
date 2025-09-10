@@ -15,10 +15,10 @@ export { default as ShadowWorkspace } from './ShadowWorkspace'
 export { default as CrossPlatformIntegration } from './CrossPlatformIntegration'
 export { default as AdvancedSecurity } from './AdvancedSecurity'
 
-// Backend Services
-export { DatabaseService } from '../../backend/DatabaseService'
-export { AgentPerformanceMonitor } from '../../backend/AgentPerformanceMonitor'
-export { BackgroundTaskScheduler } from '../../backend/BackgroundTaskScheduler'
+// Backend Services (Note: These are Node.js services, not browser services)
+// export { DatabaseService } from '../../backend/DatabaseService'
+// export { AgentPerformanceMonitor } from '../../backend/AgentPerformanceMonitor'
+// export { BackgroundTaskScheduler } from '../../backend/BackgroundTaskScheduler'
 
 // Core Support Services
 export { ApiValidator } from './ApiValidator.js'
