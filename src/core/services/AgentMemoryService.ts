@@ -1,9 +1,9 @@
 // Agent Memory Service - Persistent Memory System for Agentic Browser
 // Provides long-term memory, learning, and context retention for AI agents
 
-import { createLogger } from '../logger/Logger'
-import * as fs from 'fs'
-import * as path from 'path'
+import { createLogger } from '../logger/EnhancedLogger'
+// Note: This service requires Node.js environment for file operations
+// Browser-compatible version would use IndexedDB instead
 
 const logger = createLogger('AgentMemoryService')
 
