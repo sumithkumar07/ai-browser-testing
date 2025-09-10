@@ -1191,47 +1191,77 @@ ${nlpResults.actions.map(action => `• ${action}`).join('\n')}`
     }
   }
 
-  async addProactiveSuggestions(response, message, context) {
+  async addProactiveSuggestions(response, message, context, nlpResults = null) {
     try {
       let enhanced = response
 
-      // Add proactive suggestions based on response content and context
+      // Add proactive suggestions based on response content, context, and NLP results
       const suggestions = []
 
-      // Time-saving automation suggestions
+      // NLP-enhanced proactive suggestions
+      if (nlpResults && nlpResults.executedFeatures.length > 0) {
+        const featureTypes = nlpResults.executedFeatures.map(f => f.category)
+        
+        if (!featureTypes.includes('autonomous_goals')) {
+          suggestions.push('🎯 **Smart Goals**: I can create autonomous goals to handle similar requests automatically')
+        }
+        
+        if (!featureTypes.includes('memory_learning')) {
+          suggestions.push('🧠 **Learning Enhancement**: I can analyze your patterns to provide more personalized assistance')
+        }
+        
+        if (!featureTypes.includes('automation')) {
+          suggestions.push('⚡ **Automation Opportunity**: This type of task could be automated for future efficiency')
+        }
+      }
+
+      // Time-saving automation suggestions (enhanced)
       if (response.length > 800 || message.toLowerCase().includes('complex')) {
-        suggestions.push('⚡ **Automation Tip**: I can create workflows to automate similar tasks in the future')
+        suggestions.push('⚡ **Intelligent Automation**: I can create smart workflows with adaptive learning for similar tasks')
       }
 
-      // Related research suggestions
+      // Related research suggestions (enhanced)
       if (message.toLowerCase().includes('research') && response.includes('##')) {
-        suggestions.push('🔍 **Research Expansion**: I can dive deeper into any specific aspect mentioned above')
+        suggestions.push('🔍 **Deep Research Network**: I can create interconnected research projects with autonomous monitoring')
       }
 
-      // Cross-platform coordination
+      // Cross-platform coordination (enhanced)
       if (response.includes('email') || response.includes('social')) {
-        suggestions.push('📧 **Multi-Platform**: I can help adapt this content for different platforms and formats')
+        suggestions.push('📧 **Multi-Platform Intelligence**: I can create adaptive content that optimizes for different platforms automatically')
       }
 
-      // Continuous monitoring offers
+      // Continuous monitoring offers (enhanced)
       if (message.toLowerCase().includes('latest') || message.toLowerCase().includes('updates')) {
-        suggestions.push('📡 **Stay Updated**: I can monitor this topic and provide regular updates')
+        suggestions.push('📡 **Autonomous Monitoring**: I can set up intelligent monitoring with predictive alerts and insights')
       }
 
-      // Data organization suggestions
+      // Data organization suggestions (enhanced)
       if (response.includes('multiple') || response.includes('several')) {
-        suggestions.push('📋 **Organization**: I can create structured summaries and organize this information')
+        suggestions.push('📋 **Smart Organization**: I can create dynamic knowledge bases that organize and connect information automatically')
       }
 
-      // Add suggestions if any were identified
-      if (suggestions.length > 0) {
-        enhanced += `\n\n## 💡 **Proactive Suggestions:**\n${suggestions.map(suggestion => `• ${suggestion}`).join('\n')}`
+      // Security and privacy suggestions
+      if (context.url && context.url !== 'about:blank') {
+        suggestions.push('🛡️ **Proactive Security**: I can monitor this site and similar ones for security changes')
       }
 
-      // Add intelligent follow-up prompt
-      const followUpPrompts = this.generateIntelligentFollowUpPrompts(message, response)
+      // Performance optimization suggestions
+      if (response.length > 1000 || nlpResults?.executedFeatures.length > 2) {
+        suggestions.push('🚀 **Performance Insights**: I can analyze and optimize how you interact with complex information')
+      }
+
+      // Remove duplicates and limit to top 4 most relevant
+      const uniqueSuggestions = [...new Set(suggestions)]
+      const topSuggestions = uniqueSuggestions.slice(0, 4)
+
+      if (topSuggestions.length > 0) {
+        enhanced += `\n\n## 💡 **Intelligent Suggestions:**\n${topSuggestions.map(suggestion => `• ${suggestion}`).join('\n')}`
+      }
+
+      // Add smart follow-up prompts (enhanced with NLP awareness)
+      const followUpPrompts = this.generateIntelligentFollowUpPrompts(message, response, nlpResults)
       if (followUpPrompts.length > 0) {
-        enhanced += `\n\n## ❓ **Quick Follow-ups:**\n${followUpPrompts.map(prompt => `• "${prompt}"`).join('\n')}`
+        enhanced += `\n\n## ❓ **Smart Follow-ups:**\n${followUpPrompts.map(prompt => `• "${prompt}"`).join('\n')}`
       }
 
       return enhanced
