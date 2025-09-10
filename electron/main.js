@@ -1272,47 +1272,84 @@ ${nlpResults.actions.map(action => `• ${action}`).join('\n')}`
     }
   }
 
-  generateIntelligentFollowUpPrompts(originalMessage, response) {
+  generateIntelligentFollowUpPrompts(originalMessage, response, nlpResults = null) {
     const prompts = []
     const lowerMessage = originalMessage.toLowerCase()
     const lowerResponse = response.toLowerCase()
 
-    // Research follow-ups
+    // NLP-enhanced follow-up prompts
+    if (nlpResults && nlpResults.executedFeatures.length > 0) {
+      const featureCategories = nlpResults.executedFeatures.map(f => f.category)
+      
+      if (featureCategories.includes('autonomous_goals')) {
+        prompts.push('Show me all my active goals and their progress')
+        prompts.push('Create a related goal for continuous monitoring')
+      }
+      
+      if (featureCategories.includes('deep_search')) {
+        prompts.push('Dive deeper into the most interesting findings')
+        prompts.push('Create monitoring for related topics')
+      }
+      
+      if (featureCategories.includes('security')) {
+        prompts.push('Scan other websites I visit regularly')
+        prompts.push('Set up security monitoring for similar sites')
+      }
+      
+      if (featureCategories.includes('memory_learning')) {
+        prompts.push('Show me more detailed learning insights')
+        prompts.push('How can I optimize my browsing patterns?')
+      }
+      
+      if (featureCategories.includes('automation')) {
+        prompts.push('What other tasks can I automate?')
+        prompts.push('Show me all my automated workflows')
+      }
+    }
+
+    // Enhanced research follow-ups
     if (lowerMessage.includes('research') || lowerMessage.includes('find')) {
       if (lowerResponse.includes('source') || lowerResponse.includes('website')) {
-        prompts.push('Open research tabs for these sources')
+        prompts.push('Create autonomous research project for these sources')
       }
       if (lowerResponse.includes('trend') || lowerResponse.includes('development')) {
-        prompts.push('Monitor this topic for updates')
+        prompts.push('Set up intelligent monitoring with predictive insights')
       }
     }
 
-    // Shopping follow-ups  
+    // Enhanced shopping follow-ups  
     if (lowerMessage.includes('price') || lowerMessage.includes('product') || lowerMessage.includes('buy')) {
-      prompts.push('Compare prices across retailers')
-      prompts.push('Set up price monitoring')
+      prompts.push('Create smart price monitoring with deal alerts')
+      prompts.push('Analyze market trends for this product category')
     }
 
-    // Analysis follow-ups
+    // Enhanced analysis follow-ups
     if (lowerMessage.includes('analyze') || lowerMessage.includes('review')) {
-      prompts.push('Create detailed analysis report')
-      prompts.push('Extract key data points')
+      prompts.push('Create comprehensive analysis with autonomous updates')
+      prompts.push('Set up performance tracking for analyzed metrics')
     }
 
-    // Communication follow-ups
+    // Enhanced communication follow-ups
     if (lowerMessage.includes('email') || lowerMessage.includes('write') || lowerMessage.includes('compose')) {
-      prompts.push('Refine the tone and style')
-      prompts.push('Create variations for different audiences')
+      prompts.push('Create adaptive content templates for similar tasks')
+      prompts.push('Set up automated content optimization')
     }
 
-    // General enhancement follow-ups
-    if (response.length > 400) {
-      prompts.push('Expand on any specific point')
-      prompts.push('Create action items from this information')
+    // Smart learning follow-ups
+    if (response.length > 600) {
+      prompts.push('How can I learn from this interaction?')
+      prompts.push('Create automated workflows based on this pattern')
     }
 
-    // Limit to top 3 most relevant prompts
-    return prompts.slice(0, 3)
+    // Predictive follow-ups
+    if (nlpResults?.executedFeatures.length === 0) {
+      prompts.push('What advanced features could help with similar tasks?')
+      prompts.push('Show me my most successful interaction patterns')
+    }
+
+    // Remove duplicates and limit to top 3 most relevant prompts
+    const uniquePrompts = [...new Set(prompts)]
+    return uniquePrompts.slice(0, 3)
   }
 
   // NEW: Identify which agent was primarily used for a task
