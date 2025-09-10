@@ -26,6 +26,9 @@ const AgentMemoryService = require('../src/core/services/AgentMemoryService.js')
 const AutonomousPlanningEngine = require('../src/core/services/AutonomousPlanningEngine.js')
 const UnifiedServiceOrchestrator = require('../src/core/services/UnifiedServiceOrchestrator.js')
 
+// ENHANCED: Import the new Backend Coordinator
+const { EnhancedBackendCoordinator } = require('../src/backend/EnhancedBackendCoordinator.js')
+
 console.log('🤖 Enhanced backend services loaded successfully')
 
 class KAiroBrowserManager {
