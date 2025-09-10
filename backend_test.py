@@ -1269,11 +1269,11 @@ class KAiroBrowserBackendTester:
             
             # Test 3: Get Data Operations
             get_success_count = 0
-            for key, expected_value, expected_type in test_data_entries:
+            for key, expected_value, expected_type, expected_data_type in test_data_entries:
                 try:
                     cursor.execute("SELECT value, data_type FROM system_config WHERE key = ?", (key,))
                     result = cursor.fetchone()
-                    if result and result[0] == expected_value and result[1] == expected_type:
+                    if result and result[0] == expected_value and result[1] == expected_data_type:
                         get_success_count += 1
                 except Exception as e:
                     print(f"    ❌ Failed to get {key}: {e}")
