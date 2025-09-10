@@ -1112,41 +1112,75 @@ ${nlpResults.actions.map(action => `• ${action}`).join('\n')}`
     }
   }
 
-  async addContextualActions(response, message, context) {
+  async addContextualActions(response, message, context, nlpResults = null) {
     try {
       let enhanced = response
 
       // Detect actionable content and suggest follow-ups
       const actions = []
 
-      // Navigation suggestions
+      // Enhanced NLP-aware action suggestions
+      if (nlpResults && nlpResults.executedFeatures.length > 0) {
+        for (const feature of nlpResults.executedFeatures) {
+          switch (feature.category) {
+            case 'autonomous_goals':
+              actions.push('🎯 I can create additional goals or modify existing ones')
+              actions.push('📊 View all your active autonomous goals and their progress')
+              break
+            case 'deep_search':
+              actions.push('🔍 I can expand this research to cover related topics')
+              actions.push('🎯 Create monitoring goals for any topics that interest you')
+              break
+            case 'security':
+              actions.push('🛡️ I can perform security scans on other websites you visit')
+              actions.push('🔒 Set up continuous security monitoring')
+              break
+            case 'memory_learning':
+              actions.push('🧠 I can show you detailed patterns and insights about your preferences')
+              actions.push('📈 Help you optimize your browsing and research habits')
+              break
+            case 'system_performance':
+              actions.push('⚡ I can optimize your browsing performance further')
+              actions.push('📊 Set up performance monitoring and alerts')
+              break
+            case 'automation':
+              actions.push('🤖 I can create additional automation workflows')
+              actions.push('⏰ Manage and schedule more recurring tasks')
+              break
+          }
+        }
+      }
+
+      // Standard action suggestions (enhanced)
       if (response.includes('http') || message.toLowerCase().includes('website')) {
-        actions.push('🌐 I can navigate to any websites mentioned above')
+        actions.push('🌐 I can navigate to any websites mentioned and analyze them')
       }
 
-      // Research expansion suggestions
       if (message.toLowerCase().includes('research') || message.toLowerCase().includes('find')) {
-        actions.push('🔍 I can create detailed research tabs with comprehensive findings')
+        actions.push('🔍 I can create comprehensive research projects with deep analysis')
       }
 
-      // Shopping assistance
       if (response.includes('price') || response.includes('product') || message.toLowerCase().includes('buy')) {
-        actions.push('🛒 I can compare prices across multiple retailers for you')
+        actions.push('🛒 I can set up smart shopping assistance with price monitoring')
       }
 
-      // Content creation
       if (message.toLowerCase().includes('write') || message.toLowerCase().includes('compose')) {
-        actions.push('✍️ I can help create and refine the content further')
+        actions.push('✍️ I can help create and automate content creation workflows')
       }
 
-      // Analysis offers
       if (context.url && context.url !== 'about:blank') {
-        actions.push('📊 I can analyze the current page content for additional insights')
+        actions.push('📊 I can perform advanced analysis and create monitoring for this page')
       }
 
-      // Add actions if any were identified
-      if (actions.length > 0) {
-        enhanced += `\n\n## 🎯 **What I Can Do Next:**\n${actions.map(action => `• ${action}`).join('\n')}`
+      // Add smart learning actions
+      actions.push('🧠 I can learn from this interaction to improve future responses')
+
+      // Remove duplicates and limit to top 5 most relevant
+      const uniqueActions = [...new Set(actions)]
+      const topActions = uniqueActions.slice(0, 5)
+
+      if (topActions.length > 0) {
+        enhanced += `\n\n## 🎯 **Smart Actions Available:**\n${topActions.map(action => `• ${action}`).join('\n')}`
       }
 
       return enhanced
