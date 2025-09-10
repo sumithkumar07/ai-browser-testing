@@ -3083,8 +3083,188 @@ ${predictions.proactive.map(rec => `• ${rec}`).join('\n')}
 
           aiResponse = completion.choices[0]?.message?.content || 'No response generated'
         }
-              
-            } catch (modelError) {
+        
+        // PHASE 1+2: Enhance Response with ALL Advanced Capabilities
+        const finalResponse = await enhanceResponseWithAllCapabilities(aiResponse, message, context, advancedResults, phase2Results)
+        
+        // PHASE 1+2: Record Advanced Learning Data (Memory + Performance + Goals)
+        await recordPhase1And2LearningData(message, finalResponse, context, advancedResults, phase2Results)
+        
+        console.log('✅ PHASE 1+2 COMPLETE: Advanced AI response with all capabilities activated')
+        
+        return {
+          success: true,
+          result: finalResponse,
+          agentStatus: {
+            status: 'enhanced',
+            agentCount: 6,
+            advancedFeatures: advancedResults.activatedFeatures.length + phase2Results.activatedFeatures.length,
+            lastActive: Date.now()
+          }
+        }
+
+      } catch (error) {
+        console.error('❌ PHASE 1+2 Enhanced AI processing failed:', error)
+        return {
+          success: false,
+          error: error.message || 'Enhanced AI service error'
+        }
+      }
+    })
+
+    // PHASE 1 ACTIVATION: Execute Zero UI Impact Features
+    async function executePhase1Features(message, context) {
+      const results = {
+        activatedFeatures: [],
+        outputs: [],
+        metadata: {}
+      }
+
+      try {
+        console.log('🎯 PHASE 1: Activating Zero Impact Features...')
+
+        // 1. Autonomous Planning Engine - CREATE GOALS AUTOMATICALLY
+        if (browserManager.autonomousPlanningEngine) {
+          try {
+            const goalResult = await createSmartGoalFromMessage(message, context)
+            if (goalResult.created) {
+              results.activatedFeatures.push('autonomous_planning')
+              results.outputs.push(`🎯 Auto-created goal: "${goalResult.title}"`)
+            }
+          } catch (error) {
+            console.warn('⚠️ Autonomous planning execution failed:', error.message)
+          }
+        }
+
+        // 2. Agent Memory & Learning - STORE AND LEARN
+        if (browserManager.agentMemoryService) {
+          try {
+            const memoryResult = await storeInteractionMemory(message, context)
+            results.activatedFeatures.push('agent_memory')
+            results.outputs.push(`🧠 Learning patterns stored (${memoryResult.importance}/10 importance)`)
+          } catch (error) {
+            console.warn('⚠️ Agent memory execution failed:', error.message)
+          }
+        }
+
+        // 3. Advanced Security - SCAN CURRENT PAGE
+        if (browserManager.advancedSecurity && context.url !== 'about:blank') {
+          try {
+            const securityResult = await performBackgroundSecurityScan(context.url)
+            results.activatedFeatures.push('advanced_security')
+            results.outputs.push(`🛡️ Security scan: ${securityResult.riskLevel} risk (${securityResult.findings.length} findings)`)
+          } catch (error) {
+            console.warn('⚠️ Security scan execution failed:', error.message)
+          }
+        }
+
+        // 4. Background Task Automation - SCHEDULE TASKS
+        if (browserManager.taskScheduler) {
+          try {
+            const taskResult = await scheduleIntelligentTasks(message, context)
+            if (taskResult.scheduled > 0) {
+              results.activatedFeatures.push('background_automation')
+              results.outputs.push(`⚡ Scheduled ${taskResult.scheduled} background tasks`)
+            }
+          } catch (error) {
+            console.warn('⚠️ Background task scheduling failed:', error.message)
+          }
+        }
+
+        // 5. Unified Service Orchestrator - OPTIMIZE PERFORMANCE
+        if (browserManager.unifiedServiceOrchestrator) {
+          try {
+            const healthResult = await optimizeSystemPerformance()
+            results.activatedFeatures.push('service_orchestration')
+            results.outputs.push(`🎼 System optimized: ${(healthResult.overall * 100).toFixed(1)}% health`)
+          } catch (error) {
+            console.warn('⚠️ Service orchestration failed:', error.message)
+          }
+        }
+
+        // 6. Shadow Workspace - BACKGROUND PROCESSING
+        if (browserManager.shadowWorkspace) {
+          try {
+            const shadowResult = await activateShadowProcessing(message, context)
+            results.activatedFeatures.push('shadow_workspace')
+            results.outputs.push(`🌑 Background processing: ${shadowResult.tasksInitiated} tasks started`)
+          } catch (error) {
+            console.warn('⚠️ Shadow workspace activation failed:', error.message)
+          }
+        }
+
+        console.log(`✅ PHASE 1 COMPLETE: ${results.activatedFeatures.length} features activated`)
+        return results
+
+      } catch (error) {
+        console.error('❌ Phase 1 execution failed:', error)
+        return results
+      }
+    }
+
+    // PHASE 2 ACTIVATION: Enhanced Features (Better Experience, Same UI)
+    async function executePhase2Enhancements(message, context, phase1Results) {
+      const results = {
+        activatedFeatures: [],
+        outputs: [],
+        searchResults: null,
+        agentCoordination: null
+      }
+
+      try {
+        console.log('🔄 PHASE 2: Activating Enhancement Features...')
+
+        // 7. Deep Search Engine - COMPREHENSIVE SEARCH
+        if (browserManager.deepSearchEngine && (message.toLowerCase().includes('research') || message.toLowerCase().includes('find') || message.toLowerCase().includes('search'))) {
+          try {
+            const searchResult = await browserManager.deepSearchEngine.performDeepSearch(message, { 
+              context: context,
+              includeAnalysis: true,
+              multiSource: true 
+            })
+            if (searchResult.success) {
+              results.activatedFeatures.push('deep_search')
+              results.outputs.push(`🔍 Deep search: ${searchResult.results.primaryResults.length} primary results, ${searchResult.results.insights.totalResults} total sources`)
+              results.searchResults = searchResult.results
+            }
+          } catch (error) {
+            console.warn('⚠️ Deep search execution failed:', error.message)
+          }
+        }
+
+        // 8. Enhanced Agent Coordination - MULTI-AGENT RESPONSE
+        if (browserManager.enhancedAgentCoordinator) {
+          try {
+            const coordinationResult = await coordinateMultipleAgents(message, context)
+            results.activatedFeatures.push('agent_coordination')
+            results.outputs.push(`🤖 Agent coordination: ${coordinationResult.agentsUsed.join(', ')} collaborated`)
+            results.agentCoordination = coordinationResult
+          } catch (error) {
+            console.warn('⚠️ Agent coordination failed:', error.message)
+          }
+        }
+
+        // 9. Advanced Performance Monitoring - TRACK METRICS
+        if (browserManager.performanceMonitor) {
+          try {
+            const perfResult = await trackInteractionPerformance(message, phase1Results)
+            results.activatedFeatures.push('performance_monitoring')
+            results.outputs.push(`📊 Performance tracked: ${perfResult.responseTime}ms, ${perfResult.complexity} complexity`)
+          } catch (error) {
+            console.warn('⚠️ Performance monitoring failed:', error.message)
+          }
+        }
+
+        console.log(`✅ PHASE 2 COMPLETE: ${results.activatedFeatures.length} enhancements activated`)
+        return results
+
+      } catch (error) {
+        console.error('❌ Phase 2 execution failed:', error)
+        return results
+      }
+    }
+
+    // Continue with existing handlers...
               console.warn('⚠️ Primary model failed, trying fallback model:', modelError.message)
               
               // Fallback to older model
