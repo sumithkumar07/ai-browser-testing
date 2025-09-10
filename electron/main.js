@@ -80,6 +80,9 @@ class KAiroBrowserManager {
     // ZERO UI IMPACT: Enhanced AI System
     this.enhancedAISystem = null
     
+    // CRITICAL: AI Data Handlers for Real Backend Data Access
+    this.aiDataHandlers = null
+    
     // Production-ready services
     this.apiValidator = null
     this.databaseHealthManager = null
