@@ -1807,20 +1807,52 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
           // Continue with unenhanced result
         }
         
-        // Record interaction for learning
-        if (this.isAgenticMode && this.agentMemoryService) {
+        // ENHANCED: Record interaction for learning with advanced capabilities
+        if (this.isAgenticMode && this.agentMemoryService && this.enableAgentLearning) {
           try {
+            // Determine which agent was primarily used
+            const primaryAgent = this.identifyPrimaryAgent(message, enhancedResult)
+            
+            // Record detailed task outcome
             await this.agentMemoryService.recordTaskOutcome({
-              taskId: `task_${Date.now()}`,
-              agentId: 'ai_assistant',
+              taskId: `task_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+              agentId: primaryAgent,
+              taskType: this.classifyTaskType(message),
               success: true,
               result: enhancedResult,
-              strategies: ['enhanced_agentic_processing'],
+              strategies: ['enhanced_agentic_processing', 'context_aware_response', 'proactive_enhancement'],
               timeToComplete: (Date.now() - startTime) / 1000,
-              userSatisfaction: 0.9
+              userSatisfaction: this.estimateUserSatisfaction(message, enhancedResult),
+              metadata: {
+                messageLength: message.length,
+                responseLength: enhancedResult.length,
+                enhancementApplied: true,
+                processingTime: (Date.now() - startTime) / 1000,
+                modelUsed: 'llama-3.3-70b-versatile'
+              }
             })
+
+            // Store contextual memory for future reference
+            await this.agentMemoryService.storeMemory(primaryAgent, {
+              type: 'context',
+              content: {
+                userQuery: message,
+                response: enhancedResult,
+                taskType: this.classifyTaskType(message),
+                timestamp: Date.now()
+              },
+              importance: this.calculateContextImportance(message, enhancedResult),
+              tags: this.extractContextTags(message, enhancedResult),
+              metadata: {
+                sessionId: `session_${Date.now()}`,
+                responseQuality: 'high'
+              }
+            })
+
+            console.log(`🧠 Learning data recorded for ${primaryAgent} agent`)
+            
           } catch (memoryError) {
-            console.warn('⚠️ Failed to record task outcome:', memoryError.message)
+            console.warn('⚠️ Failed to record enhanced learning data:', memoryError.message)
           }
         }
         
