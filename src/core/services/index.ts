@@ -3,17 +3,17 @@
  * Central export point for all enhanced backend capabilities
  */
 
-// Core Services
-export { default as AgentMemoryService } from './AgentMemoryService'
-export { default as AutonomousPlanningEngine } from './AutonomousPlanningEngine'
+// Core Services (Using JS implementations for Node.js compatibility)
+export const AgentMemoryService = require('./AgentMemoryService.js')
+export const AutonomousPlanningEngine = require('./AutonomousPlanningEngine.js')
+export const DeepSearchEngine = require('./DeepSearchEngine.js')
+export const AdvancedSecurity = require('./AdvancedSecurity.js')
+
+// TypeScript Services (where available)
 export { default as EnhancedAgentCoordinator } from './EnhancedAgentCoordinator'
 export { default as UnifiedServiceOrchestrator } from './UnifiedServiceOrchestrator'
-
-// Specialized Services
-export { default as DeepSearchEngine } from './DeepSearchEngine'
 export { default as ShadowWorkspace } from './ShadowWorkspace'
 export { default as CrossPlatformIntegration } from './CrossPlatformIntegration'
-export { default as AdvancedSecurity } from './AdvancedSecurity'
 
 // Backend Services (Note: These are Node.js services, not browser services)
 // export { DatabaseService } from '../../backend/DatabaseService'
