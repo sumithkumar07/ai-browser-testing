@@ -73,7 +73,7 @@ const AISidebar: React.FC<AISidebarProps> = ({ onClose }) => {
             }
           }
         } catch (statusError) {
-          logger.warn('Failed to load agent status:', statusError)
+          logger.warn('Failed to load agent status:', { error: statusError })
         }
 
         // Add welcome message
