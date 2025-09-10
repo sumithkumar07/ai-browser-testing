@@ -3000,6 +3000,17 @@ ${predictions.proactive.map(rec => `• ${rec}`).join('\n')}
       }
     })
 
+    // MINIMAL UI IMPACT: Smart Navigation Suggestions  
+    ipcMain.handle('get-smart-navigation-suggestions', async (event, query) => {
+      try {
+        const suggestions = await this.generateSmartNavigationSuggestions(query)
+        return { success: true, suggestions }
+      } catch (error) {
+        console.error('❌ Smart navigation suggestions failed:', error)
+        return { success: false, error: error.message, suggestions: [] }
+      }
+    })
+
     ipcMain.handle('get-agent-status', async (event, agentId) => {
       try {
         if (!this.isAgenticMode || !this.agentCoordinationService) {
