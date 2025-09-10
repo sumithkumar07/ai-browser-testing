@@ -98,16 +98,31 @@ class KAiroBrowserManager {
       // Initialize AI service
       await this.initializeAIService()
       
-      // Initialize Enhanced Agentic Services
-      if (this.isAgenticMode) {
-        await this.initializeAgenticServices()
-      }
+      // ✨ INVISIBLE INTELLIGENCE UPGRADE - FORCE ENABLE ALL ADVANCED FEATURES
+      console.log('🎯 ACTIVATING INVISIBLE BACKEND INTELLIGENCE UPGRADE...')
+      this.isAgenticMode = true
+      this.isEnhancedBackendEnabled = true
+      this.enableDeepSearch = true
+      this.enableAdvancedSecurity = true
+      this.enableAgentLearning = true
+      this.enableAutonomousGoals = true
+      this.enableAdvancedTaskAnalysis = true
+      this.enableAdvancedScheduling = true
+      
+      // Initialize Enhanced Agentic Services - FORCED ACTIVATION
+      await this.initializeAgenticServices()
       
       // Setup IPC handlers
       this.setupIPCHandlers()
       
       this.isInitialized = true
-      console.log('✅ KAiro Browser Manager initialized successfully')
+      console.log('✅ KAiro Browser Manager initialized successfully with INVISIBLE INTELLIGENCE ACTIVATED')
+      console.log('🎯 Advanced Features Status:')
+      console.log(`   🤖 Autonomous Planning: ${this.autonomousPlanningEngine ? '✅ ACTIVE' : '❌ INACTIVE'}`)
+      console.log(`   🔍 Deep Search Engine: ${this.deepSearchEngine ? '✅ ACTIVE' : '❌ INACTIVE'}`)
+      console.log(`   🛡️ Advanced Security: ${this.advancedSecurity ? '✅ ACTIVE' : '❌ INACTIVE'}`)
+      console.log(`   🧠 Agent Memory: ${this.agentMemoryService ? '✅ ACTIVE' : '❌ INACTIVE'}`)
+      console.log(`   🎼 Service Orchestrator: ${this.unifiedServiceOrchestrator ? '✅ ACTIVE' : '❌ INACTIVE'}`)
       
     } catch (error) {
       console.error('❌ Failed to initialize KAiro Browser Manager:', error)
