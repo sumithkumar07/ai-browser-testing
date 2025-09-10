@@ -5,6 +5,7 @@
   "main": "electron/main.js",
   "homepage": "./",
   "scripts": {
+    "dev": "vite",
     "start": "electron . --no-sandbox",
     "build": "npm run build:react && npm run build:electron",
     "build:react": "vite build",
