@@ -1294,7 +1294,7 @@ class KAiroBrowserBackendTester:
             
             # Test 5: Delete Data Operation
             delete_success_count = 0
-            for key, _, _ in test_data_entries:
+            for key, _, _, _ in test_data_entries:
                 try:
                     cursor.execute("DELETE FROM system_config WHERE key = ?", (key,))
                     if cursor.rowcount > 0:
