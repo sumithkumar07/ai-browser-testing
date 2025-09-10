@@ -257,11 +257,15 @@ class KAiroBrowserManager {
     try {
       console.log('🚀 Initializing MAXIMUM POTENTIAL Enhanced Services...')
 
-      // Initialize Unified Service Orchestrator (Central Coordinator)
+      // Initialize Unified Service Orchestrator (Central Coordinator) - ENHANCED
       try {
         this.unifiedServiceOrchestrator = UnifiedServiceOrchestrator.getInstance()
         await this.unifiedServiceOrchestrator.initialize()
-        console.log('✅ Unified Service Orchestrator initialized')
+
+        // Register all services with the orchestrator for better coordination
+        await this.registerServicesWithOrchestrator()
+        
+        console.log('✅ Unified Service Orchestrator initialized and services registered')
       } catch (error) {
         console.warn('⚠️ Unified Service Orchestrator initialization failed:', error.message)
       }
