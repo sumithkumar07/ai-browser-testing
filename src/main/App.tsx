@@ -7,7 +7,7 @@ import BrowserWindow from './components/BrowserWindow'
 import AISidebar from './components/AISidebar'
 import ErrorBoundary from './components/ErrorBoundary'
 import { Tab, BrowserEvent } from './types/electron'
-import { createLogger } from '../core/logger/Logger'
+import { createLogger } from '../core/logger/EnhancedLogger'
 import './styles/App.css'
 
 const logger = createLogger('App')
