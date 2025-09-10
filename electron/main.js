@@ -407,34 +407,291 @@ class KAiroBrowserManager {
     }
   }
 
+  // ENHANCED: Register all services with orchestrator for better coordination
+  async registerServicesWithOrchestrator() {
+    try {
+      if (!this.unifiedServiceOrchestrator) return
+
+      console.log('📋 Registering services with orchestrator...')
+
+      // Register database service
+      if (this.databaseService) {
+        await this.unifiedServiceOrchestrator.registerService('DatabaseService', this.databaseService, {
+          priority: 'critical',
+          dependencies: [],
+          capabilities: ['data_storage', 'crud_operations', 'performance_tracking']
+        })
+      }
+
+      // Register agent memory service
+      if (this.agentMemoryService) {
+        await this.unifiedServiceOrchestrator.registerService('AgentMemoryService', this.agentMemoryService, {
+          priority: 'high',
+          dependencies: ['DatabaseService'],
+          capabilities: ['memory_management', 'learning', 'pattern_recognition']
+        })
+      }
+
+      // Register autonomous planning engine
+      if (this.autonomousPlanningEngine) {
+        await this.unifiedServiceOrchestrator.registerService('AutonomousPlanningEngine', this.autonomousPlanningEngine, {
+          priority: 'high',
+          dependencies: ['AgentMemoryService'],
+          capabilities: ['goal_planning', 'task_automation', 'execution_monitoring']
+        })
+      }
+
+      // Register deep search engine
+      if (this.deepSearchEngine) {
+        await this.unifiedServiceOrchestrator.registerService('DeepSearchEngine', this.deepSearchEngine, {
+          priority: 'medium',
+          dependencies: [],
+          capabilities: ['multi_source_search', 'content_analysis', 'ai_insights']
+        })
+      }
+
+      // Register advanced security
+      if (this.advancedSecurity) {
+        await this.unifiedServiceOrchestrator.registerService('AdvancedSecurity', this.advancedSecurity, {
+          priority: 'critical',
+          dependencies: [],
+          capabilities: ['encryption', 'audit_logging', 'security_scanning']
+        })
+      }
+
+      // Start all services in orchestrated sequence
+      const result = await this.unifiedServiceOrchestrator.startAllServices()
+      console.log(`✅ Service orchestration completed: ${result.startedServices.length} services started`)
+
+    } catch (error) {
+      console.error('❌ Failed to register services with orchestrator:', error)
+    }
+  }
+
+  // ENHANCED: Create initial optimization goals for autonomous operation
+  async createInitialAutonomousGoals() {
+    try {
+      if (!this.autonomousPlanningEngine) return
+
+      console.log('🎯 Creating initial autonomous optimization goals...')
+
+      // Create system performance optimization goal
+      await this.autonomousPlanningEngine.createAutonomousGoal({
+        title: 'Continuous System Performance Optimization',
+        description: 'Monitor and optimize system performance metrics continuously',
+        type: 'optimization',
+        priority: 'high',
+        targetOutcome: 'Maintain >99% system health and <100ms response times',
+        successCriteria: [
+          'System health above 99%',
+          'Average response time below 100ms',
+          'Error rate below 0.5%',
+          'Memory usage below 500MB'
+        ],
+        constraints: {
+          timeframe: 24 * 60 * 60 * 1000, // 24 hours
+          resourceLimits: { memory: 200, cpu: 15 }
+        },
+        createdBy: 'system_auto'
+      })
+
+      // Create user experience enhancement goal
+      await this.autonomousPlanningEngine.createAutonomousGoal({
+        title: 'User Experience Enhancement',
+        description: 'Learn from user interactions and improve experience',
+        type: 'learning',
+        priority: 'medium',
+        targetOutcome: 'Improve user satisfaction and task completion rates',
+        successCriteria: [
+          'Learn 10+ user patterns per day',
+          'Improve task completion accuracy by 5%',
+          'Reduce user effort by optimizing workflows'
+        ],
+        constraints: {
+          timeframe: 7 * 24 * 60 * 60 * 1000, // 7 days
+        },
+        createdBy: 'system_auto'
+      })
+
+      console.log('✅ Initial autonomous goals created successfully')
+
+    } catch (error) {
+      console.error('❌ Failed to create initial autonomous goals:', error)
+    }
+  }
+
+  // ENHANCED: Perform initial security scan to establish baseline
+  async performInitialSecurityScan() {
+    try {
+      if (!this.advancedSecurity) return
+
+      console.log('🔒 Performing initial security baseline scan...')
+
+      const scanResult = await this.advancedSecurity.performSecurityScan('system', 'comprehensive')
+      
+      console.log(`🔍 Security scan completed: Risk Level ${scanResult.riskLevel}, ${scanResult.findings.length} findings`)
+
+      // Log important findings
+      const highRiskFindings = scanResult.findings.filter(f => f.severity === 'high')
+      if (highRiskFindings.length > 0) {
+        console.warn(`⚠️ High-risk security findings: ${highRiskFindings.length}`)
+        highRiskFindings.forEach(finding => {
+          console.warn(`  - ${finding.title}: ${finding.description}`)
+        })
+      }
+
+    } catch (error) {
+      console.error('❌ Failed to perform initial security scan:', error)
+    }
+  }
+
   startContinuousOptimization() {
     try {
-      console.log('⚡ Starting continuous optimization...')
+      console.log('⚡ Starting enhanced continuous optimization...')
 
-      // Optimize every 30 minutes
+      // Enhanced optimization every 15 minutes with better intelligence
       setInterval(async () => {
         try {
+          // Get system health from orchestrator
           if (this.unifiedServiceOrchestrator) {
+            const health = this.unifiedServiceOrchestrator.getSystemHealth()
             const metrics = this.unifiedServiceOrchestrator.getSystemMetrics(1)[0]
-            if (metrics) {
-              // Log system metrics
-              console.log(`📊 System Metrics - Services: ${metrics.healthyServices}/${metrics.totalServices}, Operations: ${metrics.activeOperations}, Response: ${metrics.responseTimeAvg.toFixed(0)}ms`)
-              
-              // Trigger optimization if needed
-              if (metrics.errorRateAvg > 0.05 || metrics.responseTimeAvg > 3000) {
-                console.log('⚠️ Performance degradation detected, triggering optimization...')
-                // Would trigger optimization tasks here
-              }
+            
+            console.log(`📊 System Health: ${(health.overall * 100).toFixed(1)}% (${health.services.filter(s => s.status === 'healthy').length}/${health.services.length} services healthy)`)
+
+            // Trigger optimization based on health
+            if (health.overall < 0.95) {
+              console.log('⚠️ System health below 95%, triggering optimization...')
+              await this.triggerSystemOptimization(health, metrics)
+            }
+
+            // Create dynamic optimization goals based on current performance
+            if (this.autonomousPlanningEngine && metrics) {
+              await this.createPerformanceOptimizationGoal(metrics)
             }
           }
-        } catch (error) {
-          console.error('❌ Continuous optimization failed:', error)
-        }
-      }, 30 * 60 * 1000) // Every 30 minutes
 
-      console.log('✅ Continuous optimization started')
+          // Learn from recent interactions
+          if (this.agentMemoryService && this.enableAgentLearning) {
+            await this.performLearningOptimization()
+          }
+
+        } catch (error) {
+          console.error('❌ Enhanced continuous optimization failed:', error)
+        }
+      }, 15 * 60 * 1000) // Every 15 minutes
+
+      console.log('✅ Enhanced continuous optimization started')
     } catch (error) {
-      console.error('❌ Failed to start continuous optimization:', error)
+      console.error('❌ Failed to start enhanced continuous optimization:', error)
+    }
+  }
+
+  // NEW: Trigger system optimization based on current health
+  async triggerSystemOptimization(health, metrics) {
+    try {
+      console.log('🔧 Triggering system optimization...')
+
+      // Identify problematic services
+      const unhealthyServices = health.services.filter(s => s.health !== 'healthy')
+      
+      for (const service of unhealthyServices) {
+        console.log(`🚨 Service ${service.name} is ${service.health} - attempting recovery`)
+        
+        // Attempt service recovery through orchestrator
+        if (this.unifiedServiceOrchestrator) {
+          await this.unifiedServiceOrchestrator.executeOrchestrationTask('restart_service', { serviceName: service.name })
+        }
+      }
+
+      // Create optimization goal if performance is poor
+      if (metrics && (metrics.averageResponseTime > 200 || metrics.errorRate > 0.01)) {
+        await this.autonomousPlanningEngine?.createAutonomousGoal({
+          title: 'Emergency Performance Recovery',
+          description: 'Recover from performance degradation',
+          type: 'optimization',
+          priority: 'critical',
+          targetOutcome: 'Restore optimal performance within 30 minutes',
+          successCriteria: [
+            'Reduce response time below 200ms',
+            'Reduce error rate below 1%',
+            'Restore all services to healthy status'
+          ],
+          constraints: {
+            timeframe: 30 * 60 * 1000, // 30 minutes
+          },
+          createdBy: 'system_optimization'
+        })
+      }
+
+    } catch (error) {
+      console.error('❌ System optimization failed:', error)
+    }
+  }
+
+  // NEW: Create performance optimization goals dynamically
+  async createPerformanceOptimizationGoal(metrics) {
+    try {
+      // Only create goal if performance metrics indicate need
+      if (metrics.averageResponseTime > 150 || metrics.errorRate > 0.005) {
+        await this.autonomousPlanningEngine.createAutonomousGoal({
+          title: 'Dynamic Performance Optimization',
+          description: `Optimize performance - current response time: ${metrics.averageResponseTime.toFixed(0)}ms, error rate: ${(metrics.errorRate * 100).toFixed(2)}%`,
+          type: 'optimization',
+          priority: 'medium',
+          targetOutcome: 'Improve performance metrics to optimal levels',
+          successCriteria: [
+            'Average response time below 150ms',
+            'Error rate below 0.5%',
+            'System health above 98%'
+          ],
+          constraints: {
+            timeframe: 2 * 60 * 60 * 1000, // 2 hours
+          },
+          createdBy: 'dynamic_optimizer'
+        })
+      }
+    } catch (error) {
+      console.error('❌ Failed to create performance optimization goal:', error)
+    }
+  }
+
+  // NEW: Perform learning optimization from agent interactions
+  async performLearningOptimization() {
+    try {
+      // Get learning insights from all agents
+      const agents = ['research', 'navigation', 'shopping', 'communication', 'automation', 'analysis']
+      
+      for (const agentId of agents) {
+        const insights = await this.agentMemoryService.getAgentLearningInsights(agentId)
+        
+        if (insights.success && insights.hasLearningData) {
+          console.log(`🧠 Learning insights for ${agentId}: ${insights.insights.totalOutcomes} outcomes analyzed`)
+          
+          // Create learning goal if patterns indicate improvement opportunity
+          if (insights.insights.performanceMetrics.successRate < 0.95) {
+            await this.autonomousPlanningEngine?.createAutonomousGoal({
+              title: `Improve ${agentId} Agent Performance`,
+              description: `Current success rate: ${(insights.insights.performanceMetrics.successRate * 100).toFixed(1)}%`,
+              type: 'learning',
+              priority: 'low',
+              targetOutcome: 'Improve agent performance through learning optimization',
+              successCriteria: [
+                'Increase success rate above 95%',
+                'Reduce average completion time',
+                'Improve user satisfaction scores'
+              ],
+              constraints: {
+                timeframe: 7 * 24 * 60 * 60 * 1000, // 7 days
+              },
+              createdBy: 'learning_optimizer'
+            })
+          }
+        }
+      }
+
+    } catch (error) {
+      console.error('❌ Learning optimization failed:', error)
     }
   }
 
