@@ -3150,7 +3150,26 @@ ${predictions.proactive.map(rec => `• ${rec}`).join('\n')}
           }
         }
 
-        console.log('🚀 PHASE 1+2 ACTIVATED: Enhanced AI Message Processing:', message)
+        console.log('🚀 ENHANCED AI Message Processing:', message)
+        
+        // CRITICAL: Check if this is a data query first (for real backend data)
+        if (browserManager.aiDataHandlers) {
+          const dataQueryResult = await browserManager.aiDataHandlers.processQuery(message)
+          if (dataQueryResult.success) {
+            console.log(`✅ Returning real backend data: ${dataQueryResult.category}`)
+            return {
+              success: true,
+              result: dataQueryResult.data.formatted_response,
+              source: 'real_backend_data',
+              category: dataQueryResult.category,
+              agentStatus: {
+                status: 'enhanced',
+                dataSource: 'backend_services',
+                lastActive: Date.now()
+              }
+            }
+          }
+        }
         
         // Get enhanced page context with advanced analysis
         const context = await browserManager.getEnhancedPageContext()
