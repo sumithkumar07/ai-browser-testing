@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import TabBar from './components/TabBar'
 import NavigationBar from './components/NavigationBar'
+import EnhancedNavigationBar from './components/EnhancedNavigationBar'
 import BrowserWindow from './components/BrowserWindow'
 import AISidebar from './components/AISidebar'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -10,6 +11,7 @@ import DebugPanel from './components/DebugPanel'
 import { Tab, BrowserEvent } from './types/electron'
 import { createLogger } from '../core/logger/EnhancedLogger'
 import './styles/App.css'
+import './styles/EnhancedNavigationBar.css'
 
 const logger = createLogger('App')
 
