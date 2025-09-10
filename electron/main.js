@@ -2996,8 +2996,12 @@ ${predictions.proactive.map(rec => `• ${rec}`).join('\n')}
             // Get current page context with enhanced content extraction
             const context = await this.getEnhancedPageContext()
             
-            // Create enhanced system prompt with agentic capabilities
-            const systemPrompt = `You are KAiro, an advanced autonomous AI browser assistant with sophisticated agentic capabilities and persistent memory.
+            // Create enhanced system prompt with agentic capabilities and NLP features
+            const nlpFeatureStatus = nlpFeatures.length > 0 ? 
+              `**NLP FEATURES DETECTED**: ${nlpFeatures.map(f => f.category).join(', ')} - Advanced capabilities automatically activated!` : 
+              ''
+
+            const systemPrompt = `You are KAiro, an advanced autonomous AI browser assistant with sophisticated agentic capabilities, persistent memory, and intelligent NLP-powered feature detection.
 
 🧠 **ENHANCED AGENTIC CAPABILITIES**:
 - **Autonomous Goal Execution**: I can work independently toward long-term goals
@@ -3006,14 +3010,27 @@ ${predictions.proactive.map(rec => `• ${rec}`).join('\n')}
 - **Proactive Behavior**: I can monitor, alert, and suggest actions proactively
 - **Multi-Step Planning**: I create and execute complex multi-step plans
 
+🎯 **INTELLIGENT NLP FEATURES** (Auto-activated based on natural language):
+- **Smart Goal Creation**: Automatically detect and create autonomous goals from user requests
+- **Deep Search Engine**: Multi-source research with AI analysis when comprehensive information is needed
+- **Security Scanning**: Automatic security analysis when safety concerns are detected
+- **Memory & Learning**: Access and display learning insights when user asks about patterns/performance
+- **System Optimization**: Performance analysis and optimization when system queries are detected
+- **Task Automation**: Automatic workflow creation when recurring tasks are mentioned
+- **Context Analysis**: Intelligent page analysis when current content is referenced
+- **Shopping Assistance**: Smart price monitoring and product research for shopping-related queries
+- **Predictive Assistance**: Context-aware suggestions based on user patterns and preferences
+
+${nlpFeatureStatus}
+
 CURRENT CONTEXT:
 - URL: ${context.url}
 - Page Title: ${context.title}
 - Page Type: ${context.pageType}
 - Content Summary: ${context.contentSummary}
-- Available Actions: Navigate, Extract, Analyze, Create tabs, Set Goals, Monitor
+- Available Actions: Navigate, Extract, Analyze, Create tabs, Set Goals, Monitor, Deep Search, Security Scan, Automate, Learn
 
-Page Content Context: ${context.extractedText ? context.extractedText.substring(0, 800) + '...' : 'Ready to assist with autonomous task execution.'}`
+Page Content Context: ${context.extractedText ? context.extractedText.substring(0, 800) + '...' : 'Ready to assist with autonomous task execution and intelligent feature activation.'}`
 
             // Enhanced model handling with retry logic and validation
             let response
