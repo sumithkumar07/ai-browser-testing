@@ -2247,6 +2247,82 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       }
     })
 
+    // ENHANCED: Bug Detection and Fix System Handlers
+    ipcMain.handle('perform-system-scan', async () => {
+      try {
+        if (!this.bugDetectionSystem) {
+          return { success: false, error: 'Bug detection system not available' }
+        }
+
+        const scanResults = await this.bugDetectionSystem.performSystemScan()
+        return { success: true, scanResults }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-bug-report', async () => {
+      try {
+        if (!this.bugDetectionSystem) {
+          return { success: false, error: 'Bug detection system not available' }
+        }
+
+        const report = this.bugDetectionSystem.getBugReport()
+        return { success: true, report }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('attempt-bug-fix', async (event, bugId) => {
+      try {
+        if (!this.bugDetectionSystem) {
+          return { success: false, error: 'Bug detection system not available' }
+        }
+
+        const fixResult = await this.bugDetectionSystem.attemptBugFix(bugId)
+        return { success: true, fixResult }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-system-health-status', async () => {
+      try {
+        const healthData = {
+          timestamp: Date.now(),
+          components: {}
+        }
+
+        // Get health from bug detection system
+        if (this.bugDetectionSystem) {
+          const bugReport = this.bugDetectionSystem.getBugReport()
+          healthData.bugDetection = {
+            overallHealth: bugReport.systemHealth.overall,
+            bugsDetected: bugReport.bugsDetected,
+            fixSuccessRate: bugReport.fixAttempts > 0 ? (bugReport.successfulFixes / bugReport.fixAttempts) : 1
+          }
+        }
+
+        // Get health from service orchestrator
+        if (this.unifiedServiceOrchestrator) {
+          healthData.orchestrator = this.unifiedServiceOrchestrator.getSystemHealth()
+        }
+
+        // Get performance metrics
+        if (this.performanceMonitor) {
+          const metrics = this.performanceMonitor.getAggregatedMetrics()
+          if (metrics.success) {
+            healthData.performance = metrics.data
+          }
+        }
+
+        return { success: true, health: healthData }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
     // Additional Missing Handlers - FIXED: Added handlers that preload references
     ipcMain.handle('analyze-image', async (event, imageData) => {
       try {
