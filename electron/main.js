@@ -324,11 +324,15 @@ class KAiroBrowserManager {
         console.warn('⚠️ Cross-Platform Integration initialization failed:', error.message)
       }
 
-      // Initialize Advanced Security
+      // Initialize Advanced Security - ENHANCED
       try {
         this.advancedSecurity = AdvancedSecurity.getInstance()
         await this.advancedSecurity.initialize()
-        console.log('✅ Advanced Security initialized')
+        
+        // Enable comprehensive security features
+        this.enableAdvancedSecurity = true
+        await this.performInitialSecurityScan()
+        console.log('✅ Advanced Security initialized with comprehensive monitoring')
       } catch (error) {
         console.warn('⚠️ Advanced Security initialization failed:', error.message)
       }
