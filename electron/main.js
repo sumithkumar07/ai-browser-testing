@@ -60,6 +60,9 @@ class KAiroBrowserManager {
     this.unifiedServiceOrchestrator = null
     this.isAgenticMode = true // Enable enhanced agentic features
     this.isEnhancedBackendEnabled = true // Enable all maximum potential features
+
+    // ENHANCED: Initialize Backend Coordinator
+    this.enhancedBackendCoordinator = null
     
     // Production-ready services
     this.apiValidator = null
