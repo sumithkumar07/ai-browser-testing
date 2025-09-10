@@ -1650,11 +1650,14 @@ ${nlpResults.actions.map(action => `• ${action}`).join('\n')}`
       needsMultipleAgents,
       supportingAgents,
       allScores: scores,
+      nlpFeatures: nlpFeatures,
+      nlpEnhanced: nlpFeatures.length > 0,
       // Add debug info for testing
       debugInfo: {
         originalTask: task,
         processedTask: lowerTask,
-        topScores: Object.entries(scores).sort(([,a], [,b]) => b - a).slice(0, 3)
+        topScores: Object.entries(scores).sort(([,a], [,b]) => b - a).slice(0, 3),
+        nlpFeaturesDetected: nlpFeatures.length
       }
     }
   }
