@@ -998,28 +998,85 @@ class KAiroBrowserManager {
   }
 
   // FIXED: Enhanced error handling for agent response enhancement
-  async enhanceResponseWithAgenticCapabilities(aiResponse, originalMessage, context) {
+  async enhanceResponseWithAgenticCapabilities(aiResponse, originalMessage, context, nlpResults = null) {
     try {
       if (!this.isAgenticMode || !aiResponse) {
         return aiResponse
       }
 
-      console.log('✨ Enhancing AI response with agentic capabilities')
+      console.log('✨ Enhancing AI response with agentic capabilities and NLP features')
+
+      // PHASE 0: Integrate NLP Results (NEW)
+      let enhancedResponse = aiResponse
+      if (nlpResults && nlpResults.executedFeatures.length > 0) {
+        enhancedResponse = await this.integrateNLPResults(aiResponse, nlpResults, originalMessage, context)
+      }
 
       // PHASE 1: Response Quality Enhancement
-      let enhancedResponse = await this.enhanceResponseQuality(aiResponse, originalMessage, context)
+      enhancedResponse = await this.enhanceResponseQuality(enhancedResponse, originalMessage, context)
 
-      // PHASE 2: Add Contextual Actions
-      enhancedResponse = await this.addContextualActions(enhancedResponse, originalMessage, context)
+      // PHASE 2: Add Contextual Actions (Enhanced with NLP awareness)
+      enhancedResponse = await this.addContextualActions(enhancedResponse, originalMessage, context, nlpResults)
 
-      // PHASE 3: Add Proactive Suggestions
-      enhancedResponse = await this.addProactiveSuggestions(enhancedResponse, originalMessage, context)
+      // PHASE 3: Add Proactive Suggestions (Enhanced with NLP awareness)
+      enhancedResponse = await this.addProactiveSuggestions(enhancedResponse, originalMessage, context, nlpResults)
 
       return enhancedResponse
 
     } catch (error) {
       console.error('❌ Response enhancement failed:', error)
       return aiResponse // Return original if enhancement fails
+    }
+  }
+
+  // NEW: Integrate NLP Results into AI Response
+  async integrateNLPResults(aiResponse, nlpResults, originalMessage, context) {
+    try {
+      if (!nlpResults || nlpResults.executedFeatures.length === 0) {
+        return aiResponse
+      }
+
+      console.log('🧠 Integrating NLP results into AI response')
+
+      let integratedResponse = aiResponse
+
+      // If we have specific NLP responses, prioritize them
+      if (nlpResults.responses.length > 0) {
+        // Combine AI response with NLP feature results
+        const nlpContent = nlpResults.responses.join('\n\n---\n\n')
+        
+        // Create a cohesive response that includes both AI reasoning and NLP feature execution
+        integratedResponse = `${nlpContent}
+
+---
+
+## 🤖 **Additional AI Analysis:**
+${aiResponse}`
+      }
+
+      // Add executed feature summary
+      if (nlpResults.executedFeatures.length > 0) {
+        const featureSummary = `\n\n## ⚡ **Advanced Features Activated:**
+${nlpResults.executedFeatures.map(feature => 
+  `• **${feature.category.replace('_', ' ').toUpperCase()}**: ${feature.type} (${(feature.confidence * 100).toFixed(1)}% confidence)`
+).join('\n')}`
+
+        integratedResponse += featureSummary
+      }
+
+      // Add any automated actions that were performed
+      if (nlpResults.actions.length > 0) {
+        const actionSummary = `\n\n## 🎯 **Automated Actions Completed:**
+${nlpResults.actions.map(action => `• ${action}`).join('\n')}`
+
+        integratedResponse += actionSummary
+      }
+
+      return integratedResponse
+
+    } catch (error) {
+      console.error('❌ NLP results integration failed:', error)
+      return aiResponse
     }
   }
 
