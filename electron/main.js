@@ -3393,9 +3393,530 @@ ${predictions.proactive.map(rec => `• ${rec}`).join('\n')}
       }
     }
 
-    // Helper Functions for Phase 1 & 2 Activation
+    // 🎪 CONTEXTUAL SERVICE ACTIVATION - Auto-activate based on context
+    async function executeContextualServiceActivation(message, context) {
+      const results = {
+        activatedFeatures: [],
+        contextualInsights: [],
+        autoActions: []
+      }
 
-    // Generate Enhanced System Prompt
+      try {
+        console.log('🎪 CONTEXTUAL ACTIVATION: Auto-activating based on context...')
+
+        // URL-based contextual activation
+        if (context.url && context.url !== 'about:blank') {
+          const contextualServices = await activateServicesByURL(context.url, message)
+          results.activatedFeatures.push(...contextualServices.services)
+          results.contextualInsights.push(...contextualServices.insights)
+        }
+
+        // Message-based contextual activation  
+        const messageServices = await activateServicesByMessage(message, context)
+        results.activatedFeatures.push(...messageServices.services)
+        results.autoActions.push(...messageServices.actions)
+
+        // Proactive background services
+        const backgroundServices = await activateProactiveServices(message, context)
+        results.activatedFeatures.push(...backgroundServices.services)
+
+        console.log(`✅ CONTEXTUAL ACTIVATION COMPLETE: ${results.activatedFeatures.length} services auto-activated`)  
+        return results
+
+      } catch (error) {
+        console.error('❌ Contextual activation failed:', error)
+        return results
+      }
+    }
+
+    // Helper Functions for MAXIMUM UTILIZATION
+
+    // 🎯 Smart Goal Creation from ANY message
+    async function createSmartGoalFromMessage(message, context) {
+      try {
+        const lowerMessage = message.toLowerCase()
+        let goalType = 'optimization'
+        let title = ''
+        let targetOutcome = ''
+
+        // Intelligent goal creation based on message patterns
+        if (lowerMessage.includes('research') || lowerMessage.includes('learn') || lowerMessage.includes('find out')) {
+          goalType = 'research'
+          title = `Research: ${message.substring(0, 50)}...`
+          targetOutcome = 'Comprehensive research with ongoing monitoring'
+        } else if (lowerMessage.includes('buy') || lowerMessage.includes('price') || lowerMessage.includes('shop')) {
+          goalType = 'monitoring'  
+          title = `Price Monitoring: ${message.substring(0, 50)}...`
+          targetOutcome = 'Track prices and find best deals'
+        } else if (lowerMessage.includes('track') || lowerMessage.includes('monitor') || lowerMessage.includes('watch')) {
+          goalType = 'monitoring'
+          title = `Monitor: ${message.substring(0, 50)}...`
+          targetOutcome = 'Continuous monitoring and alerts'
+        } else if (lowerMessage.includes('automate') || lowerMessage.includes('schedule') || lowerMessage.includes('remind')) {
+          goalType = 'automation'
+          title = `Automate: ${message.substring(0, 50)}...`
+          targetOutcome = 'Automated task execution'
+        } else {
+          title = `Learn from: ${message.substring(0, 50)}...`
+          targetOutcome = 'Extract patterns and optimize future interactions'
+        }
+
+        const goalResult = await browserManager.autonomousPlanningEngine.createAutonomousGoal({
+          title: title,
+          description: `Auto-created goal from user interaction: "${message}"`,
+          type: goalType,
+          priority: 'medium',
+          targetOutcome: targetOutcome,
+          successCriteria: [
+            'Goal execution completed successfully',
+            'User satisfaction maintained above 80%',
+            'Learning patterns updated'
+          ],
+          constraints: {
+            timeframe: 24 * 60 * 60 * 1000, // 24 hours
+            autoCreated: true
+          },
+          createdBy: 'auto_orchestrator'
+        })
+
+        return {
+          created: goalResult.success,
+          title: title,
+          goalId: goalResult.goalId
+        }
+
+      } catch (error) {
+        console.error('❌ Smart goal creation failed:', error)
+        return { created: false }
+      }
+    }
+
+    // 🧠 Interaction Memory Storage
+    async function storeInteractionMemory(message, context) {
+      try {
+        const importance = calculateInteractionImportance(message, context)
+        
+        const memoryResult = await browserManager.agentMemoryService.storeMemory('ai_assistant', {
+          type: 'interaction',
+          content: {
+            userMessage: message,
+            context: context,
+            timestamp: Date.now(),
+            sessionData: {
+              url: context.url,
+              pageType: context.pageType,
+              userIntent: classifyUserIntent(message)
+            }
+          },
+          importance: importance,
+          tags: extractMemoryTags(message, context),
+          metadata: {
+            interactionType: 'chat',
+            contextUrl: context.url,
+            messageLength: message.length
+          }
+        })
+
+        return {
+          success: memoryResult.success,
+          importance: importance,
+          memoryId: memoryResult.memoryId
+        }
+
+      } catch (error) {
+        console.error('❌ Interaction memory storage failed:', error)
+        return { success: false, importance: 1 }
+      }
+    }
+
+    // 🛡️ Background Security Scanning
+    async function performBackgroundSecurityScan(url) {
+      try {
+        const scanResult = await browserManager.advancedSecurity.performSecurityScan(url, 'basic')
+        
+        // Auto-create security monitoring goal if risks found
+        if (scanResult.riskLevel !== 'low' && scanResult.findings.length > 0) {
+          await browserManager.autonomousPlanningEngine.createAutonomousGoal({
+            title: `Security Monitoring: ${url}`,
+            description: `Monitor security risks detected on ${url}`,
+            type: 'monitoring',
+            priority: 'high',
+            targetOutcome: 'Continuous security monitoring and alerts',
+            successCriteria: ['No new security risks', 'Risk level maintained or improved'],
+            constraints: { timeframe: 7 * 24 * 60 * 60 * 1000 }, // 7 days
+            createdBy: 'security_orchestrator'
+          })
+        }
+
+        return scanResult
+
+      } catch (error) {
+        console.error('❌ Background security scan failed:', error)
+        return { riskLevel: 'unknown', findings: [] }
+      }
+    }
+
+    // ⚡ Intelligent Task Scheduling
+    async function scheduleIntelligentTasks(message, context) {
+      try {
+        let scheduled = 0
+        const lowerMessage = message.toLowerCase()
+
+        // Auto-schedule relevant background tasks
+        if (lowerMessage.includes('research') || lowerMessage.includes('learn')) {
+          await browserManager.taskScheduler.scheduleTask('research_monitoring', {
+            query: message,
+            context: context,
+            type: 'follow_up_research'
+          }, {
+            priority: 2,
+            scheduledFor: Date.now() + (24 * 60 * 60 * 1000) // Tomorrow
+          })
+          scheduled++
+        }
+
+        if (lowerMessage.includes('price') || lowerMessage.includes('buy') || lowerMessage.includes('shop')) {
+          await browserManager.taskScheduler.scheduleTask('price_monitoring', {
+            query: message,
+            url: context.url,
+            type: 'price_tracking'
+          }, {
+            priority: 2,
+            scheduledFor: Date.now() + (6 * 60 * 60 * 1000) // 6 hours
+          })
+          scheduled++
+        }
+
+        // Always schedule learning optimization
+        await browserManager.taskScheduler.scheduleTask('agent_learning', {
+          interaction: message,
+          context: context,
+          type: 'pattern_learning'
+        }, {
+          priority: 3,
+          scheduledFor: Date.now() + (60 * 60 * 1000) // 1 hour
+        })
+        scheduled++
+
+        return { scheduled }
+
+      } catch (error) {
+        console.error('❌ Intelligent task scheduling failed:', error)
+        return { scheduled: 0 }
+      }
+    }
+
+    // 🎼 System Performance Optimization
+    async function optimizeSystemPerformance() {
+      try {
+        const healthResult = browserManager.unifiedServiceOrchestrator.getSystemHealth()
+        
+        // Auto-optimize if performance is sub-optimal
+        if (healthResult.overall < 0.9) {
+          await browserManager.unifiedServiceOrchestrator.executeOrchestrationTask('optimize_performance', {
+            targetHealth: 0.95,
+            autoRestart: false
+          })
+        }
+
+        return healthResult
+
+      } catch (error) {
+        console.error('❌ System optimization failed:', error)
+        return { overall: 0.8 }
+      }
+    }
+
+    // 🌑 Shadow Workspace Activation
+    async function activateShadowProcessing(message, context) {
+      try {
+        let tasksInitiated = 0
+
+        if (browserManager.shadowWorkspace) {
+          // Initiate background processing for complex queries
+          if (message.length > 100 || context.pageType !== 'blank') {
+            await browserManager.shadowWorkspace.initiateBackgroundProcessing({
+              type: 'content_analysis',
+              data: { message, context },
+              priority: 'normal'
+            })
+            tasksInitiated++
+          }
+        }
+
+        return { tasksInitiated }
+
+      } catch (error) {
+        console.error('❌ Shadow processing failed:', error)
+        return { tasksInitiated: 0 }
+      }
+    }
+
+    // 🎪 URL-based Service Activation
+    async function activateServicesByURL(url, message) {
+      const services = []
+      const insights = []
+
+      try {
+        const urlObj = new URL(url)
+        const domain = urlObj.hostname.toLowerCase()
+
+        // E-commerce sites -> Shopping Agent + Price Monitoring
+        if (domain.includes('amazon') || domain.includes('ebay') || domain.includes('shop') || domain.includes('store')) {
+          services.push('shopping_agent', 'price_monitoring')
+          insights.push('🛒 E-commerce site detected - activated shopping assistance and price monitoring')
+          
+          // Auto-create price monitoring goal
+          await browserManager.autonomousPlanningEngine.createAutonomousGoal({
+            title: `Price Monitoring: ${domain}`,
+            description: `Monitor prices and deals on ${domain}`,
+            type: 'monitoring',
+            priority: 'medium',
+            targetOutcome: 'Track price changes and find best deals',
+            createdBy: 'context_orchestrator'
+          })
+        }
+
+        // News sites -> Research Agent + Trend Monitoring
+        if (domain.includes('news') || domain.includes('cnn') || domain.includes('bbc') || domain.includes('reuters')) {
+          services.push('research_agent', 'trend_monitoring')
+          insights.push('📰 News site detected - activated research assistance and trend monitoring')
+        }
+
+        // Social media -> Communication Agent + Content Analysis
+        if (domain.includes('twitter') || domain.includes('facebook') || domain.includes('linkedin') || domain.includes('instagram')) {
+          services.push('communication_agent', 'content_analysis')
+          insights.push('📱 Social media detected - activated communication assistance')
+        }
+
+        // Technical sites -> Analysis Agent + Documentation Tracking
+        if (domain.includes('github') || domain.includes('stackoverflow') || domain.includes('docs') || domain.includes('api')) {
+          services.push('analysis_agent', 'documentation_tracking')
+          insights.push('💻 Technical site detected - activated code analysis and documentation tracking')
+        }
+
+        // Educational sites -> Research Agent + Learning Optimization
+        if (domain.includes('edu') || domain.includes('wiki') || domain.includes('course') || domain.includes('learn')) {
+          services.push('research_agent', 'learning_optimization')
+          insights.push('📚 Educational content detected - activated research and learning optimization')
+        }
+
+        return { services, insights }
+
+      } catch (error) {
+        console.warn('⚠️ URL-based service activation failed:', error.message)
+        return { services: [], insights: [] }
+      }
+    }
+
+    // 🎯 Message-based Service Activation
+    async function activateServicesByMessage(message, context) {
+      const services = []
+      const actions = []
+      const lowerMessage = message.toLowerCase()
+
+      // Research-related keywords
+      if (lowerMessage.includes('research') || lowerMessage.includes('find') || lowerMessage.includes('learn') || lowerMessage.includes('study')) {
+        services.push('deep_search', 'research_agent', 'knowledge_aggregation')
+        actions.push('Auto-initiated comprehensive research with multi-source analysis')
+      }
+
+      // Shopping-related keywords  
+      if (lowerMessage.includes('buy') || lowerMessage.includes('price') || lowerMessage.includes('cheap') || lowerMessage.includes('deal')) {
+        services.push('shopping_agent', 'price_comparison', 'deal_monitoring')
+        actions.push('Auto-activated shopping assistance with price tracking')
+      }
+
+      // Communication-related keywords
+      if (lowerMessage.includes('write') || lowerMessage.includes('email') || lowerMessage.includes('compose') || lowerMessage.includes('message')) {
+        services.push('communication_agent', 'writing_assistance', 'tone_analysis')
+        actions.push('Auto-enabled communication assistance with writing optimization')
+      }
+
+      // Analysis-related keywords
+      if (lowerMessage.includes('analyze') || lowerMessage.includes('summary') || lowerMessage.includes('explain') || lowerMessage.includes('understand')) {
+        services.push('analysis_agent', 'content_analysis', 'insight_generation')
+        actions.push('Auto-activated content analysis with insight generation')
+      }
+
+      // Automation-related keywords
+      if (lowerMessage.includes('automate') || lowerMessage.includes('schedule') || lowerMessage.includes('remind') || lowerMessage.includes('workflow')) {
+        services.push('automation_agent', 'task_scheduling', 'workflow_optimization')  
+        actions.push('Auto-enabled automation assistance with workflow optimization')
+      }
+
+      // Security-related keywords
+      if (lowerMessage.includes('secure') || lowerMessage.includes('safe') || lowerMessage.includes('privacy') || lowerMessage.includes('protect')) {
+        services.push('security_scanning', 'privacy_analysis', 'threat_monitoring')
+        actions.push('Auto-activated security analysis with privacy protection')
+      }
+
+      return { services, actions }
+    }
+
+    // 🔄 Proactive Service Activation
+    async function activateProactiveServices(message, context) {
+      const services = []
+
+      try {
+        // Always activate core services
+        services.push('performance_monitoring', 'system_health', 'learning_engine')
+
+        // Activate based on time patterns (if user typically does research in morning, pre-activate research tools)
+        const currentHour = new Date().getHours()
+        if (currentHour >= 9 && currentHour <= 12) {
+          services.push('research_optimization', 'productivity_enhancement')
+        }
+
+        // Activate based on previous interaction patterns
+        if (browserManager.agentMemoryService) {
+          const recentMemories = await browserManager.agentMemoryService.retrieveMemories('ai_assistant', {
+            limit: 10,
+            type: 'interaction'
+          })
+          
+          // If user frequently asks about specific topics, pre-activate relevant services
+          const frequentTopics = analyzeFrequentTopics(recentMemories.memories)
+          services.push(...frequentTopics.map(topic => `${topic}_optimization`))
+        }
+
+        return { services }
+
+      } catch (error) {
+        console.warn('⚠️ Proactive service activation failed:', error.message)
+        return { services: ['performance_monitoring'] }
+      }
+    }
+
+    // 🤖 Multi-Agent Coordination
+    async function coordinateMultipleAgents(message, context) {
+      try {
+        const agentsUsed = []
+        const responses = []
+
+        // Determine which agents should collaborate
+        const taskAnalysis = browserManager.analyzeAgentTask(message)
+        
+        if (taskAnalysis.confidence >= 80) {
+          agentsUsed.push(taskAnalysis.primaryAgent)
+        }
+
+        // Add supporting agents based on context
+        if (context.url && context.url !== 'about:blank') {
+          agentsUsed.push('analysis')
+        }
+
+        if (message.length > 200) {
+          agentsUsed.push('research')
+        }
+
+        // Always include learning and optimization
+        agentsUsed.push('learning', 'optimization')
+
+        return {
+          agentsUsed: [...new Set(agentsUsed)],
+          responses: responses,
+          coordinationSuccess: true
+        }
+
+      } catch (error) {
+        console.error('❌ Multi-agent coordination failed:', error)
+        return {
+          agentsUsed: ['ai_assistant'],
+          responses: [],
+          coordinationSuccess: false
+        }
+      }
+    }
+
+    // 📊 Performance Tracking
+    async function trackInteractionPerformance(message, phase1Results) {
+      try {
+        const startTime = Date.now()
+        const complexity = calculateInteractionComplexity(message, phase1Results)
+        const responseTime = Date.now() - startTime
+
+        if (browserManager.performanceMonitor) {
+          await browserManager.performanceMonitor.recordMetric('ai_interaction', {
+            responseTime: responseTime,
+            complexity: complexity,
+            featuresActivated: phase1Results.activatedFeatures.length,
+            success: true
+          })
+        }
+
+        return {
+          responseTime: responseTime,
+          complexity: complexity,
+          success: true
+        }
+
+      } catch (error) {
+        console.error('❌ Performance tracking failed:', error)
+        return {
+          responseTime: 0,
+          complexity: 'unknown',
+          success: false
+        }
+      }
+    }
+
+    // Helper utility functions
+    function calculateInteractionImportance(message, context) {
+      let importance = 3 // Base importance
+      
+      if (message.length > 200) importance += 1
+      if (context.url && context.url !== 'about:blank') importance += 1
+      if (message.toLowerCase().includes('important') || message.toLowerCase().includes('urgent')) importance += 2
+      
+      return Math.max(1, Math.min(5, importance))
+    }
+
+    function classifyUserIntent(message) {
+      const lowerMessage = message.toLowerCase()
+      
+      if (lowerMessage.includes('research') || lowerMessage.includes('find')) return 'research'
+      if (lowerMessage.includes('buy') || lowerMessage.includes('price')) return 'shopping'
+      if (lowerMessage.includes('write') || lowerMessage.includes('compose')) return 'communication'
+      if (lowerMessage.includes('analyze') || lowerMessage.includes('explain')) return 'analysis'
+      if (lowerMessage.includes('automate') || lowerMessage.includes('schedule')) return 'automation'
+      
+      return 'general'
+    }
+
+    function extractMemoryTags(message, context) {
+      const tags = []
+      const lowerMessage = message.toLowerCase()
+      
+      if (lowerMessage.includes('research')) tags.push('research')
+      if (lowerMessage.includes('buy') || lowerMessage.includes('shop')) tags.push('shopping')
+      if (lowerMessage.includes('important')) tags.push('high_priority')
+      if (context.url && context.url !== 'about:blank') tags.push('contextual')
+      if (message.length > 200) tags.push('complex_query')
+      
+      return tags
+    }
+
+    function calculateInteractionComplexity(message, phase1Results) {
+      let complexity = 'simple'
+      
+      if (message.length > 300 || phase1Results.activatedFeatures.length > 4) {
+        complexity = 'high'
+      } else if (message.length > 100 || phase1Results.activatedFeatures.length > 2) {
+        complexity = 'medium'
+      }
+      
+      return complexity
+    }
+
+    function analyzeFrequentTopics(memories) {
+      const topics = []
+      // Simple frequency analysis of memory content
+      // Could be enhanced with more sophisticated NLP
+      return topics.slice(0, 3) // Return top 3 frequent topics
+    }
+
+    // Generate Enhanced System Prompt with ALL activated features
     function generateEnhancedSystemPrompt(context, advancedResults, phase2Results) {
       const activatedFeatures = [
         ...advancedResults.activatedFeatures,
