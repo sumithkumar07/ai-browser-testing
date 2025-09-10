@@ -51,7 +51,7 @@ export class IntegratedAgentFramework {
   private isInitialized = false
 
   private constructor() {
-    this.conversationManager = ConversationManager.getInstance()
+    // Conversation management handled by main process
   }
 
   static getInstance(): IntegratedAgentFramework {
