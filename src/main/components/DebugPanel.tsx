@@ -364,7 +364,7 @@ const DebugPanel: React.FC<DebugPanelProps> = ({ isOpen, onClose }) => {
         )}
       </div>
 
-      <style jsx>{`
+      <style>{`
         .debug-panel {
           position: fixed;
           top: 50px;
