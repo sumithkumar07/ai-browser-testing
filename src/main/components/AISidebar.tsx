@@ -356,6 +356,7 @@ Welcome! I'm your intelligent browsing companion with advanced capabilities:
           {/* Quick Actions */}
           {messages.length <= 1 && ( // Only show for new conversations
             <div className="quick-actions">
+              {/* Basic Actions */}
               <button 
                 className="quick-action-btn"
                 onClick={() => handleQuickAction('Summarize this page')}
@@ -370,19 +371,55 @@ Welcome! I'm your intelligent browsing companion with advanced capabilities:
               >
                 🔍 Research Topic
               </button>
+              
+              {/* Advanced Features */}
               <button 
-                className="quick-action-btn"
-                onClick={() => handleQuickAction('Create comprehensive analysis')}
+                className="quick-action-btn advanced"
+                onClick={() => handleQuickAction('Show me my autonomous goals and their progress')}
                 disabled={isLoading}
+                title="Autonomous Planning Engine"
               >
-                📊 Analyze Content
+                🎯 My Goals
               </button>
               <button 
-                className="quick-action-btn"
-                onClick={() => handleQuickAction('Help me navigate related websites')}
+                className="quick-action-btn advanced"
+                onClick={() => handleQuickAction('Show my learning patterns and insights')}
                 disabled={isLoading}
+                title="Agent Memory Learning System"
               >
-                🌐 Smart Navigation
+                🧠 Learning Insights
+              </button>
+              <button 
+                className="quick-action-btn advanced"
+                onClick={() => handleQuickAction('Perform deep search with multi-source analysis')}
+                disabled={isLoading}
+                title="Deep Search Engine"
+              >
+                🔍 Deep Search
+              </button>
+              <button 
+                className="quick-action-btn advanced"
+                onClick={() => handleQuickAction('Run security scan on current website')}
+                disabled={isLoading}
+                title="Advanced Security Scanning"
+              >
+                🛡️ Security Scan
+              </button>
+              <button 
+                className="quick-action-btn advanced"
+                onClick={() => handleQuickAction('Show system health and performance metrics')}
+                disabled={isLoading}
+                title="System Health Monitoring"
+              >
+                📊 System Health
+              </button>
+              <button 
+                className="quick-action-btn advanced"
+                onClick={() => handleQuickAction('Show background tasks and automation')}
+                disabled={isLoading}
+                title="Background Task Automation"
+              >
+                ⚡ Automation
               </button>
             </div>
           )}
