@@ -14,7 +14,7 @@ const AITabContent: React.FC<AITabContentProps> = ({ tab, onContentChange }) => 
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const loadTabContent = useCallback(async () => {
     try {
