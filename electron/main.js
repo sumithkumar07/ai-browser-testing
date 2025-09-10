@@ -1998,6 +1998,163 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
       }
     })
 
+    // ENHANCED: New Advanced Backend Service Handlers
+    ipcMain.handle('get-system-health', async () => {
+      try {
+        if (!this.unifiedServiceOrchestrator) {
+          return { success: false, error: 'Service orchestrator not available' }
+        }
+
+        const health = this.unifiedServiceOrchestrator.getSystemHealth()
+        return { success: true, health }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-learning-insights', async (event, agentId = 'ai_assistant') => {
+      try {
+        if (!this.agentMemoryService || !this.enableAgentLearning) {
+          return { success: false, error: 'Agent learning not available' }
+        }
+
+        const insights = await this.agentMemoryService.getAgentLearningInsights(agentId)
+        return { success: true, insights }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('perform-deep-search', async (event, query, options = {}) => {
+      try {
+        if (!this.deepSearchEngine || !this.enableDeepSearch) {
+          return { success: false, error: 'Deep search not available' }
+        }
+
+        const results = await this.deepSearchEngine.performDeepSearch(query, options)
+        return results
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-autonomous-goals', async (event, status = null) => {
+      try {
+        if (!this.autonomousPlanningEngine) {
+          return { success: false, error: 'Autonomous planning not available' }
+        }
+
+        const goals = await this.autonomousPlanningEngine.getAllGoals(status)
+        return { success: true, goals }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('create-autonomous-goal', async (event, goalDefinition) => {
+      try {
+        if (!this.autonomousPlanningEngine) {
+          return { success: false, error: 'Autonomous planning not available' }
+        }
+
+        const result = await this.autonomousPlanningEngine.createAutonomousGoal(goalDefinition)
+        return result
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-security-status', async () => {
+      try {
+        if (!this.advancedSecurity || !this.enableAdvancedSecurity) {
+          return { success: false, error: 'Advanced security not available' }
+        }
+
+        const status = this.advancedSecurity.getSecurityStatus()
+        return { success: true, status }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('perform-security-scan', async (event, target = 'system', scanType = 'basic') => {
+      try {
+        if (!this.advancedSecurity || !this.enableAdvancedSecurity) {
+          return { success: false, error: 'Advanced security not available' }
+        }
+
+        const results = await this.advancedSecurity.performSecurityScan(target, scanType)
+        return { success: true, results }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-system-metrics', async (event, count = 10) => {
+      try {
+        if (!this.unifiedServiceOrchestrator) {
+          return { success: false, error: 'Service orchestrator not available' }
+        }
+
+        const metrics = this.unifiedServiceOrchestrator.getSystemMetrics(count)
+        return { success: true, metrics }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-memory-stats', async () => {
+      try {
+        if (!this.agentMemoryService) {
+          return { success: false, error: 'Agent memory service not available' }
+        }
+
+        const stats = this.agentMemoryService.getMemoryStats()
+        return { success: true, stats }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-planning-stats', async () => {
+      try {
+        if (!this.autonomousPlanningEngine) {
+          return { success: false, error: 'Autonomous planning not available' }
+        }
+
+        const stats = this.autonomousPlanningEngine.getPlanningStats()
+        return { success: true, stats }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('encrypt-data', async (event, data, options = {}) => {
+      try {
+        if (!this.advancedSecurity || !this.enableAdvancedSecurity) {
+          return { success: false, error: 'Advanced security not available' }
+        }
+
+        const result = await this.advancedSecurity.encryptData(data, options)
+        return { success: true, encrypted: result }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('decrypt-data', async (event, encryptedData, options = {}) => {
+      try {
+        if (!this.advancedSecurity || !this.enableAdvancedSecurity) {
+          return { success: false, error: 'Advanced security not available' }
+        }
+
+        const result = await this.advancedSecurity.decryptData(encryptedData, options)
+        return { success: true, decrypted: result }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
+    })
+
     // Additional Missing Handlers - FIXED: Added handlers that preload references
     ipcMain.handle('analyze-image', async (event, imageData) => {
       try {
