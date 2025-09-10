@@ -12,8 +12,14 @@ interface DebugPanelProps {
   onClose: () => void
 }
 
+interface SystemMemoryInfo {
+  usedJSHeapSize: number
+  totalJSHeapSize: number  
+  jsHeapSizeLimit: number
+}
+
 interface SystemMetrics {
-  memory: MemoryInfo
+  memory: SystemMemoryInfo
   timing: PerformanceTiming
   navigation: PerformanceNavigation
   userAgent: string
