@@ -20,6 +20,7 @@ const App: React.FC = () => {
   const [isAISidebarOpen, setIsAISidebarOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(false)
 
   // FIXED: Enhanced performance with useMemo for heavy computations
   const activeTab = useMemo(() => 
