@@ -1028,12 +1028,64 @@ class KAiroBrowserManager {
     }
   }
 
-  determinePageType(url) {
-    if (!url || url === 'about:blank') return 'blank'
-    if (url.includes('google.com')) return 'search'
-    if (url.includes('github.com')) return 'development'
-    if (url.includes('stackoverflow.com')) return 'technical'
-    return 'general'
+  // ENHANCED: Generate basic navigation suggestions
+  generateBasicNavigationSuggestions(query, currentUrl) {
+    const suggestions = []
+    const lowerQuery = query.toLowerCase()
+    
+    // Context-aware suggestions based on current URL
+    if (currentUrl) {
+      const domain = this.extractDomain(currentUrl)
+      if (domain) {
+        suggestions.push({
+          text: `Search within ${domain}`,
+          description: `Site-specific search on ${domain}`,
+          confidence: 0.8
+        })
+      }
+    }
+    
+    // Topic-based suggestions
+    if (lowerQuery.includes('programming') || lowerQuery.includes('code')) {
+      suggestions.push(
+        { text: 'stackoverflow.com', description: 'Programming Q&A', confidence: 0.9 },
+        { text: 'github.com', description: 'Code repositories', confidence: 0.8 }
+      )
+    }
+    
+    if (lowerQuery.includes('research') || lowerQuery.includes('academic')) {
+      suggestions.push(
+        { text: 'scholar.google.com', description: 'Academic search', confidence: 0.9 },
+        { text: 'arxiv.org', description: 'Research papers', confidence: 0.8 }
+      )
+    }
+    
+    if (lowerQuery.includes('news') || lowerQuery.includes('current')) {
+      suggestions.push(
+        { text: 'news.google.com', description: 'Latest news', confidence: 0.9 },
+        { text: 'reuters.com', description: 'Reuters news', confidence: 0.8 }
+      )
+    }
+
+    // Add Deep Search suggestion
+    suggestions.push({
+      text: `Deep research on "${query}"`,
+      description: 'AI-powered multi-source analysis',
+      confidence: 0.95,
+      type: 'deep_search'
+    })
+    
+    return suggestions
+  }
+
+  // Helper method to extract domain from URL
+  extractDomain(url) {
+    try {
+      const urlObj = new URL(url)
+      return urlObj.hostname.replace('www.', '')
+    } catch (error) {
+      return null
+    }
   }
 
   // FIXED: Enhanced error handling for agent response enhancement
