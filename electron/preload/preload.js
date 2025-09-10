@@ -27,6 +27,12 @@ const electronAPI = {
   analyzeContent: () => ipcRenderer.invoke('analyze-content'),
   getAIContext: () => ipcRenderer.invoke('get-ai-context'),
   
+  // Enhanced Navigation & Search
+  performDeepSearch: (query, options) => ipcRenderer.invoke('perform-deep-search', query, options),
+  getAINavigationSuggestions: (query, currentUrl) => ipcRenderer.invoke('get-ai-navigation-suggestions', query, currentUrl),
+  performSecurityScan: (target, scanType) => ipcRenderer.invoke('perform-security-scan', target, scanType),
+  getSystemHealth: () => ipcRenderer.invoke('get-system-health'),
+  
   // Agent System
   executeAgentTask: (task) => ipcRenderer.invoke('execute-agent-task', task),
   getAgentStatus: (agentId) => ipcRenderer.invoke('get-agent-status', agentId),
