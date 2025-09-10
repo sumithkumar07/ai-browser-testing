@@ -16,7 +16,7 @@ const UnifiedServiceOrchestrator = require('./src/core/services/UnifiedServiceOr
 
 async function testInvisibleIntelligence() {
   console.log('🎯 TESTING INVISIBLE INTELLIGENCE UPGRADE...')
-  console.log('='=50)
+  console.log('='.repeat(50))
   
   let passedTests = 0
   let totalTests = 0
