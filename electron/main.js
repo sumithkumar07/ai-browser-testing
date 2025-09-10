@@ -270,11 +270,14 @@ class KAiroBrowserManager {
         console.warn('⚠️ Unified Service Orchestrator initialization failed:', error.message)
       }
 
-      // Initialize Autonomous Planning Engine
+      // Initialize Autonomous Planning Engine - ENHANCED
       try {
         this.autonomousPlanningEngine = AutonomousPlanningEngine.getInstance()
         await this.autonomousPlanningEngine.initialize()
-        console.log('✅ Autonomous Planning Engine initialized')
+        
+        // Create initial optimization goals
+        await this.createInitialAutonomousGoals()
+        console.log('✅ Autonomous Planning Engine initialized with optimization goals')
       } catch (error) {
         console.warn('⚠️ Autonomous Planning Engine initialization failed:', error.message)
       }
