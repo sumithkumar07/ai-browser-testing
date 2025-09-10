@@ -365,7 +365,7 @@ export class ConfigManager {
     return { isValid, errors, warnings }
   }
 
-  isInitialized(): boolean {
+  getInitializationStatus(): boolean {
     return this.isInitialized
   }
 }
