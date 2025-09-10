@@ -1227,35 +1227,37 @@ class KAiroBrowserBackendTester:
             conn = sqlite3.connect(str(self.db_path))
             cursor = conn.cursor()
             
-            # Test 1: Check system_config table exists or can be created
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS system_config (
-                    key TEXT PRIMARY KEY,
-                    value TEXT NOT NULL,
-                    data_type TEXT NOT NULL DEFAULT 'string',
-                    created_at INTEGER NOT NULL,
-                    updated_at INTEGER NOT NULL
-                )
-            """)
+            # Test 1: Check system_config table schema
+            cursor.execute("PRAGMA table_info(system_config)")
+            columns = cursor.fetchall()
+            column_names = [col[1] for col in columns]
             
-            self.log_test("Data Storage Schema", True, "✅ System config table ready", time.time() - start_time)
+            required_columns = ['key', 'value', 'type', 'updated_at', 'category', 'data_type']
+            missing_columns = [col for col in required_columns if col not in column_names]
             
-            # Test 2: Save Data Operations
+            if missing_columns:
+                self.log_test("Data Storage Schema", False, f"Missing columns: {missing_columns}", time.time() - start_time)
+                conn.close()
+                return
+            
+            self.log_test("Data Storage Schema", True, "✅ System config table schema verified", time.time() - start_time)
+            
+            # Test 2: Save Data Operations (using actual table schema)
             test_data_entries = [
-                ("test_string", "Hello World", "string"),
-                ("test_number", "42", "number"),
-                ("test_boolean", "true", "boolean"),
-                ("test_json", '{"key": "value", "array": [1, 2, 3]}', "json")
+                ("test_string", "Hello World", "string", "string"),
+                ("test_number", "42", "number", "number"),
+                ("test_boolean", "true", "boolean", "boolean"),
+                ("test_json", '{"key": "value", "array": [1, 2, 3]}', "json", "json")
             ]
             
             save_success_count = 0
-            for key, value, data_type in test_data_entries:
+            for key, value, type_val, data_type in test_data_entries:
                 try:
                     cursor.execute("""
                         INSERT OR REPLACE INTO system_config 
-                        (key, value, data_type, created_at, updated_at)
-                        VALUES (?, ?, ?, ?, ?)
-                    """, (key, value, data_type, int(time.time() * 1000), int(time.time() * 1000)))
+                        (key, value, type, updated_at, category, data_type)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    """, (key, value, type_val, int(time.time() * 1000), 'test', data_type))
                     save_success_count += 1
                 except Exception as e:
                     print(f"    ❌ Failed to save {key}: {e}")
