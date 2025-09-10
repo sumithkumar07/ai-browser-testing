@@ -3225,9 +3225,15 @@ ${predictions.proactive.map(rec => `• ${rec}`).join('\n')}
           success: true,
           result: finalResponse,
           agentStatus: {
-            status: 'enhanced',
+            status: 'maximum_utilization',
             agentCount: 6,
-            advancedFeatures: advancedResults.activatedFeatures.length + phase2Results.activatedFeatures.length,
+            advancedFeatures: (advancedResults?.activatedFeatures?.length || 0) + 
+                            (phase2Results?.activatedFeatures?.length || 0) + 
+                            (contextualResults?.activatedFeatures?.length || 0),
+            contextualServices: contextualResults?.activatedFeatures?.length || 0,
+            totalSystemsActive: (advancedResults?.activatedFeatures?.length || 0) + 
+                              (phase2Results?.activatedFeatures?.length || 0) + 
+                              (contextualResults?.activatedFeatures?.length || 0),
             lastActive: Date.now()
           }
         }
