@@ -3076,42 +3076,13 @@ ${predictions.proactive.map(rec => `• ${rec}`).join('\n')}
                 content: message
               }
             ],
-                    model: 'llama-3.3-70b-versatile',
-                    temperature: 0.7,
-                    max_tokens: 3072,
-                    top_p: 0.9,
-                    frequency_penalty: 0.1,
-                    presence_penalty: 0.1
-                  },
-                  timeout: 45000
-                })
-                
-                if (!response.success) {
-                  throw new Error(response.error || 'API request failed')
-                }
-                
-                // Convert to expected format
-                response = {
-                  choices: [{ message: { content: response.data.choices[0].message.content } }],
-                  model: response.data.model,
-                  usage: response.data.usage
-                }
-                
-              } else {
-                // Fallback to direct API call
-                response = await this.aiService.chat.completions.create({
-                  messages: [
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user', content: message }
-                  ],
-                  model: 'llama-3.3-70b-versatile',
-                  temperature: 0.7,
-                  max_tokens: 3072,
-                  top_p: 0.9,
-                  frequency_penalty: 0.1,
-                  presence_penalty: 0.1
-                })
-              }
+            model: 'llama-3.3-70b-versatile',
+            temperature: 0.7,
+            max_tokens: 2048
+          })
+
+          aiResponse = completion.choices[0]?.message?.content || 'No response generated'
+        }
               
             } catch (modelError) {
               console.warn('⚠️ Primary model failed, trying fallback model:', modelError.message)
