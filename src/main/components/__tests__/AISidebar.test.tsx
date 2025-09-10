@@ -232,7 +232,7 @@ describe('AISidebar', () => {
       expect(screen.getByPlaceholderText(/Ask me anything/)).toBeInTheDocument()
     })
 
-    const input = screen.getByPlaceholderText(/Ask me anything/)
+    const input = screen.getByPlaceholderText(/Ask me anything/) as HTMLInputElement
     
     // Try to input very long text (over 5000 characters)
     const longText = 'a'.repeat(6000)
