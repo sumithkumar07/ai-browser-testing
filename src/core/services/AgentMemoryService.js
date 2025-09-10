@@ -75,8 +75,9 @@ class AgentMemoryService {
         throw new Error(`Invalid memory type: ${memory.type}`);
       }
 
-      if (!this.importanceLevels.includes(memory.importance)) {
-        throw new Error(`Invalid importance level: ${memory.importance}`);
+      // Allow importance levels 1-10 (expanded from 1-5 for more granular control)
+      if (memory.importance < 1 || memory.importance > 10 || !Number.isInteger(memory.importance)) {
+        throw new Error(`Invalid importance level: ${memory.importance}. Must be integer between 1-10`);
       }
 
       // Store in appropriate category
