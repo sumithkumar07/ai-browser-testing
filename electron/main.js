@@ -3210,6 +3210,25 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
             if (!enhancedResult || enhancedResult.trim().length === 0) {
               throw new Error('AI service returned empty response')
             }
+
+            // ZERO UI IMPACT: Enhanced AI Response Quality using existing advanced services
+            if (this.enhancedAISystem) {
+              try {
+                const originalResult = enhancedResult;
+                enhancedResult = await this.enhancedAISystem.enhanceAIResponse(
+                  originalResult, 
+                  message, 
+                  context
+                );
+                
+                if (enhancedResult !== originalResult) {
+                  console.log('✨ AI response enhanced using advanced backend services');
+                }
+              } catch (enhanceError) {
+                console.warn('⚠️ AI response enhancement failed, using original:', enhanceError.message);
+                // Continue with original response
+              }
+            }
             
           } catch (aiError) {
             console.error('❌ AI processing failed:', aiError.message)
