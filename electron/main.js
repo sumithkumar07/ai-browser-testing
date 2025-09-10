@@ -14,6 +14,13 @@ const { BackgroundTaskScheduler } = require('../src/backend/BackgroundTaskSchedu
 const { ApiValidator } = require('../src/core/services/ApiValidator')
 const { DatabaseHealthManager } = require('../src/core/services/DatabaseHealthManager')
 
+// Import enhanced capabilities - NEW
+const DeepSearchEngine = require('../src/core/services/DeepSearchEngine.js')
+const ShadowWorkspace = require('../src/core/services/ShadowWorkspace.js')
+const CrossPlatformIntegration = require('../src/core/services/CrossPlatformIntegration.js')
+const AdvancedSecurity = require('../src/core/services/AdvancedSecurity.js')
+const EnhancedAgentCoordinator = require('../src/core/services/EnhancedAgentCoordinator.js')
+
 console.log('🤖 Enhanced backend services loaded successfully')
 
 class KAiroBrowserManager {
