@@ -922,26 +922,26 @@ class KAiroBrowserManager {
   }
 
   // FIXED: Moved this method from inside IPC handler to proper class method
-  async processWithAgenticCapabilities(message) {
+  async processWithAgenticCapabilities(message, nlpFeatures = []) {
     try {
-      console.log('🤖 Processing with advanced agentic capabilities:', message)
+      console.log('🤖 Processing with advanced agentic capabilities and NLP features:', message)
       
       if (!this.isAgenticMode || !this.agentCoordinationService) {
         return null // Fall back to standard processing
       }
 
-      // PHASE 1: Advanced Task Analysis
-      const taskAnalysis = this.analyzeAgentTask(message)
-      console.log('📊 Advanced Task Analysis:', taskAnalysis)
+      // PHASE 1: Advanced Task Analysis (Enhanced with NLP awareness)
+      const taskAnalysis = this.analyzeAgentTask(message, nlpFeatures)
+      console.log('📊 Advanced Task Analysis with NLP:', taskAnalysis)
 
       // PHASE 2: Multi-Agent Coordination for Complex Tasks
       if (taskAnalysis.needsMultipleAgents || taskAnalysis.complexity === 'high') {
-        return await this.executeCoordinatedMultiAgentTask(message, taskAnalysis)
+        return await this.executeCoordinatedMultiAgentTask(message, taskAnalysis, nlpFeatures)
       }
 
       // PHASE 3: Enhanced Single Agent Execution
       if (taskAnalysis.confidence >= 80) {
-        return await this.executeEnhancedAgentTask(message, taskAnalysis)
+        return await this.executeEnhancedAgentTask(message, taskAnalysis, nlpFeatures)
       }
 
       return null // Fall back to standard processing
