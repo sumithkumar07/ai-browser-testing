@@ -345,7 +345,7 @@ export class ConfigManager {
     } catch (error) {
       isValid = false
       if (error instanceof z.ZodError) {
-        errors = error.errors.map(err => ({
+        errors = error.issues.map((err: any) => ({
           path: err.path.join('.'),
           message: err.message,
           code: err.code
