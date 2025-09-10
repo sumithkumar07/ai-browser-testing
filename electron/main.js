@@ -2985,10 +2985,19 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
           }
         }
         
-        // Enhance response with agentic capabilities
+        // ENHANCED: Execute detected NLP features and enhance response
+        let nlpResults = null
         try {
           const context = await this.getEnhancedPageContext()
-          enhancedResult = await this.enhanceResponseWithAgenticCapabilities(enhancedResult, message, context)
+          
+          // Execute NLP features if detected
+          if (nlpFeatures.length > 0) {
+            nlpResults = await this.executeNLPFeatures(nlpFeatures, message, context)
+            console.log('🎯 NLP Features executed:', nlpResults.executedFeatures.length)
+          }
+          
+          // Enhance response with both agentic capabilities and NLP results
+          enhancedResult = await this.enhanceResponseWithAgenticCapabilities(enhancedResult, message, context, nlpResults)
         } catch (enhanceError) {
           console.warn('⚠️ Response enhancement failed:', enhanceError.message)
           // Continue with unenhanced result
