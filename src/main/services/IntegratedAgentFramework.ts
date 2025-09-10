@@ -240,9 +240,7 @@ export class IntegratedAgentFramework {
     this.eventListeners.clear()
     
     // Cleanup conversation manager
-    if (this.conversationManager) {
-      try {
-        await this.conversationManager.cleanup()
+    // Cleanup handled by main process
       } catch (error) {
         logger.warn('Failed to cleanup conversation manager:', error)
       }
