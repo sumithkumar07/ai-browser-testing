@@ -44,6 +44,15 @@ const App: React.FC = () => {
       try {
         setIsLoading(true)
         
+        // Initialize configuration system
+        try {
+          const { config } = await import('../core/config/ConfigManager')
+          await config.initialize()
+          logger.info('Configuration system initialized successfully')
+        } catch (configError) {
+          logger.warn('Configuration system initialization failed, using defaults', { error: configError })
+        }
+        
         // Check if Electron API is available
         if (!window.electronAPI) {
           throw new Error('Electron API not available - running outside Electron environment')
