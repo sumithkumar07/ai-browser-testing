@@ -20,9 +20,9 @@ export { default as AdvancedSecurity } from './AdvancedSecurity'
 // export { AgentPerformanceMonitor } from '../../backend/AgentPerformanceMonitor'
 // export { BackgroundTaskScheduler } from '../../backend/BackgroundTaskScheduler'
 
-// Core Support Services
-export { ApiValidator } from './ApiValidator.js'
-export { DatabaseHealthManager } from './DatabaseHealthManager.js'
+// Core Support Services (Commented out due to Node.js compatibility issues)
+// export { ApiValidator } from './ApiValidator.js'
+// export { DatabaseHealthManager } from './DatabaseHealthManager.js'
 
 // Enhanced Initialization Function
 export async function initializeEnhancedBackend(): Promise<{
