@@ -79,6 +79,12 @@ export interface ElectronAPI {
   analyzeContent: () => Promise<any>
   getAIContext: () => Promise<any>
   
+  // Enhanced Navigation & Search
+  performDeepSearch: (query: string, options?: any) => Promise<any>
+  getAINavigationSuggestions: (query: string, currentUrl?: string) => Promise<any>
+  performSecurityScan: (target: string, scanType?: string) => Promise<any>
+  getSystemHealth: () => Promise<any>
+  
   // Agent System
   executeAgentTask: (task: string) => Promise<any>
   getAgentStatus: (agentId?: string) => Promise<any>
