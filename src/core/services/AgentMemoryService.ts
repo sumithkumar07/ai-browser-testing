@@ -672,11 +672,13 @@ class AgentMemoryService {
   }
 
   // Cleanup and Maintenance
-  async cleanup(): Promise<void> {
+  async cleanup(): Promise<number> {
     // Remove old, unimportant memories to prevent bloat
     const cutoffTime = Date.now() - (30 * 24 * 60 * 60 * 1000) // 30 days
+    let totalCleaned = 0
     
     for (const [agentId, memories] of this.memories.entries()) {
+      const originalCount = memories.length
       const filtered = memories.filter(m => 
         m.timestamp > cutoffTime || m.importance >= 7
       )
@@ -684,9 +686,40 @@ class AgentMemoryService {
       if (filtered.length !== memories.length) {
         this.memories.set(agentId, filtered)
         await this.persistMemories(agentId)
-        logger.info(`Cleaned up ${memories.length - filtered.length} old memories for agent ${agentId}`)
+        const cleaned = originalCount - filtered.length
+        totalCleaned += cleaned
+        logger.info(`🧹 Cleaned up ${cleaned} old memories for agent ${agentId}`)
       }
     }
+
+    return totalCleaned
+  }
+
+  // Enhanced method to clean up expired memories
+  async cleanupExpiredMemories(): Promise<number> {
+    return await this.cleanup()
+  }
+
+  // Method to clean up old history
+  async cleanupOldHistory(daysToKeep: number = 90): Promise<number> {
+    const cutoffTime = Date.now() - (daysToKeep * 24 * 60 * 60 * 1000)
+    let totalCleaned = 0
+    
+    for (const [agentId, memories] of this.memories.entries()) {
+      const originalCount = memories.length
+      const filtered = memories.filter(m => 
+        m.timestamp > cutoffTime || m.importance >= 8 // Keep important memories longer
+      )
+      
+      if (filtered.length !== memories.length) {
+        this.memories.set(agentId, filtered)
+        await this.persistMemories(agentId)
+        const cleaned = originalCount - filtered.length
+        totalCleaned += cleaned
+      }
+    }
+
+    return totalCleaned
   }
 }
 
