@@ -3,7 +3,7 @@
  * Provides robust error handling and automatic recovery mechanisms
  */
 
-import { createLogger } from '../../core/logger/Logger'
+import { createLogger } from '../../core/logger/EnhancedLogger'
 import { appEvents } from '../../core/utils/EventEmitter'
 
 const logger = createLogger('ErrorRecoveryService')

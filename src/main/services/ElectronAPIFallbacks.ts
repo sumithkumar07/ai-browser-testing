@@ -3,7 +3,7 @@
  * Provides fallback implementations for missing Electron API methods
  */
 
-import { createLogger } from '../../core/logger/Logger'
+import { createLogger } from '../../core/logger/EnhancedLogger'
 
 const logger = createLogger('ElectronAPIFallbacks')
 

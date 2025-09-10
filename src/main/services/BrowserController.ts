@@ -1,7 +1,7 @@
 // FIXED: Enhanced Browser Controller with comprehensive bug fixes
 // Phase 2: Agent Browser Controller - Comprehensive Implementation
 
-import { createLogger } from '../../core/logger/Logger'
+import { createLogger } from '../../core/logger/EnhancedLogger'
 import { validateUrl } from '../../core/utils/Validators'
 
 const logger = createLogger('BrowserController')

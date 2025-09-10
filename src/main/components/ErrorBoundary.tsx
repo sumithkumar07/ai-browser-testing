@@ -4,7 +4,7 @@
  */
 
 import { Component, ErrorInfo, ReactNode } from 'react'
-import { createLogger } from '../../core/logger/Logger'
+import { createLogger } from '../../core/logger/EnhancedLogger'
 
 const logger = createLogger('ErrorBoundary')
 

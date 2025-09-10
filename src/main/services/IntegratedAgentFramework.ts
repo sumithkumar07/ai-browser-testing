@@ -3,7 +3,7 @@
  * Updated to work with existing backend services and eliminate missing dependencies
  */
 
-import { createLogger } from '../../core/logger/Logger'
+import { createLogger } from '../../core/logger/EnhancedLogger'
 import { appEvents } from '../../core/utils/EventEmitter'
 import { validateAgentTask } from '../../core/utils/Validators'
 import ConversationManager from '../../core/services/ConversationManager'
