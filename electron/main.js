@@ -3060,64 +3060,22 @@ ${predictions.proactive.map(rec => `• ${rec}`).join('\n')}
           agenticResponse = await browserManager.processWithAgenticCapabilities(message, phase2Results.executedFeatures)
         }
         
-        let enhancedResult
-        
-        if (agenticResult && agenticResult.success) {
-          enhancedResult = agenticResult.result
-        } else {
-          // Fall back to standard AI processing with enhanced error handling
-          try {
-            // Get current page context with enhanced content extraction
-            const context = await this.getEnhancedPageContext()
-            
-            // Create enhanced system prompt with agentic capabilities and NLP features
-            const nlpFeatureStatus = nlpFeatures.length > 0 ? 
-              `**NLP FEATURES DETECTED**: ${nlpFeatures.map(f => f.category).join(', ')} - Advanced capabilities automatically activated!` : 
-              ''
-
-            const systemPrompt = `You are KAiro, an advanced autonomous AI browser assistant with sophisticated agentic capabilities, persistent memory, and intelligent NLP-powered feature detection.
-
-🧠 **ENHANCED AGENTIC CAPABILITIES**:
-- **Autonomous Goal Execution**: I can work independently toward long-term goals
-- **Persistent Memory**: I remember our conversations and learn from outcomes
-- **Agent Coordination**: I coordinate with specialized agents for complex tasks
-- **Proactive Behavior**: I can monitor, alert, and suggest actions proactively
-- **Multi-Step Planning**: I create and execute complex multi-step plans
-
-🎯 **INTELLIGENT NLP FEATURES** (Auto-activated based on natural language):
-- **Smart Goal Creation**: Automatically detect and create autonomous goals from user requests
-- **Deep Search Engine**: Multi-source research with AI analysis when comprehensive information is needed
-- **Security Scanning**: Automatic security analysis when safety concerns are detected
-- **Memory & Learning**: Access and display learning insights when user asks about patterns/performance
-- **System Optimization**: Performance analysis and optimization when system queries are detected
-- **Task Automation**: Automatic workflow creation when recurring tasks are mentioned
-- **Context Analysis**: Intelligent page analysis when current content is referenced
-- **Shopping Assistance**: Smart price monitoring and product research for shopping-related queries
-- **Predictive Assistance**: Context-aware suggestions based on user patterns and preferences
-
-${nlpFeatureStatus}
-
-CURRENT CONTEXT:
-- URL: ${context.url}
-- Page Title: ${context.title}
-- Page Type: ${context.pageType}
-- Content Summary: ${context.contentSummary}
-- Available Actions: Navigate, Extract, Analyze, Create tabs, Set Goals, Monitor, Deep Search, Security Scan, Automate, Learn
-
-Page Content Context: ${context.extractedText ? context.extractedText.substring(0, 800) + '...' : 'Ready to assist with autonomous task execution and intelligent feature activation.'}`
-
-            // Enhanced model handling with retry logic and validation
-            let response
-            try {
-              // Use API validator for requests if available
-              if (this.apiValidator) {
-                response = await this.apiValidator.makeRequest('/chat/completions', {
-                  method: 'POST',
-                  body: {
-                    messages: [
-                      { role: 'system', content: systemPrompt },
-                      { role: 'user', content: message }
-                    ],
+        // Get AI Response with Enhanced Context and Capabilities
+        let aiResponse = agenticResponse
+        if (!aiResponse) {
+          const systemPrompt = generateEnhancedSystemPrompt(context, advancedResults, phase2Results)
+          
+          const completion = await browserManager.aiService.chat.completions.create({
+            messages: [
+              {
+                role: 'system',
+                content: systemPrompt
+              },
+              {
+                role: 'user',
+                content: message
+              }
+            ],
                     model: 'llama-3.3-70b-versatile',
                     temperature: 0.7,
                     max_tokens: 3072,
