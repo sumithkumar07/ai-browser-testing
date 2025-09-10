@@ -1444,11 +1444,11 @@ ${nlpResults.actions.map(action => `• ${action}`).join('\n')}`
   }
 
   // ENHANCED: Ultra-High Accuracy Task Analysis Method (Target: 95%+ accuracy)
-  analyzeAgentTask(task) {
+  analyzeAgentTask(task, nlpFeatures = []) {
     const lowerTask = task.toLowerCase().trim()
     const words = lowerTask.split(/\s+/)
     
-    // Advanced scoring system with semantic understanding
+    // Advanced scoring system with semantic understanding and NLP awareness
     const scores = {
       research: 0,
       navigation: 0,
@@ -1456,6 +1456,30 @@ ${nlpResults.actions.map(action => `• ${action}`).join('\n')}`
       communication: 0,
       automation: 0,
       analysis: 0
+    }
+
+    // NLP Feature Boost: Enhance scores based on detected NLP features
+    if (nlpFeatures.length > 0) {
+      nlpFeatures.forEach(feature => {
+        switch (feature.category) {
+          case 'deep_search':
+            scores.research += 15
+            break
+          case 'shopping':
+            scores.shopping += 15
+            break
+          case 'automation':
+            scores.automation += 15
+            break
+          case 'context_analysis':
+            scores.analysis += 15
+            break
+          case 'autonomous_goals':
+            scores.automation += 10
+            scores.research += 5
+            break
+        }
+      })
     }
 
     // PHASE 1: Intent Pattern Recognition with Context Awareness
