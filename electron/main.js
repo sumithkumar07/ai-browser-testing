@@ -77,6 +77,9 @@ class KAiroBrowserManager {
     this.enhancedBackendCoordinator = null
     this.bugDetectionSystem = null
     
+    // ZERO UI IMPACT: Enhanced AI System
+    this.enhancedAISystem = null
+    
     // Production-ready services
     this.apiValidator = null
     this.databaseHealthManager = null
