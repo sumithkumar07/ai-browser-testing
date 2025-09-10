@@ -294,11 +294,14 @@ class KAiroBrowserManager {
         console.warn('⚠️ Advanced Agent Memory Service initialization failed:', error.message)
       }
 
-      // Initialize Deep Search Engine
+      // Initialize Deep Search Engine - ENHANCED  
       try {
         this.deepSearchEngine = DeepSearchEngine.getInstance()
         await this.deepSearchEngine.initialize()
-        console.log('✅ Deep Search Engine initialized')
+        
+        // Enable advanced search capabilities
+        this.enableDeepSearch = true
+        console.log('✅ Deep Search Engine initialized with multi-source capabilities')
       } catch (error) {
         console.warn('⚠️ Deep Search Engine initialization failed:', error.message)
       }
