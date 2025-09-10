@@ -2992,7 +2992,19 @@ Keep it concise and helpful.`
     }
 
     try {
+      console.log(`🌐 Navigating to: ${url}`)
+      
       const browserView = this.browserViews.get(tabId)
+      
+      // Input validation and sanitization
+      if (!url || typeof url !== 'string') {
+        return { success: false, error: 'Valid URL is required' }
+      }
+      
+      const trimmedUrl = url.trim()
+      if (trimmedUrl.length === 0) {
+        return { success: false, error: 'URL cannot be empty' }
+      }
       
       // Process URL input (handle search vs navigation)
       const processedUrl = this.processAddressBarInput(url)
