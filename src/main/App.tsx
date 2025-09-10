@@ -404,7 +404,7 @@ const App: React.FC = () => {
             onTabClose={closeTab}
             onNewTab={() => createTab()}
           />
-          <NavigationBar
+          <EnhancedNavigationBar
             currentUrl={activeTab?.url || ''}
             onNavigate={navigateTo}
             onGoBack={() => window.electronAPI.goBack()}
