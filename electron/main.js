@@ -3011,6 +3011,47 @@ ${predictions.proactive.map(rec => `• ${rec}`).join('\n')}
       }
     })
 
+    // ENHANCED: AI Navigation Suggestions Handler
+    ipcMain.handle('get-ai-navigation-suggestions', async (event, query, currentUrl) => {
+      try {
+        console.log(`🤖 AI Navigation Suggestions: "${query}"`)
+        
+        // Generate context-aware navigation suggestions
+        const suggestions = []
+        
+        if (this.enhancedAISystem) {
+          // Use enhanced AI system for smart suggestions
+          const context = {
+            query: query,
+            currentUrl: currentUrl,
+            requestType: 'navigation_suggestions'
+          }
+          
+          const aiResponse = await this.enhancedAISystem.generateNavigationSuggestions(context)
+          if (aiResponse && aiResponse.suggestions) {
+            suggestions.push(...aiResponse.suggestions)
+          }
+        } else {
+          // Fallback to basic suggestions
+          const basicSuggestions = this.generateBasicNavigationSuggestions(query, currentUrl)
+          suggestions.push(...basicSuggestions)
+        }
+        
+        return {
+          success: true,
+          suggestions: suggestions.slice(0, 5) // Limit to 5 suggestions
+        }
+        
+      } catch (error) {
+        console.error('❌ AI navigation suggestions failed:', error)
+        return {
+          success: false,
+          error: error.message,
+          suggestions: []
+        }
+      }
+    })
+
     ipcMain.handle('get-agent-status', async (event, agentId) => {
       try {
         if (!this.isAgenticMode || !this.agentCoordinationService) {
