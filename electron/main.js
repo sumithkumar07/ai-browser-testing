@@ -417,9 +417,10 @@ class KAiroBrowserManager {
         const { EnhancedAISystem } = require('./enhanced-ai-system.js')
         this.enhancedAISystem = new EnhancedAISystem(this)
         await this.enhancedAISystem.initialize()
-        console.log('✅ Enhanced AI System initialized - Zero UI impact improvements active')
+        console.log('✅ Enhanced AI System initialized - MAXIMUM BACKEND UTILIZATION active')
       } catch (error) {
         console.warn('⚠️ Enhanced AI System initialization failed:', error.message)
+        this.enhancedAISystem = null
       }
 
       // CRITICAL: Initialize AI Data Handlers for Real Backend Data Access
