@@ -30,7 +30,7 @@ export class PerformanceMonitor {
   private static instance: PerformanceMonitor
   private metrics: PerformanceMetric[] = []
   private alerts: PerformanceAlert[] = []
-  private monitoringInterval: NodeJS.Timeout | null = null
+  private monitoringInterval: ReturnType<typeof setInterval> | null = null
   private isMonitoring = false
   private maxMetricsHistory = 1000
 
