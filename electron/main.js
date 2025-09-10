@@ -2881,31 +2881,107 @@ Keep it concise and helpful.`
     }
 
     try {
-      // Hide current view
+      console.log(`🔄 Switching to tab: ${tabId}`)
+      
+      // Hide current view with proper cleanup
       if (this.activeTabId && this.browserViews.has(this.activeTabId)) {
         const currentView = this.browserViews.get(this.activeTabId)
-        this.mainWindow.removeBrowserView(currentView)
+        try {
+          this.mainWindow.removeBrowserView(currentView)
+          console.log(`👋 Hidden previous tab: ${this.activeTabId}`)
+        } catch (hideError) {
+          console.warn('⚠️ Failed to hide current view:', hideError.message)
+        }
       }
 
       // Show new view
       const browserView = this.browserViews.get(tabId)
       this.mainWindow.setBrowserView(browserView)
       
-      // Update bounds
-      this.updateBrowserViewBounds(browserView)
+      // Update bounds with proper error handling
+      try {
+        this.updateBrowserViewBounds(browserView)
+      } catch (boundsError) {
+        console.warn('⚠️ Failed to update bounds, using default:', boundsError.message)
+        // Fallback bounds
+        const bounds = this.mainWindow.getBounds()
+        browserView.setBounds({
+          x: 0,
+          y: 100,
+          width: Math.floor(bounds.width * 0.7),
+          height: bounds.height - 100
+        })
+      }
       
       // Set as active
+      const previousActiveTab = this.activeTabId
       this.activeTabId = tabId
       
-      // Notify frontend
-      this.notifyTabSwitched(tabId)
+      // Update tab states
+      if (this.tabState) {
+        for (const [id, state] of this.tabState.entries()) {
+          this.tabState.set(id, { ...state, isActive: id === tabId })
+        }
+      }
       
-      console.log(`✅ Switched to tab: ${tabId}`)
+      // Notify frontend with enhanced data
+      this.notifyTabSwitched(tabId, {
+        previousTabId: previousActiveTab,
+        tabCount: this.browserViews.size,
+        timestamp: Date.now()
+      })
       
-      return { success: true, tabId }
+      // Save to history if database available
+      if (this.databaseService && browserView.webContents) {
+        try {
+          const url = browserView.webContents.getURL()
+          const title = browserView.webContents.getTitle()
+          
+          if (url && url !== 'about:blank') {
+            const historyEntry = {
+              id: `history_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+              url: url,
+              title: title || 'Untitled',
+              visitedAt: Date.now(),
+              duration: 0,
+              pageType: this.determinePageType(url),
+              exitType: 'tab_switch',
+              referrer: null,
+              searchQuery: null
+            }
+            
+            await this.databaseService.saveHistoryEntry(historyEntry)
+          }
+        } catch (historyError) {
+          console.warn('⚠️ Failed to save history entry:', historyError.message)
+        }
+      }
+      
+      console.log(`✅ Successfully switched to tab: ${tabId}`)
+      
+      return { 
+        success: true, 
+        tabId: tabId,
+        previousTabId: previousActiveTab,
+        url: browserView.webContents?.getURL() || 'about:blank',
+        title: browserView.webContents?.getTitle() || 'Loading...',
+        timestamp: Date.now()
+      }
       
     } catch (error) {
       console.error('❌ Tab switch failed:', error)
+      
+      // Attempt recovery - restore previous tab if possible
+      if (this.activeTabId && this.browserViews.has(this.activeTabId)) {
+        try {
+          const fallbackView = this.browserViews.get(this.activeTabId)
+          this.mainWindow.setBrowserView(fallbackView)
+          console.log('🔄 Restored previous tab after switch failure')
+        } catch (recoveryError) {
+          console.error('❌ Failed to recover previous tab:', recoveryError.message)
+        }
+      }
+      
       return { success: false, error: error.message }
     }
   }
