@@ -33,6 +33,9 @@ const UnifiedServiceOrchestrator = require('../src/core/services/UnifiedServiceO
 const { EnhancedBackendCoordinator } = require('../src/backend/EnhancedBackendCoordinator.js')
 const { BugDetectionAndFixSystem } = require('../src/backend/BugDetectionAndFixSystem.js')
 
+// CRITICAL: Import AI Data Handlers for Real Backend Data Access
+const { AIDataHandlers } = require('./ai-data-handlers.js')
+
 console.log('🤖 Enhanced backend services loaded successfully')
 
 class KAiroBrowserManager {
