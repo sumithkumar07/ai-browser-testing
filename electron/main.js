@@ -3267,7 +3267,7 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
           }
         }
         
-        console.log(`✅ Enhanced backend AI response generated in ${duration}ms`)
+        console.log(`✅ Enhanced backend AI response generated in ${duration}ms with ${nlpFeatures.length} NLP features detected`)
         return { 
           success: true, 
           result: enhancedResult,
@@ -3275,7 +3275,10 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
           agenticMode: this.isAgenticMode,
           responseTime: duration,
           timestamp: endTime,
-          connectionStatus: this.connectionState
+          connectionStatus: this.connectionState,
+          nlpFeatures: nlpFeatures,
+          nlpResults: nlpResults,
+          enhancedCapabilities: nlpResults ? nlpResults.executedFeatures.length > 0 : false
         }
         
       } catch (error) {
