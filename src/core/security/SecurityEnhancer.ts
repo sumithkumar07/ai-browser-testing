@@ -3,7 +3,7 @@
  * Provides comprehensive security controls, threat detection, and safety measures
  */
 
-import { createLogger } from '../logger/Logger'
+import { createLogger } from '../logger/EnhancedLogger'
 
 const logger = createLogger('SecurityEnhancer')
 

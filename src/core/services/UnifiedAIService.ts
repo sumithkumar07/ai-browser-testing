@@ -3,7 +3,7 @@
  * Provides centralized AI functionality for the React frontend
  */
 
-import { createLogger } from '../logger/Logger'
+import { createLogger } from '../logger/EnhancedLogger'
 import { AIMessage, AIResponse } from '../types'
 
 const logger = createLogger('UnifiedAIService')

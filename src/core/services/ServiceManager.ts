@@ -3,7 +3,7 @@
  * Centralized service management and dependency injection
  */
 
-import { createLogger } from '../logger/Logger'
+import { createLogger } from '../logger/EnhancedLogger'
 import config from '../config/AppConfig'
 
 const logger = createLogger('ServiceManager')

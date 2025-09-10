@@ -3,7 +3,7 @@
  * Manages AI conversation quality, context, and memory
  */
 
-import { createLogger } from '../logger/Logger'
+import { createLogger } from '../logger/EnhancedLogger'
 import { appEvents } from '../utils/EventEmitter'
 import { AIMessage } from '../types'
 

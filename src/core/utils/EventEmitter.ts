@@ -3,7 +3,7 @@
  * Type-safe event management system
  */
 
-import { createLogger } from '../logger/Logger'
+import { createLogger } from '../logger/EnhancedLogger'
 
 const logger = createLogger('EventEmitter')
 

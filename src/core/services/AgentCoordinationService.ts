@@ -3,7 +3,7 @@
  * This service was referenced but missing, causing integration bugs
  */
 
-import { createLogger } from '../logger/Logger'
+import { createLogger } from '../logger/EnhancedLogger'
 import { appEvents } from '../utils/EventEmitter'
 import AgentMemoryService from './AgentMemoryService'
 

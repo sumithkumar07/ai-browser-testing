@@ -3,7 +3,7 @@
  * Centralized data persistence and caching
  */
 
-import { createLogger } from '../logger/Logger'
+import { createLogger } from '../logger/EnhancedLogger'
 import { APP_CONSTANTS } from '../utils/Constants'
 
 const logger = createLogger('StorageManager')
