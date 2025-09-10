@@ -3192,7 +3192,7 @@ ${predictions.proactive.map(rec => `• ${rec}`).join('\n')}
         // Get AI Response with Enhanced Context and Capabilities
         let aiResponse = agenticResponse
         if (!aiResponse) {
-          const systemPrompt = generateEnhancedSystemPrompt(context, advancedResults, phase2Results)
+          const systemPrompt = generateEnhancedSystemPrompt(context, advancedResults, phase2Results, contextualResults)
           
           const completion = await browserManager.aiService.chat.completions.create({
             messages: [
@@ -3213,11 +3213,11 @@ ${predictions.proactive.map(rec => `• ${rec}`).join('\n')}
           aiResponse = completion.choices[0]?.message?.content || 'No response generated'
         }
         
-        // PHASE 1+2: Enhance Response with ALL Advanced Capabilities
-        const finalResponse = await enhanceResponseWithAllCapabilities(aiResponse, message, context, advancedResults, phase2Results)
+        // 🚀 MAXIMUM UTILIZATION: Enhance Response with ALL Advanced Capabilities
+        const finalResponse = await enhanceResponseWithAllCapabilities(aiResponse, message, context, advancedResults, phase2Results, contextualResults)
         
-        // PHASE 1+2: Record Advanced Learning Data (Memory + Performance + Goals)
-        await recordPhase1And2LearningData(message, finalResponse, context, advancedResults, phase2Results)
+        // 🧠 COMPREHENSIVE LEARNING: Record Advanced Learning Data (Memory + Performance + Goals)
+        await recordPhase1And2LearningData(message, finalResponse, context, advancedResults, phase2Results, contextualResults)
         
         console.log('✅ PHASE 1+2 COMPLETE: Advanced AI response with all capabilities activated')
         
