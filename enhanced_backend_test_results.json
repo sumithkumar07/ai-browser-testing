@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-09-10T08:24:52.580Z",
+  "timestamp": "2025-09-10T08:26:58.043Z",
   "summary": {
     "total": 31,
     "passed": 5,
@@ -124,7 +124,7 @@
       {
         "name": "Orchestrator - Get System Health",
         "status": "passed",
-        "duration": 1
+        "duration": 0
       },
       {
         "name": "Orchestrator - Get System Metrics",
@@ -149,17 +149,17 @@
       {
         "name": "Integration - Autonomous Goal with Memory",
         "status": "passed",
-        "duration": 1
+        "duration": 0
       },
       {
         "name": "Performance - Concurrent Memory Operations",
         "status": "passed",
-        "duration": 2
+        "duration": 1
       },
       {
         "name": "Reliability - Service Health Recovery",
         "status": "passed",
-        "duration": 0
+        "duration": 1
       }
     ]
   },
