@@ -343,6 +343,20 @@ const App: React.FC = () => {
     setError(null)
   }, [])
 
+  // Debug panel keyboard shortcut (Ctrl+Shift+D or Cmd+Shift+D)
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'D') {
+        event.preventDefault()
+        setIsDebugPanelOpen(prev => !prev)
+        logger.info('Debug panel toggled', { isOpen: !isDebugPanelOpen })
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isDebugPanelOpen])
+
   // FIXED: Loading screen component
   if (isLoading) {
     return (
