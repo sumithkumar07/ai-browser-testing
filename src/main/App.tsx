@@ -87,7 +87,7 @@ const App: React.FC = () => {
             logger.info('AI service connected successfully')
           }
         } catch (aiError) {
-          logger.warn('AI service test failed:', aiError)
+          logger.warn('AI service test failed:', { error: aiError })
         }
 
         setIsLoading(false)
