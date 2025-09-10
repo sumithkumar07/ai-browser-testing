@@ -44,11 +44,11 @@ export async function initializeEnhancedBackend(): Promise<{
     const services = {
       memory: AgentMemoryService.getInstance(),
       planning: AutonomousPlanningEngine.getInstance(),
-      coordinator: EnhancedAgentCoordinator.getInstance(),
       search: DeepSearchEngine.getInstance(),
+      security: AdvancedSecurity.getInstance(),
+      coordinator: EnhancedAgentCoordinator.getInstance(),
       shadow: ShadowWorkspace.getInstance(),
-      crossPlatform: CrossPlatformIntegration.getInstance(),
-      security: AdvancedSecurity.getInstance()
+      crossPlatform: CrossPlatformIntegration.getInstance()
     }
 
     // Get system health
