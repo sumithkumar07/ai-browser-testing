@@ -410,6 +410,14 @@ const App: React.FC = () => {
             <AISidebar onClose={() => setIsAISidebarOpen(false)} />
           )}
         </div>
+        
+        {/* Debug Panel - Only in development */}
+        {process.env.NODE_ENV === 'development' && (
+          <DebugPanel 
+            isOpen={isDebugPanelOpen} 
+            onClose={() => setIsDebugPanelOpen(false)} 
+          />
+        )}
       </div>
     </ErrorBoundary>
   )
