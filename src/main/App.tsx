@@ -393,7 +393,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <ErrorBoundary onError={(error, errorInfo) => handleError(error, errorInfo.componentStack || 'Unknown context')}>
+    <EnhancedErrorBoundary onError={(error, errorInfo) => handleError(error, errorInfo.componentStack || 'Unknown context')}>
       <div className="app">
         <div className="app-header">
           <TabBar
@@ -433,7 +433,7 @@ const App: React.FC = () => {
           />
         )}
       </div>
-    </ErrorBoundary>
+    </EnhancedErrorBoundary>
   )
 }
 
