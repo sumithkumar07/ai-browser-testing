@@ -3039,6 +3039,15 @@ ${predictions.proactive.map(rec => `• ${rec}`).join('\n')}
         // Record performance metrics - START
         const startTime = Date.now()
         
+        // ZERO UI IMPACT: Predictive Performance Optimization
+        if (this.enhancedAISystem) {
+          try {
+            await this.enhancedAISystem.optimizePerformance();
+          } catch (optimizeError) {
+            console.warn('⚠️ Performance optimization failed:', optimizeError.message);
+          }
+        }
+        
         // Check API availability with circuit breaker
         if (this.apiValidator && this.apiValidator.isCircuitOpen()) {
           return { 
