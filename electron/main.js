@@ -407,6 +407,16 @@ class KAiroBrowserManager {
         console.warn('⚠️ Bug Detection and Fix System initialization failed:', error.message)
       }
 
+      // ZERO UI IMPACT: Initialize Enhanced AI System
+      try {
+        const { EnhancedAISystem } = require('./enhanced-ai-system.js')
+        this.enhancedAISystem = new EnhancedAISystem(this)
+        await this.enhancedAISystem.initialize()
+        console.log('✅ Enhanced AI System initialized - Zero UI impact improvements active')
+      } catch (error) {
+        console.warn('⚠️ Enhanced AI System initialization failed:', error.message)
+      }
+
       console.log('🎯 MAXIMUM POTENTIAL Enhanced Services initialized successfully!')
       
       // Log service health status
