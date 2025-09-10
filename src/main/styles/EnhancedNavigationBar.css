@@ -1,0 +1,411 @@
+/* Enhanced Navigation Bar Styles */
+.enhanced-navigation-bar {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 8px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  gap: 12px;
+  position: relative;
+  z-index: 100;
+}
+
+/* Navigation Controls */
+.nav-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-button {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: white;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.nav-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.nav-button:active {
+  transform: translateY(0);
+}
+
+.nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Address/Search Container */
+.address-search-container {
+  flex: 1;
+  position: relative;
+  max-width: 800px;
+}
+
+.address-form {
+  position: relative;
+  width: 100%;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.input-container:focus-within {
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 1);
+}
+
+/* Deep Search Toggle */
+.deep-search-toggle {
+  background: transparent;
+  border: none;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  border-radius: 50%;
+  margin: 2px;
+}
+
+.deep-search-toggle:hover {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.deep-search-toggle.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Enhanced Address Bar */
+.enhanced-address-bar {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 12px 16px;
+  font-size: 15px;
+  color: #333;
+  placeholder-color: #888;
+}
+
+.enhanced-address-bar.deep-search-mode {
+  background: linear-gradient(90deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+  font-weight: 500;
+}
+
+.enhanced-address-bar::placeholder {
+  color: #888;
+  font-style: italic;
+}
+
+.enhanced-address-bar.deep-search-mode::placeholder {
+  color: #667eea;
+  font-weight: 500;
+}
+
+/* Loading Indicator */
+.loading-indicator {
+  padding: 0 12px;
+  font-size: 18px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Suggestions Dropdown */
+.suggestions-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1000;
+  margin-top: 4px;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  gap: 12px;
+}
+
+.suggestion-item:hover {
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item.deep_search {
+  background: linear-gradient(90deg, rgba(102, 126, 234, 0.03), rgba(118, 75, 162, 0.03));
+  border-left: 3px solid #667eea;
+}
+
+.suggestion-item.deep_search:hover {
+  background: linear-gradient(90deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
+}
+
+.suggestion-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.suggestion-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.suggestion-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestion-description {
+  font-size: 12px;
+  color: #666;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestion-confidence {
+  font-size: 11px;
+  color: #888;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 2px 6px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+/* Security Section */
+.security-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.security-status {
+  font-size: 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+  cursor: help;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.security-status:hover {
+  transform: scale(1.05);
+}
+
+.security-scan-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: white;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.security-scan-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.security-scan-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* AI Toggle Button */
+.ai-toggle-button {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: white;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-toggle-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.ai-toggle-button.active {
+  background: rgba(255, 255, 255, 0.9);
+  color: #667eea;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.ai-toggle-button.active:hover {
+  background: rgba(255, 255, 255, 1);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .enhanced-navigation-bar {
+    padding: 6px 12px;
+    gap: 8px;
+  }
+  
+  .address-search-container {
+    max-width: none;
+  }
+  
+  .enhanced-address-bar {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+  
+  .security-status {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .enhanced-navigation-bar {
+    flex-wrap: wrap;
+    padding: 8px;
+  }
+  
+  .address-search-container {
+    order: 3;
+    width: 100%;
+    margin-top: 8px;
+  }
+  
+  .nav-controls {
+    order: 1;
+  }
+  
+  .security-section {
+    order: 2;
+  }
+  
+  .ai-toggle-button {
+    order: 4;
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+}
+
+/* Animation for Deep Search activation */
+@keyframes deepSearchActivate {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.deep-search-toggle.active {
+  animation: deepSearchActivate 0.5s ease;
+}
+
+/* Accessibility */
+.enhanced-navigation-bar *:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .enhanced-navigation-bar {
+    background: #000;
+    border-bottom: 2px solid #fff;
+  }
+  
+  .nav-button, .security-scan-btn, .ai-toggle-button {
+    background: #333;
+    border: 2px solid #fff;
+    color: #fff;
+  }
+  
+  .input-container {
+    background: #fff;
+    border: 2px solid #000;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .suggestions-dropdown {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: white;
+  }
+  
+  .suggestion-item {
+    border-bottom-color: #4a5568;
+  }
+  
+  .suggestion-item:hover {
+    background: rgba(102, 126, 234, 0.2);
+  }
+  
+  .suggestion-text {
+    color: #e2e8f0;
+  }
+  
+  .suggestion-description {
+    color: #a0aec0;
+  }
+}
