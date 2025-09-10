@@ -176,12 +176,13 @@ class DatabaseService {
     this.db.exec('CREATE INDEX IF NOT EXISTS idx_agent_health_status ON agent_health(status)');
     this.db.exec('CREATE INDEX IF NOT EXISTS idx_agent_health_check ON agent_health(last_health_check DESC)');
     
-    // ENHANCED: Add system config table for better data management
+    // ENHANCED: Add system config table for better data management with data_type support
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS system_config (
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL,
         type TEXT NOT NULL,
+        data_type TEXT DEFAULT 'string',
         updated_at INTEGER NOT NULL,
         category TEXT DEFAULT 'general'
       )
