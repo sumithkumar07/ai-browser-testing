@@ -279,11 +279,14 @@ class KAiroBrowserManager {
         console.warn('⚠️ Autonomous Planning Engine initialization failed:', error.message)
       }
 
-      // Initialize Advanced Agent Memory Service
+      // Initialize Advanced Agent Memory Service - ENHANCED
       try {
         this.agentMemoryService = AgentMemoryService.getInstance()
         await this.agentMemoryService.initialize()
-        console.log('✅ Advanced Agent Memory Service initialized')
+        
+        // Enable learning from agent interactions
+        this.enableAgentLearning = true
+        console.log('✅ Advanced Agent Memory Service initialized with learning enabled')
       } catch (error) {
         console.warn('⚠️ Advanced Agent Memory Service initialization failed:', error.message)
       }
