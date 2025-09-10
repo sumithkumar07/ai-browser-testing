@@ -46,7 +46,7 @@ export interface Agent {
 export class IntegratedAgentFramework {
   private static instance: IntegratedAgentFramework
   private agents: Map<string, Agent> = new Map()
-  private conversationManager: ConversationManager
+  // Conversation management handled by main process
   private eventListeners: Map<string, Function[]> = new Map()
   private isInitialized = false
 
