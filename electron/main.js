@@ -1477,6 +1477,236 @@ class KAiroBrowserManager {
     }
   }
 
+  // ENHANCED NLP FEATURE DETECTION SYSTEM
+  async detectNLPFeatures(message) {
+    const lowerMessage = message.toLowerCase().trim()
+    const detectedFeatures = []
+
+    try {
+      // 1. AUTONOMOUS GOAL DETECTION 🎯
+      const goalPatterns = [
+        { pattern: /(?:track|monitor|watch|keep an eye on|alert me|notify me|let me know).*(price|cost|deal|sale|discount)/i, type: 'price_monitoring' },
+        { pattern: /(?:track|monitor|watch|keep an eye on|alert me|notify me|let me know).*(news|update|development|announcement|release)/i, type: 'news_monitoring' },
+        { pattern: /(?:remind me|schedule|set up|automate|do this).*(regularly|daily|weekly|monthly|every|recurring)/i, type: 'recurring_task' },
+        { pattern: /(?:create|set up|establish|make).*(goal|task|monitoring|automation|schedule)/i, type: 'goal_creation' },
+        { pattern: /(?:find|search for|look for|get|buy).*(when|if).*(under|below|less than|cheaper than|price drops)/i, type: 'conditional_monitoring' }
+      ]
+
+      for (const { pattern, type } of goalPatterns) {
+        if (pattern.test(lowerMessage)) {
+          detectedFeatures.push({ category: 'autonomous_goals', type, confidence: 0.9, trigger: 'goal_creation' })
+          break
+        }
+      }
+
+      // 2. DEEP SEARCH ENGINE DETECTION 🔍
+      const searchPatterns = [
+        { pattern: /(?:research|investigate|study|analyze|explore|examine).*(thoroughly|comprehensively|in detail|deep|complete)/i, type: 'comprehensive_research' },
+        { pattern: /(?:find|search|look up|discover).*(everything|all|comprehensive|detailed|complete|thorough)/i, type: 'exhaustive_search' },
+        { pattern: /(?:what's happening|latest|recent|current|newest|updates|developments).*(with|in|about|on)/i, type: 'current_events' },
+        { pattern: /(?:compare|vs|versus|difference|better|best|top|which|evaluate)/i, type: 'comparative_analysis' },
+        { pattern: /(?:sources|references|citations|papers|studies|articles|reports)/i, type: 'academic_research' }
+      ]
+
+      for (const { pattern, type } of searchPatterns) {
+        if (pattern.test(lowerMessage)) {
+          detectedFeatures.push({ category: 'deep_search', type, confidence: 0.85, trigger: 'enhanced_search' })
+          break
+        }
+      }
+
+      // 3. SECURITY & PRIVACY DETECTION 🛡️
+      const securityPatterns = [
+        { pattern: /(?:is|check|verify|scan).*(safe|secure|trusted|legitimate|real)/i, type: 'safety_check' },
+        { pattern: /(?:security|privacy|protection|threat|malware|phishing|scam)/i, type: 'security_analysis' },
+        { pattern: /(?:protect|secure|private|anonymous|hide|encrypt)/i, type: 'privacy_enhancement' },
+        { pattern: /(?:what.*tracking|who.*watching|privacy.*policy|data.*collected)/i, type: 'privacy_inquiry' }
+      ]
+
+      for (const { pattern, type } of securityPatterns) {
+        if (pattern.test(lowerMessage)) {
+          detectedFeatures.push({ category: 'security', type, confidence: 0.8, trigger: 'security_scan' })
+          break
+        }
+      }
+
+      // 4. MEMORY & LEARNING DETECTION 🧠
+      const memoryPatterns = [
+        { pattern: /(?:what do you know|tell me|show me|remember|recall).*(about me|my.*interest|my.*habit|my.*pattern)/i, type: 'personal_insights' },
+        { pattern: /(?:how.*doing|performance|progress|improvement|learning|getting better)/i, type: 'performance_review' },
+        { pattern: /(?:what.*learned|pattern|trend|behavior|preference|like|interest)/i, type: 'learning_analysis' },
+        { pattern: /(?:remember|save|store|keep.*track|note|record)/i, type: 'memory_storage' }
+      ]
+
+      for (const { pattern, type } of memoryPatterns) {
+        if (pattern.test(lowerMessage)) {
+          detectedFeatures.push({ category: 'memory_learning', type, confidence: 0.75, trigger: 'memory_access' })
+          break
+        }
+      }
+
+      // 5. PERFORMANCE & SYSTEM DETECTION 📊
+      const systemPatterns = [
+        { pattern: /(?:how.*running|performance|speed|slow|fast|optimize|improve)/i, type: 'performance_check' },
+        { pattern: /(?:system|browser|app).*(health|status|working|issue|problem)/i, type: 'system_health' },
+        { pattern: /(?:fix|repair|troubleshoot|debug|error|issue|problem)/i, type: 'troubleshooting' },
+        { pattern: /(?:memory|ram|cpu|resource|usage|consumption)/i, type: 'resource_monitoring' }
+      ]
+
+      for (const { pattern, type } of systemPatterns) {
+        if (pattern.test(lowerMessage)) {
+          detectedFeatures.push({ category: 'system_performance', type, confidence: 0.7, trigger: 'system_analysis' })
+          break
+        }
+      }
+
+      // 6. AUTOMATION & TASK DETECTION ⚡
+      const automationPatterns = [
+        { pattern: /(?:automate|automatic|schedule|recurring|repeat|regularly)/i, type: 'task_automation' },
+        { pattern: /(?:every|daily|weekly|monthly|hourly|routine)/i, type: 'scheduled_task' },
+        { pattern: /(?:workflow|process|procedure|steps|sequence)/i, type: 'workflow_creation' },
+        { pattern: /(?:set up|configure|arrange|organize|manage)/i, type: 'system_setup' }
+      ]
+
+      for (const { pattern, type } of automationPatterns) {
+        if (pattern.test(lowerMessage)) {
+          detectedFeatures.push({ category: 'automation', type, confidence: 0.8, trigger: 'automation_setup' })
+          break
+        }
+      }
+
+      // 7. CONTEXTUAL PAGE ANALYSIS DETECTION 📄
+      const contextPatterns = [
+        { pattern: /(?:this page|current page|this site|this website|here|this content)/i, type: 'page_analysis' },
+        { pattern: /(?:summarize|summary|overview|main points|key points)/i, type: 'content_summary' },
+        { pattern: /(?:analyze|analysis|examine|evaluate|assess|review)/i, type: 'content_analysis' },
+        { pattern: /(?:extract|get|find|pull).*(data|information|details|facts)/i, type: 'data_extraction' }
+      ]
+
+      for (const { pattern, type } of contextPatterns) {
+        if (pattern.test(lowerMessage)) {
+          detectedFeatures.push({ category: 'context_analysis', type, confidence: 0.9, trigger: 'context_processing' })
+          break
+        }
+      }
+
+      // 8. SHOPPING & PRICE DETECTION 🛒
+      const shoppingPatterns = [
+        { pattern: /(?:price|cost|expensive|cheap|deal|sale|discount|offer)/i, type: 'price_inquiry' },
+        { pattern: /(?:compare|vs|versus|better|best|recommend|suggest)/i, type: 'product_comparison' },
+        { pattern: /(?:buy|purchase|order|get|find|shop)/i, type: 'purchase_intent' },
+        { pattern: /(?:review|rating|opinion|feedback|quality)/i, type: 'product_research' }
+      ]
+
+      for (const { pattern, type } of shoppingPatterns) {
+        if (pattern.test(lowerMessage)) {
+          detectedFeatures.push({ category: 'shopping', type, confidence: 0.85, trigger: 'shopping_assistance' })
+          break
+        }
+      }
+
+      // 9. PREDICTIVE ASSISTANCE DETECTION 🔮
+      const predictivePatterns = [
+        { pattern: /(?:what.*next|suggest|recommend|what should|help me|guide me)/i, type: 'guidance_request' },
+        { pattern: /(?:similar|related|like this|more like|alternative)/i, type: 'similarity_search' },
+        { pattern: /(?:predict|forecast|trend|future|likely|expect)/i, type: 'predictive_analysis' },
+        { pattern: /(?:based on|considering|given|according to)/i, type: 'contextual_reasoning' }
+      ]
+
+      for (const { pattern, type } of predictivePatterns) {
+        if (pattern.test(lowerMessage)) {
+          detectedFeatures.push({ category: 'predictive_assistance', type, confidence: 0.7, trigger: 'predictive_processing' })
+          break
+        }
+      }
+
+      // 10. INTENT PRIORITY SCORING
+      if (detectedFeatures.length > 1) {
+        // Sort by confidence and relevance
+        detectedFeatures.sort((a, b) => b.confidence - a.confidence)
+        
+        // Keep top 3 most relevant features
+        detectedFeatures.splice(3)
+      }
+
+      return detectedFeatures
+
+    } catch (error) {
+      console.error('❌ NLP feature detection failed:', error)
+      return []
+    }
+  }
+
+  // ENHANCED FEATURE EXECUTION SYSTEM
+  async executeNLPFeatures(features, originalMessage, context) {
+    const results = {
+      executedFeatures: [],
+      responses: [],
+      actions: []
+    }
+
+    try {
+      for (const feature of features) {
+        console.log(`🚀 Executing NLP feature: ${feature.category} - ${feature.type}`)
+        
+        let featureResult = null
+
+        switch (feature.category) {
+          case 'autonomous_goals':
+            featureResult = await this.executeGoalCreation(feature, originalMessage, context)
+            break
+          case 'deep_search':
+            featureResult = await this.executeDeepSearch(feature, originalMessage, context)
+            break
+          case 'security':
+            featureResult = await this.executeSecurityScan(feature, originalMessage, context)
+            break
+          case 'memory_learning':
+            featureResult = await this.executeMemoryAccess(feature, originalMessage, context)
+            break
+          case 'system_performance':
+            featureResult = await this.executeSystemAnalysis(feature, originalMessage, context)
+            break
+          case 'automation':
+            featureResult = await this.executeAutomation(feature, originalMessage, context)
+            break
+          case 'context_analysis':
+            featureResult = await this.executeContextAnalysis(feature, originalMessage, context)
+            break
+          case 'shopping':
+            featureResult = await this.executeShoppingAssistance(feature, originalMessage, context)
+            break
+          case 'predictive_assistance':
+            featureResult = await this.executePredictiveAssistance(feature, originalMessage, context)
+            break
+        }
+
+        if (featureResult && featureResult.success) {
+          results.executedFeatures.push({
+            category: feature.category,
+            type: feature.type,
+            confidence: feature.confidence,
+            result: featureResult
+          })
+          
+          if (featureResult.response) {
+            results.responses.push(featureResult.response)
+          }
+          
+          if (featureResult.actions) {
+            results.actions.push(...featureResult.actions)
+          }
+        }
+      }
+
+      return results
+
+    } catch (error) {
+      console.error('❌ NLP feature execution failed:', error)
+      return results
+    }
+  }
+
   setupIPCHandlers() {
     console.log('🔌 Setting up IPC handlers...')
     
