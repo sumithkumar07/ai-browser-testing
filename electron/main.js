@@ -955,12 +955,21 @@ class KAiroBrowserManager {
     if (lowerTask.includes('deal') || lowerTask.includes('discount') || lowerTask.includes('sale')) {
       scores.shopping = Math.max(scores.shopping, 85)
     }
-    // FIXED: Improve detection for shopping-related searches
+    // ENHANCED: Better detection for shopping-related searches
     if (lowerTask.includes('best') && (lowerTask.includes('laptop') || lowerTask.includes('phone') || lowerTask.includes('product'))) {
-      scores.shopping = Math.max(scores.shopping, 90)
+      scores.shopping = Math.max(scores.shopping, 95)
     }
     if (lowerTask.includes('find') && (lowerTask.includes('deal') || lowerTask.includes('price') || lowerTask.includes('cheap'))) {
-      scores.shopping = Math.max(scores.shopping, 88)
+      scores.shopping = Math.max(scores.shopping, 93)
+    }
+    // CRITICAL FIX: Handle "find best laptop deals" pattern specifically
+    if (lowerTask.includes('find') && lowerTask.includes('best') && (lowerTask.includes('laptop') || lowerTask.includes('deals') || lowerTask.includes('phone'))) {
+      scores.shopping = 95
+      scores.research = 70 // Reduce research score for shopping-related finds
+    }
+    // Enhanced shopping product keywords
+    if (lowerTask.includes('laptop') || lowerTask.includes('computer') || lowerTask.includes('phone') || lowerTask.includes('tablet')) {
+      scores.shopping = Math.max(scores.shopping, 85)
     }
     
     // Enhanced Communication Agent scoring
