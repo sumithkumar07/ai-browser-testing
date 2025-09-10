@@ -2,7 +2,6 @@
 // Last Updated: Bug Fix Session - Enhanced Error Handling & Performance
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import TabBar from './components/TabBar'
-import NavigationBar from './components/NavigationBar'
 import EnhancedNavigationBar from './components/EnhancedNavigationBar'
 import BrowserWindow from './components/BrowserWindow'
 import AISidebar from './components/AISidebar'
