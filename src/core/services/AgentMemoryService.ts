@@ -604,12 +604,13 @@ class AgentMemoryService {
     }
   }
 
-  // Persistence Methods
+  // Browser-compatible storage methods
   private async persistMemories(agentId: string): Promise<void> {
     try {
-      const filePath = path.join(this.memoryPath, `${agentId}_memories.json`)
-      const memories = this.memories.get(agentId) || []
-      await fs.promises.writeFile(filePath, JSON.stringify(memories, null, 2))
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const memories = this.memories.get(agentId) || []
+        localStorage.setItem(`kairo_memories_${agentId}`, JSON.stringify(memories))
+      }
     } catch (error) {
       logger.error(`Failed to persist memories for agent ${agentId}`, error as Error)
     }
@@ -617,9 +618,10 @@ class AgentMemoryService {
 
   private async persistKnowledge(agentId: string): Promise<void> {
     try {
-      const filePath = path.join(this.memoryPath, `${agentId}_knowledge.json`)
-      const knowledge = this.knowledge.get(agentId) || []
-      await fs.promises.writeFile(filePath, JSON.stringify(knowledge, null, 2))
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const knowledge = this.knowledge.get(agentId) || []
+        localStorage.setItem(`kairo_knowledge_${agentId}`, JSON.stringify(knowledge))
+      }
     } catch (error) {
       logger.error(`Failed to persist knowledge for agent ${agentId}`, error as Error)
     }
@@ -627,62 +629,45 @@ class AgentMemoryService {
 
   private async persistGoals(agentId: string): Promise<void> {
     try {
-      const filePath = path.join(this.memoryPath, `${agentId}_goals.json`)
-      const goals = this.goals.get(agentId) || []
-      await fs.promises.writeFile(filePath, JSON.stringify(goals, null, 2))
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const goals = this.goals.get(agentId) || []
+        localStorage.setItem(`kairo_goals_${agentId}`, JSON.stringify(goals))
+      }
     } catch (error) {
       logger.error(`Failed to persist goals for agent ${agentId}`, error as Error)
     }
   }
 
-  private async loadAllMemories(): Promise<void> {
+  private async loadFromLocalStorage(): Promise<void> {
     try {
-      const files = await fs.promises.readdir(this.memoryPath)
-      const memoryFiles = files.filter(f => f.endsWith('_memories.json'))
+      const agents = ['research', 'navigation', 'shopping', 'communication', 'automation', 'analysis']
       
-      for (const file of memoryFiles) {
-        const agentId = file.replace('_memories.json', '')
-        const filePath = path.join(this.memoryPath, file)
-        const data = await fs.promises.readFile(filePath, 'utf-8')
-        const memories = JSON.parse(data) as AgentMemoryEntry[]
-        this.memories.set(agentId, memories)
-      }
-    } catch (error) {
-      logger.warn('No existing memories found, starting fresh')
-    }
-  }
+      for (const agentId of agents) {
+        // Load memories
+        const memoriesData = localStorage.getItem(`kairo_memories_${agentId}`)
+        if (memoriesData) {
+          const memories = JSON.parse(memoriesData) as AgentMemoryEntry[]
+          this.memories.set(agentId, memories)
+        }
 
-  private async loadAllKnowledge(): Promise<void> {
-    try {
-      const files = await fs.promises.readdir(this.memoryPath)
-      const knowledgeFiles = files.filter(f => f.endsWith('_knowledge.json'))
-      
-      for (const file of knowledgeFiles) {
-        const agentId = file.replace('_knowledge.json', '')
-        const filePath = path.join(this.memoryPath, file)
-        const data = await fs.promises.readFile(filePath, 'utf-8')
-        const knowledge = JSON.parse(data) as AgentKnowledge[]
-        this.knowledge.set(agentId, knowledge)
-      }
-    } catch (error) {
-      logger.warn('No existing knowledge found, starting fresh')
-    }
-  }
+        // Load knowledge
+        const knowledgeData = localStorage.getItem(`kairo_knowledge_${agentId}`)
+        if (knowledgeData) {
+          const knowledge = JSON.parse(knowledgeData) as AgentKnowledge[]
+          this.knowledge.set(agentId, knowledge)
+        }
 
-  private async loadAllGoals(): Promise<void> {
-    try {
-      const files = await fs.promises.readdir(this.memoryPath)
-      const goalFiles = files.filter(f => f.endsWith('_goals.json'))
-      
-      for (const file of goalFiles) {
-        const agentId = file.replace('_goals.json', '')
-        const filePath = path.join(this.memoryPath, file)
-        const data = await fs.promises.readFile(filePath, 'utf-8')
-        const goals = JSON.parse(data) as AgentGoal[]
-        this.goals.set(agentId, goals)
+        // Load goals
+        const goalsData = localStorage.getItem(`kairo_goals_${agentId}`)
+        if (goalsData) {
+          const goals = JSON.parse(goalsData) as AgentGoal[]
+          this.goals.set(agentId, goals)
+        }
       }
+      
+      logger.info('📂 Loaded agent data from browser storage')
     } catch (error) {
-      logger.warn('No existing goals found, starting fresh')
+      logger.warn('No existing agent data found, starting fresh')
     }
   }
 
