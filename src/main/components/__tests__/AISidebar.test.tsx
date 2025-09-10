@@ -1,8 +1,7 @@
 // AISidebar Component Tests
 // Comprehensive test suite for AI sidebar functionality
 
-import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
 import AISidebar from '../AISidebar'
