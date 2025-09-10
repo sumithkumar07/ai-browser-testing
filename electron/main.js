@@ -2408,30 +2408,258 @@ Keep it concise and helpful.`
       }
     })
 
-    // Data storage handlers - FIXED: Added missing handlers
+    // Data storage handlers - ENHANCED: Full database implementation
     ipcMain.handle('get-data', async (event, key) => {
       try {
-        // Placeholder for data storage functionality
-        console.log(`💾 Get data requested for key: ${key} (placeholder)`)
-        return { 
-          success: false, 
-          error: 'Data storage not implemented yet' 
+        console.log(`💾 Getting data for key: ${key}`)
+        
+        if (!key || typeof key !== 'string') {
+          return { success: false, error: 'Valid key string is required' }
         }
+
+        if (this.databaseService && this.databaseService.db) {
+          try {
+            const stmt = this.databaseService.db.prepare('SELECT * FROM system_config WHERE key = ?')
+            const row = stmt.get(key)
+            
+            if (row) {
+              let value
+              try {
+                // Parse stored value based on type
+                switch (row.type) {
+                  case 'json':
+                    value = JSON.parse(row.value)
+                    break
+                  case 'number':
+                    value = parseFloat(row.value)
+                    break
+                  case 'boolean':
+                    value = row.value === 'true'
+                    break
+                  case 'string':
+                  default:
+                    value = row.value
+                    break
+                }
+              } catch (parseError) {
+                console.warn('⚠️ Failed to parse stored value, returning as string:', parseError)
+                value = row.value
+              }
+
+              console.log(`✅ Retrieved data for key: ${key}`)
+              return { 
+                success: true,
+                key: key,
+                value: value,
+                type: row.type,
+                category: row.category,
+                updatedAt: row.updated_at,
+                timestamp: Date.now()
+              }
+            } else {
+              return { 
+                success: false, 
+                error: `No data found for key: ${key}`,
+                key: key
+              }
+            }
+          } catch (dbError) {
+            console.error('❌ Failed to get data from database:', dbError)
+            return { success: false, error: `Database error: ${dbError.message}` }
+          }
+        } else {
+          return { success: false, error: 'Database not available' }
+        }
+
       } catch (error) {
-        return { success: false, error: error.message }
+        console.error('❌ Get data failed:', error)
+        return { success: false, error: `Get data failed: ${error.message}` }
       }
     })
 
     ipcMain.handle('save-data', async (event, key, data) => {
       try {
-        // Placeholder for data storage functionality
-        console.log(`💾 Save data requested for key: ${key} (placeholder)`)
-        return { 
-          success: false, 
-          error: 'Data storage not implemented yet' 
+        console.log(`💾 Saving data for key: ${key}`)
+        
+        if (!key || typeof key !== 'string') {
+          return { success: false, error: 'Valid key string is required' }
         }
+
+        if (data === undefined) {
+          return { success: false, error: 'Data value is required' }
+        }
+
+        if (this.databaseService && this.databaseService.db) {
+          try {
+            // Determine data type and serialize if needed
+            let value, type
+            if (typeof data === 'object' && data !== null) {
+              value = JSON.stringify(data)
+              type = 'json'
+            } else if (typeof data === 'number') {
+              value = data.toString()
+              type = 'number'
+            } else if (typeof data === 'boolean') {
+              value = data.toString()
+              type = 'boolean'
+            } else {
+              value = String(data)
+              type = 'string'
+            }
+
+            const stmt = this.databaseService.db.prepare(`
+              INSERT OR REPLACE INTO system_config 
+              (key, value, type, updated_at, category)
+              VALUES (?, ?, ?, ?, ?)
+            `)
+            
+            const now = Date.now()
+            const category = key.includes('.') ? key.split('.')[0] : 'general'
+            
+            stmt.run(key, value, type, now, category)
+            
+            console.log(`✅ Saved data for key: ${key}`)
+            return { 
+              success: true,
+              key: key,
+              value: data,
+              type: type,
+              category: category,
+              updatedAt: now,
+              message: `Data saved successfully for key: ${key}`,
+              timestamp: Date.now()
+            }
+          } catch (dbError) {
+            console.error('❌ Failed to save data to database:', dbError)
+            return { success: false, error: `Database error: ${dbError.message}` }
+          }
+        } else {
+          return { success: false, error: 'Database not available' }
+        }
+
       } catch (error) {
-        return { success: false, error: error.message }
+        console.error('❌ Save data failed:', error)
+        return { success: false, error: `Save data failed: ${error.message}` }
+      }
+    })
+
+    // Additional data storage helpers
+    ipcMain.handle('get-all-data', async (event, category) => {
+      try {
+        console.log(`💾 Getting all data${category ? ` for category: ${category}` : ''}`)
+        
+        if (this.databaseService && this.databaseService.db) {
+          try {
+            let query = 'SELECT * FROM system_config'
+            let params = []
+            
+            if (category) {
+              query += ' WHERE category = ?'
+              params.push(category)
+            }
+            
+            query += ' ORDER BY updated_at DESC'
+            
+            const stmt = this.databaseService.db.prepare(query)
+            const rows = stmt.all(...params)
+            
+            const data = {}
+            for (const row of rows) {
+              try {
+                let value
+                switch (row.type) {
+                  case 'json':
+                    value = JSON.parse(row.value)
+                    break
+                  case 'number':
+                    value = parseFloat(row.value)
+                    break
+                  case 'boolean':
+                    value = row.value === 'true'
+                    break
+                  case 'string':
+                  default:
+                    value = row.value
+                    break
+                }
+                data[row.key] = {
+                  value: value,
+                  type: row.type,
+                  category: row.category,
+                  updatedAt: row.updated_at
+                }
+              } catch (parseError) {
+                console.warn(`⚠️ Failed to parse value for key ${row.key}:`, parseError)
+                data[row.key] = {
+                  value: row.value,
+                  type: 'string',
+                  category: row.category,
+                  updatedAt: row.updated_at
+                }
+              }
+            }
+            
+            console.log(`✅ Retrieved ${Object.keys(data).length} data entries`)
+            return { 
+              success: true,
+              data: data,
+              count: Object.keys(data).length,
+              category: category,
+              timestamp: Date.now()
+            }
+          } catch (dbError) {
+            console.error('❌ Failed to get all data from database:', dbError)
+            return { success: false, error: `Database error: ${dbError.message}` }
+          }
+        } else {
+          return { success: false, error: 'Database not available' }
+        }
+
+      } catch (error) {
+        console.error('❌ Get all data failed:', error)
+        return { success: false, error: `Get all data failed: ${error.message}` }
+      }
+    })
+
+    ipcMain.handle('delete-data', async (event, key) => {
+      try {
+        console.log(`💾 Deleting data for key: ${key}`)
+        
+        if (!key || typeof key !== 'string') {
+          return { success: false, error: 'Valid key string is required' }
+        }
+
+        if (this.databaseService && this.databaseService.db) {
+          try {
+            const stmt = this.databaseService.db.prepare('DELETE FROM system_config WHERE key = ?')
+            const result = stmt.run(key)
+            
+            if (result.changes > 0) {
+              console.log(`✅ Deleted data for key: ${key}`)
+              return { 
+                success: true,
+                key: key,
+                message: `Data deleted successfully for key: ${key}`,
+                timestamp: Date.now()
+              }
+            } else {
+              return { 
+                success: false, 
+                error: `No data found for key: ${key}`,
+                key: key
+              }
+            }
+          } catch (dbError) {
+            console.error('❌ Failed to delete data from database:', dbError)
+            return { success: false, error: `Database error: ${dbError.message}` }
+          }
+        } else {
+          return { success: false, error: 'Database not available' }
+        }
+
+      } catch (error) {
+        console.error('❌ Delete data failed:', error)
+        return { success: false, error: `Delete data failed: ${error.message}` }
       }
     })
 
