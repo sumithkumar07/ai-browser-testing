@@ -454,7 +454,7 @@ const formatMessageContent = (content: string): string => {
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       
       // Lists
-      .replace(/^[\*\-] (.*$)/gim, '<li style="margin: 4px 0;">$1</li>')
+      .replace(/^[*-] (.*$)/gim, '<li style="margin: 4px 0;">$1</li>')
       
       // Links (basic, be careful with XSS)
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: underline;">$1</a>')
