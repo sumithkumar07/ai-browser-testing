@@ -90,6 +90,19 @@ const App: React.FC = () => {
           logger.warn('AI service test failed:', { error: aiError })
         }
 
+        // Initialize Enhanced Backend Services
+        try {
+          const { initializeEnhancedBackend } = await import('../core/services/index')
+          const backendResult = await initializeEnhancedBackend()
+          logger.info('🚀 Enhanced Backend Services initialized:', {
+            services: Object.keys(backendResult.services).length,
+            health: `${(backendResult.health.overall * 100).toFixed(1)}%`,
+            healthyServices: backendResult.health.services.filter((s: any) => s.status === 'healthy').length
+          })
+        } catch (backendError) {
+          logger.warn('Enhanced Backend Services initialization failed, continuing with basic functionality:', { error: backendError })
+        }
+
         setIsLoading(false)
         logger.info('✅ KAiro Browser initialized successfully')
         
