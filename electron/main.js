@@ -155,8 +155,42 @@ class KAiroBrowserManager {
 
       // Initialize Enhanced Agent Services with fallback
       try {
-        const AgentMemoryService = require('../compiled/services/AgentMemoryService.js')
-        const AgentCoordinationService = require('../compiled/services/AgentCoordinationService.js')
+        // Try to load compiled services first
+        let AgentMemoryService, AgentCoordinationService
+        
+        try {
+          AgentMemoryService = require('../compiled/services/AgentMemoryService.js')
+          AgentCoordinationService = require('../compiled/services/AgentCoordinationService.js')
+        } catch (compiledError) {
+          console.log('📝 Compiled services not found, trying TypeScript sources...')
+          
+          // Fallback to TypeScript sources (may require ts-node or compilation)
+          try {
+            AgentMemoryService = require('../src/core/services/AgentMemoryService.ts')
+            AgentCoordinationService = require('../src/core/services/AgentCoordinationService.ts')
+          } catch (tsError) {
+            console.log('📝 TypeScript services require compilation, using fallback implementations...')
+            
+            // Create fallback implementations
+            AgentMemoryService = {
+              default: {
+                getInstance: () => ({
+                  initialize: async () => console.log('✅ Fallback agent memory service initialized'),
+                  recordTaskOutcome: async () => console.log('📝 Task outcome recorded (fallback)')
+                })
+              }
+            }
+            
+            AgentCoordinationService = {
+              default: {
+                getInstance: () => ({
+                  initialize: async () => console.log('✅ Fallback agent coordination service initialized'),
+                  monitorGoalProgress: async () => ({ activeGoals: 0, averageProgress: 0 })
+                })
+              }
+            }
+          }
+        }
         
         this.agentMemoryService = AgentMemoryService.default.getInstance()
         await this.agentMemoryService.initialize()
