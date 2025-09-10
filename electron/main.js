@@ -358,6 +358,15 @@ class KAiroBrowserManager {
       // Start continuous optimization
       this.startContinuousOptimization()
 
+      // ENHANCED: Initialize Backend Coordinator to manage all services
+      try {
+        this.enhancedBackendCoordinator = new EnhancedBackendCoordinator(this)
+        await this.enhancedBackendCoordinator.initialize()
+        console.log('✅ Enhanced Backend Coordinator initialized')
+      } catch (error) {
+        console.warn('⚠️ Enhanced Backend Coordinator initialization failed:', error.message)
+      }
+
       console.log('🎯 MAXIMUM POTENTIAL Enhanced Services initialized successfully!')
       
       // Log service health status
