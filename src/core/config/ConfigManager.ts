@@ -198,7 +198,7 @@ export class ConfigManager {
       this.config = ConfigSchema.parse(this.config)
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const validationErrors: ConfigValidationError[] = error.errors.map(err => ({
+        const validationErrors: ConfigValidationError[] = error.issues.map((err: any) => ({
           path: err.path.join('.'),
           message: err.message,
           code: err.code
