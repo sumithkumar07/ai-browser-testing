@@ -14,12 +14,17 @@ const { BackgroundTaskScheduler } = require('../src/backend/BackgroundTaskSchedu
 const { ApiValidator } = require('../src/core/services/ApiValidator')
 const { DatabaseHealthManager } = require('../src/core/services/DatabaseHealthManager')
 
-// Import enhanced capabilities - NEW
+// Import enhanced capabilities - NEW MAXIMUM POTENTIAL SERVICES
 const DeepSearchEngine = require('../src/core/services/DeepSearchEngine.js')
 const ShadowWorkspace = require('../src/core/services/ShadowWorkspace.js')
 const CrossPlatformIntegration = require('../src/core/services/CrossPlatformIntegration.js')
 const AdvancedSecurity = require('../src/core/services/AdvancedSecurity.js')
 const EnhancedAgentCoordinator = require('../src/core/services/EnhancedAgentCoordinator.js')
+
+// Enhanced Maximum Potential Services - NEW 
+const AgentMemoryService = require('../src/core/services/AgentMemoryService.js')
+const AutonomousPlanningEngine = require('../src/core/services/AutonomousPlanningEngine.js')
+const UnifiedServiceOrchestrator = require('../src/core/services/UnifiedServiceOrchestrator.js')
 
 console.log('🤖 Enhanced backend services loaded successfully')
 
