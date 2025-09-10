@@ -1780,10 +1780,14 @@ class KAiroBrowserManager {
           return { success: false, error: 'AI service not initialized - please check GROQ API key configuration' }
         }
 
-        // Try agentic processing first
+        // ENHANCED: Advanced NLP Feature Detection and Automatic Execution
+        const nlpFeatures = await this.detectNLPFeatures(message)
+        console.log('🧠 NLP Features detected:', nlpFeatures)
+        
+        // Try agentic processing first with NLP-enhanced capabilities
         let agenticResult = null
         try {
-          agenticResult = await this.processWithAgenticCapabilities(message)
+          agenticResult = await this.processWithAgenticCapabilities(message, nlpFeatures)
         } catch (agenticError) {
           console.warn('⚠️ Agentic processing failed, falling back to standard AI:', agenticError.message)
         }
