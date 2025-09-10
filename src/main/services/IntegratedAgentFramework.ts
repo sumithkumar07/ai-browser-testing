@@ -292,7 +292,7 @@ class NavigationAgent implements Agent {
     // Smart URL processing
     if (url) {
       // FIXED: Better URL cleaning and validation
-      url = url.trim().replace(/[^\w\-\.\/\:\?\=\&\%]/g, '')
+      url = url.trim().replace(/[^\w\-./:?=&%]/g, '')
       
       // Add protocol if missing
       if (!url.startsWith('http')) {
