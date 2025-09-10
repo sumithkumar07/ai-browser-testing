@@ -2947,6 +2947,385 @@ Keep it concise and helpful.`
       }
     })
 
+    // ENHANCED BACKEND IPC HANDLERS - MAXIMUM POTENTIAL
+    console.log('🔌 Setting up Enhanced Backend IPC handlers...')
+
+    // Autonomous Planning Engine Handlers
+    ipcMain.handle('create-autonomous-goal', async (event, goalConfig) => {
+      try {
+        if (!this.autonomousPlanningEngine) {
+          return { success: false, error: 'Autonomous Planning Engine not available' }
+        }
+
+        const goal = await this.autonomousPlanningEngine.createAutonomousGoal(goalConfig)
+        return { success: true, goal }
+      } catch (error) {
+        console.error('❌ Failed to create autonomous goal:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-autonomous-goals', async () => {
+      try {
+        if (!this.autonomousPlanningEngine) {
+          return { success: false, error: 'Autonomous Planning Engine not available' }
+        }
+
+        const goals = this.autonomousPlanningEngine.getActiveGoals()
+        return { success: true, goals }
+      } catch (error) {
+        console.error('❌ Failed to get autonomous goals:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('execute-autonomous-goal', async (event, goalId) => {
+      try {
+        if (!this.autonomousPlanningEngine) {
+          return { success: false, error: 'Autonomous Planning Engine not available' }
+        }
+
+        await this.autonomousPlanningEngine.executeAutonomousGoal(goalId)
+        return { success: true, message: 'Goal execution started' }
+      } catch (error) {
+        console.error('❌ Failed to execute autonomous goal:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-strategic-insights', async () => {
+      try {
+        if (!this.autonomousPlanningEngine) {
+          return { success: false, error: 'Autonomous Planning Engine not available' }
+        }
+
+        const insights = this.autonomousPlanningEngine.getStrategicInsights()
+        return { success: true, insights }
+      } catch (error) {
+        console.error('❌ Failed to get strategic insights:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Deep Search Engine Handlers
+    ipcMain.handle('create-deep-search', async (event, query, options = {}) => {
+      try {
+        if (!this.deepSearchEngine) {
+          return { success: false, error: 'Deep Search Engine not available' }
+        }
+
+        const searchQuery = await this.deepSearchEngine.createSearchQuery(query, options)
+        const report = await this.deepSearchEngine.executeDeepSearch(searchQuery)
+        return { success: true, report }
+      } catch (error) {
+        console.error('❌ Deep search failed:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-search-sources', async () => {
+      try {
+        if (!this.deepSearchEngine) {
+          return { success: false, error: 'Deep Search Engine not available' }
+        }
+
+        const sources = this.deepSearchEngine.getSearchSources()
+        return { success: true, sources }
+      } catch (error) {
+        console.error('❌ Failed to get search sources:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Shadow Workspace Handlers
+    ipcMain.handle('create-shadow-task', async (event, taskConfig) => {
+      try {
+        if (!this.shadowWorkspace) {
+          return { success: false, error: 'Shadow Workspace not available' }
+        }
+
+        const task = await this.shadowWorkspace.createShadowTask(taskConfig)
+        return { success: true, task }
+      } catch (error) {
+        console.error('❌ Failed to create shadow task:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-shadow-tasks', async () => {
+      try {
+        if (!this.shadowWorkspace) {
+          return { success: false, error: 'Shadow Workspace not available' }
+        }
+
+        const activeTasks = this.shadowWorkspace.getActiveTasks()
+        const queuedTasks = this.shadowWorkspace.getQueuedTasks()
+        return { success: true, activeTasks, queuedTasks }
+      } catch (error) {
+        console.error('❌ Failed to get shadow tasks:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('cancel-shadow-task', async (event, taskId) => {
+      try {
+        if (!this.shadowWorkspace) {
+          return { success: false, error: 'Shadow Workspace not available' }
+        }
+
+        const cancelled = this.shadowWorkspace.cancelTask(taskId)
+        return { success: cancelled, message: cancelled ? 'Task cancelled' : 'Task not found or not cancellable' }
+      } catch (error) {
+        console.error('❌ Failed to cancel shadow task:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Cross-Platform Integration Handlers
+    ipcMain.handle('execute-file-operation', async (event, operation) => {
+      try {
+        if (!this.crossPlatformIntegration) {
+          return { success: false, error: 'Cross-Platform Integration not available' }
+        }
+
+        const result = await this.crossPlatformIntegration.executeFileOperation(operation)
+        return { success: true, result }
+      } catch (error) {
+        console.error('❌ File operation failed:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-installed-apps', async () => {
+      try {
+        if (!this.crossPlatformIntegration) {
+          return { success: false, error: 'Cross-Platform Integration not available' }
+        }
+
+        const apps = this.crossPlatformIntegration.getInstalledApps()
+        return { success: true, apps }
+      } catch (error) {
+        console.error('❌ Failed to get installed apps:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('execute-app-automation', async (event, appId, action, parameters) => {
+      try {
+        if (!this.crossPlatformIntegration) {
+          return { success: false, error: 'Cross-Platform Integration not available' }
+        }
+
+        const result = await this.crossPlatformIntegration.executeAppAutomation(appId, action, parameters)
+        return { success: true, result }
+      } catch (error) {
+        console.error('❌ App automation failed:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Advanced Security Handlers
+    ipcMain.handle('encrypt-data', async (event, data) => {
+      try {
+        if (!this.advancedSecurity) {
+          return { success: false, error: 'Advanced Security not available' }
+        }
+
+        const encrypted = await this.advancedSecurity.encrypt(data)
+        return { success: true, encrypted }
+      } catch (error) {
+        console.error('❌ Encryption failed:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('decrypt-data', async (event, encryptedData) => {
+      try {
+        if (!this.advancedSecurity) {
+          return { success: false, error: 'Advanced Security not available' }
+        }
+
+        const decrypted = await this.advancedSecurity.decrypt(encryptedData)
+        return { success: true, decrypted }
+      } catch (error) {
+        console.error('❌ Decryption failed:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('store-credential', async (event, credential) => {
+      try {
+        if (!this.advancedSecurity) {
+          return { success: false, error: 'Advanced Security not available' }
+        }
+
+        const credentialId = await this.advancedSecurity.storeCredential(credential)
+        return { success: true, credentialId }
+      } catch (error) {
+        console.error('❌ Credential storage failed:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-security-status', async () => {
+      try {
+        if (!this.advancedSecurity) {
+          return { success: false, error: 'Advanced Security not available' }
+        }
+
+        const status = this.advancedSecurity.getSecurityStatus()
+        return { success: true, status }
+      } catch (error) {
+        console.error('❌ Failed to get security status:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Agent Memory Service Handlers
+    ipcMain.handle('store-agent-memory', async (event, agentId, memory) => {
+      try {
+        if (!this.agentMemoryService) {
+          return { success: false, error: 'Agent Memory Service not available' }
+        }
+
+        const memoryId = await this.agentMemoryService.storeMemory(agentId, memory)
+        return { success: true, memoryId }
+      } catch (error) {
+        console.error('❌ Failed to store agent memory:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-agent-memories', async (event, agentId, filters) => {
+      try {
+        if (!this.agentMemoryService) {
+          return { success: false, error: 'Agent Memory Service not available' }
+        }
+
+        const memories = await this.agentMemoryService.getMemories(agentId, filters)
+        return { success: true, memories }
+      } catch (error) {
+        console.error('❌ Failed to get agent memories:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-agent-insights', async (event, agentId) => {
+      try {
+        if (!this.agentMemoryService) {
+          return { success: false, error: 'Agent Memory Service not available' }
+        }
+
+        const insights = await this.agentMemoryService.getAgentInsights(agentId)
+        return { success: true, insights }
+      } catch (error) {
+        console.error('❌ Failed to get agent insights:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Unified Service Orchestrator Handlers
+    ipcMain.handle('get-system-health', async () => {
+      try {
+        if (!this.unifiedServiceOrchestrator) {
+          return { success: false, error: 'Unified Service Orchestrator not available' }
+        }
+
+        const health = this.unifiedServiceOrchestrator.getSystemHealth()
+        return { success: true, health }
+      } catch (error) {
+        console.error('❌ Failed to get system health:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-system-metrics', async (event, limit = 60) => {
+      try {
+        if (!this.unifiedServiceOrchestrator) {
+          return { success: false, error: 'Unified Service Orchestrator not available' }
+        }
+
+        const metrics = this.unifiedServiceOrchestrator.getSystemMetrics(limit)
+        return { success: true, metrics }
+      } catch (error) {
+        console.error('❌ Failed to get system metrics:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('execute-service-operation', async (event, serviceId, operation, parameters, priority) => {
+      try {
+        if (!this.unifiedServiceOrchestrator) {
+          return { success: false, error: 'Unified Service Orchestrator not available' }
+        }
+
+        const result = await this.unifiedServiceOrchestrator.executeOperation(serviceId, operation, parameters, priority)
+        return { success: true, result }
+      } catch (error) {
+        console.error('❌ Service operation failed:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-active-operations', async () => {
+      try {
+        if (!this.unifiedServiceOrchestrator) {
+          return { success: false, error: 'Unified Service Orchestrator not available' }
+        }
+
+        const operations = this.unifiedServiceOrchestrator.getActiveOperations()
+        return { success: true, operations }
+      } catch (error) {
+        console.error('❌ Failed to get active operations:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    // Enhanced Agent Coordinator Handlers  
+    ipcMain.handle('create-enhanced-task', async (event, taskConfig) => {
+      try {
+        if (!this.enhancedAgentCoordinator) {
+          return { success: false, error: 'Enhanced Agent Coordinator not available' }
+        }
+
+        const task = await this.enhancedAgentCoordinator.createEnhancedTask(taskConfig)
+        return { success: true, task }
+      } catch (error) {
+        console.error('❌ Failed to create enhanced task:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-enhanced-tasks', async () => {
+      try {
+        if (!this.enhancedAgentCoordinator) {
+          return { success: false, error: 'Enhanced Agent Coordinator not available' }
+        }
+
+        const activeTasks = this.enhancedAgentCoordinator.getActiveTasks()
+        const queuedTasks = this.enhancedAgentCoordinator.getQueuedTasks()
+        return { success: true, activeTasks, queuedTasks }
+      } catch (error) {
+        console.error('❌ Failed to get enhanced tasks:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    ipcMain.handle('get-capability-matrix', async () => {
+      try {
+        if (!this.enhancedAgentCoordinator) {
+          return { success: false, error: 'Enhanced Agent Coordinator not available' }
+        }
+
+        const matrix = this.enhancedAgentCoordinator.getCapabilityMatrix()
+        return { success: true, matrix }
+      } catch (error) {
+        console.error('❌ Failed to get capability matrix:', error)
+        return { success: false, error: error.message }
+      }
+    })
+
+    console.log('✅ Enhanced Backend IPC handlers setup completed')
     console.log('✅ IPC handlers setup completed')
   }
 
