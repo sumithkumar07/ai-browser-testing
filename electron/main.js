@@ -212,36 +212,25 @@ class KAiroBrowserManager {
       // Initialize Enhanced Agent Services with fallback
       try {
         // Try to load compiled services first
-        let AgentMemoryService, AgentCoordinationService
+        let AgentMemoryService
         
         try {
           AgentMemoryService = require('../compiled/services/AgentMemoryService.js')
-          AgentCoordinationService = require('../compiled/services/AgentCoordinationService.js')
         } catch (compiledError) {
           console.log('📝 Compiled services not found, trying TypeScript sources...')
           
-          // Fallback to TypeScript sources (may require ts-node or compilation)
+          // Fallback to TypeScript sources
           try {
             AgentMemoryService = require('../src/core/services/AgentMemoryService.ts')
-            AgentCoordinationService = require('../src/core/services/AgentCoordinationService.ts')
           } catch (tsError) {
             console.log('📝 TypeScript services require compilation, using fallback implementations...')
             
-            // Create fallback implementations
+            // Create fallback implementation for AgentMemoryService
             AgentMemoryService = {
               default: {
                 getInstance: () => ({
                   initialize: async () => console.log('✅ Fallback agent memory service initialized'),
                   recordTaskOutcome: async () => console.log('📝 Task outcome recorded (fallback)')
-                })
-              }
-            }
-            
-            AgentCoordinationService = {
-              default: {
-                getInstance: () => ({
-                  initialize: async () => console.log('✅ Fallback agent coordination service initialized'),
-                  monitorGoalProgress: async () => ({ activeGoals: 0, averageProgress: 0 })
                 })
               }
             }
@@ -251,8 +240,21 @@ class KAiroBrowserManager {
         this.agentMemoryService = AgentMemoryService.default.getInstance()
         await this.agentMemoryService.initialize()
         
-        this.agentCoordinationService = AgentCoordinationService.default.getInstance()
-        await this.agentCoordinationService.initialize()
+        // Use EnhancedAgentCoordinator as the primary coordination service
+        this.agentCoordinationService = {
+          monitorGoalProgress: async () => {
+            if (this.enhancedAgentCoordinator) {
+              const stats = this.enhancedAgentCoordinator.getCoordinationStats()
+              return {
+                activeGoals: stats.activeTasks,
+                averageProgress: stats.completedTasks / Math.max(stats.totalTasks, 1) * 100,
+                completedGoals: stats.completedTasks,
+                failedGoals: stats.failedTasks
+              }
+            }
+            return { activeGoals: 0, averageProgress: 0, completedGoals: 0, failedGoals: 0 }
+          }
+        }
         
         this.connectionState.agents = 'connected'
         console.log('✅ Enhanced agent services initialized')
