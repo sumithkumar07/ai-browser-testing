@@ -523,6 +523,119 @@ class DatabaseService {
     return result.changes;
   }
 
+  // ENHANCED: System Configuration Management with data_type support
+  async setSystemConfig(key, value, options = {}) {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    const type = options.type || 'user';
+    const category = options.category || 'general';
+    const dataType = this.inferDataType(value);
+    const serializedValue = this.serializeConfigValue(value, dataType);
+    
+    const stmt = this.db.prepare(`
+      INSERT OR REPLACE INTO system_config 
+      (key, value, type, data_type, updated_at, category)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    
+    stmt.run(key, serializedValue, type, dataType, Date.now(), category);
+    
+    console.log(`⚙️ System config updated: ${key} = ${serializedValue} (${dataType})`);
+  }
+
+  async getSystemConfig(key, defaultValue = null) {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    const stmt = this.db.prepare('SELECT * FROM system_config WHERE key = ?');
+    const row = stmt.get(key);
+    
+    if (!row) {
+      return defaultValue;
+    }
+    
+    return this.deserializeConfigValue(row.value, row.data_type || 'string');
+  }
+
+  async getAllSystemConfig(category = null) {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    let query = 'SELECT * FROM system_config';
+    let params = [];
+    
+    if (category) {
+      query += ' WHERE category = ?';
+      params.push(category);
+    }
+    
+    query += ' ORDER BY category, key';
+    
+    const stmt = this.db.prepare(query);
+    const rows = stmt.all(...params);
+    
+    const config = {};
+    rows.forEach(row => {
+      config[row.key] = {
+        value: this.deserializeConfigValue(row.value, row.data_type || 'string'),
+        type: row.type,
+        dataType: row.data_type,
+        category: row.category,
+        updatedAt: row.updated_at
+      };
+    });
+    
+    return config;
+  }
+
+  async deleteSystemConfig(key) {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    const stmt = this.db.prepare('DELETE FROM system_config WHERE key = ?');
+    const result = stmt.run(key);
+    
+    console.log(`🗑️ System config deleted: ${key}`);
+    return result.changes > 0;
+  }
+
+  // Helper methods for data type handling
+  inferDataType(value) {
+    if (typeof value === 'boolean') return 'boolean';
+    if (typeof value === 'number') return 'number';
+    if (Array.isArray(value)) return 'array';
+    if (typeof value === 'object' && value !== null) return 'object';
+    return 'string';
+  }
+
+  serializeConfigValue(value, dataType) {
+    switch (dataType) {
+      case 'boolean':
+      case 'number':
+        return String(value);
+      case 'array':
+      case 'object':
+        return JSON.stringify(value);
+      default:
+        return String(value);
+    }
+  }
+
+  deserializeConfigValue(value, dataType) {
+    switch (dataType) {
+      case 'boolean':
+        return value === 'true';
+      case 'number':
+        return Number(value);
+      case 'array':
+      case 'object':
+        try {
+          return JSON.parse(value);
+        } catch {
+          return value;
+        }
+      default:
+        return value;
+    }
+  }
+
   async close() {
     if (this.db) {
       this.db.close();
