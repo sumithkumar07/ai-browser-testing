@@ -3242,6 +3242,15 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
           } catch (aiError) {
             console.error('❌ AI processing failed:', aiError.message)
             
+            // ZERO UI IMPACT: Record error for smart prevention
+            if (this.enhancedAISystem) {
+              try {
+                this.enhancedAISystem.errorPredictor.recordError('ai_processing', aiError, { message, context });
+              } catch (recordError) {
+                console.warn('⚠️ Error recording failed:', recordError.message);
+              }
+            }
+            
             // Provide helpful error messages based on error type
             let userFriendlyError = 'AI service temporarily unavailable'
             
