@@ -21,6 +21,9 @@ const CrossPlatformIntegration = require('../src/core/services/CrossPlatformInte
 const AdvancedSecurity = require('../src/core/services/AdvancedSecurity.js')
 const EnhancedAgentCoordinator = require('../src/core/services/EnhancedAgentCoordinator.js')
 
+// ZERO UI IMPACT: Enhanced AI System
+const { EnhancedAISystem } = require('./enhanced-ai-system.js')
+
 // Enhanced Maximum Potential Services - NEW 
 const AgentMemoryService = require('../src/core/services/AgentMemoryService.js')
 const AutonomousPlanningEngine = require('../src/core/services/AutonomousPlanningEngine.js')
