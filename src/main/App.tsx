@@ -153,7 +153,7 @@ const App: React.FC = () => {
                 }
                 break
               default:
-                logger.debug('Unhandled browser event:', event.type)
+                logger.debug('Unhandled browser event:', { eventType: event.type })
             }
           })
         } catch (eventError) {
