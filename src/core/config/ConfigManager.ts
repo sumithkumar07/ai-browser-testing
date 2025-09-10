@@ -231,9 +231,9 @@ export class ConfigManager {
     // Validate the new section configuration
     try {
       const sectionSchema = this.getSectionSchema(section)
-      const validatedSection = sectionSchema.parse(newSectionConfig)
+      const validatedSection = sectionSchema.parse(newSectionConfig) as AppConfig[K]
       
-      this.config[section] = validatedSection
+      this.config = { ...this.config, [section]: validatedSection } as AppConfig
       await this.validateConfig()
       await this.saveToStorage()
 
