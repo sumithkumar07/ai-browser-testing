@@ -422,6 +422,15 @@ class KAiroBrowserManager {
         console.warn('⚠️ Enhanced AI System initialization failed:', error.message)
       }
 
+      // CRITICAL: Initialize AI Data Handlers for Real Backend Data Access
+      try {
+        const { AIDataHandlers } = require('./ai-data-handlers.js')
+        this.aiDataHandlers = new AIDataHandlers(this)
+        console.log('✅ AI Data Handlers initialized - Real backend data access enabled')
+      } catch (error) {
+        console.warn('⚠️ AI Data Handlers initialization failed:', error.message)
+      }
+
       console.log('🎯 MAXIMUM POTENTIAL Enhanced Services initialized successfully!')
       
       // Log service health status
