@@ -147,9 +147,9 @@ async function testInvisibleIntelligence() {
   }
   
   // Final Results
-  console.log('\n' + '='=50)
+  console.log('\n' + '='.repeat(50))
   console.log('🎯 INVISIBLE INTELLIGENCE TEST RESULTS')
-  console.log('='=50)
+  console.log('='.repeat(50))
   console.log(`✅ Passed: ${passedTests}/${totalTests} tests`)
   console.log(`📊 Success Rate: ${((passedTests / totalTests) * 100).toFixed(1)}%`)
   
