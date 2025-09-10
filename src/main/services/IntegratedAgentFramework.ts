@@ -71,7 +71,7 @@ export class IntegratedAgentFramework {
 
     try {
       // Initialize conversation manager
-      await this.conversationManager.initialize()
+      // Conversation management handled by main process
 
       // Register simplified navigation agent
       this.registerAgent(new NavigationAgent())
