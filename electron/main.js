@@ -3227,8 +3227,13 @@ Page Content Context: ${context.extractedText ? context.extractedText.substring(
           }
         }
         
-        // Analyze if AI wants to perform actions
+        // Analyze if AI wants to perform actions and combine with NLP actions
         const actions = this.extractActionsFromResponse(enhancedResult, message)
+        
+        // Add NLP actions if they were executed
+        if (nlpResults && nlpResults.actions.length > 0) {
+          actions.push(...nlpResults.actions)
+        }
         
         // Record performance metrics - END
         const endTime = Date.now()
