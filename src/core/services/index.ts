@@ -8,12 +8,12 @@ export const AgentMemoryService = require('./AgentMemoryService.js')
 export const AutonomousPlanningEngine = require('./AutonomousPlanningEngine.js')
 export const DeepSearchEngine = require('./DeepSearchEngine.js')
 export const AdvancedSecurity = require('./AdvancedSecurity.js')
+export const EnhancedAgentCoordinator = require('./EnhancedAgentCoordinator.js')
 
-// TypeScript Services (where available)
-export { default as EnhancedAgentCoordinator } from './EnhancedAgentCoordinator'
-export { default as UnifiedServiceOrchestrator } from './UnifiedServiceOrchestrator'
-export { default as ShadowWorkspace } from './ShadowWorkspace'
-export { default as CrossPlatformIntegration } from './CrossPlatformIntegration'
+// Additional Services (keeping the ones that work with require)
+export const UnifiedServiceOrchestrator = require('./UnifiedServiceOrchestrator.js')
+export const ShadowWorkspace = require('./ShadowWorkspace.js')
+export const CrossPlatformIntegration = require('./CrossPlatformIntegration.js')
 
 // Backend Services (Note: These are Node.js services, not browser services)
 // export { DatabaseService } from '../../backend/DatabaseService'
