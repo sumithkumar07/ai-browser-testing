@@ -999,13 +999,22 @@ class KAiroBrowserManager {
     
     // Enhanced Analysis Agent scoring
     if (lowerTask.includes('analyze') || lowerTask.includes('analysis') || lowerTask.includes('examine')) {
-      scores.analysis = 90
+      scores.analysis = 95
     }
     if (lowerTask.includes('summarize') || lowerTask.includes('summary') || lowerTask.includes('overview')) {
       scores.analysis = Math.max(scores.analysis, 85)
     }
     if (lowerTask.includes('review') || lowerTask.includes('evaluate') || lowerTask.includes('assess')) {
       scores.analysis = Math.max(scores.analysis, 80)
+    }
+    // CRITICAL FIX: Handle "analyze this page content" pattern specifically
+    if (lowerTask.includes('analyze') && (lowerTask.includes('page') || lowerTask.includes('content') || lowerTask.includes('this'))) {
+      scores.analysis = 98
+      scores.navigation = 50 // Reduce navigation score for analysis tasks
+    }
+    // Enhanced analysis keywords
+    if (lowerTask.includes('content') || lowerTask.includes('data') || lowerTask.includes('text')) {
+      scores.analysis = Math.max(scores.analysis, 85)
     }
     if (lowerTask.includes('report') || lowerTask.includes('insight') || lowerTask.includes('breakdown')) {
       scores.analysis = Math.max(scores.analysis, 85)
