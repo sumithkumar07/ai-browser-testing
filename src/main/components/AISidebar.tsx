@@ -1,7 +1,7 @@
 // FIXED: Enhanced AI Sidebar Component with comprehensive bug fixes
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { AIMessage, AgentStatus } from '../types/electron'
-import { createLogger } from '../../core/logger/Logger'
+import { createLogger } from '../../core/logger/EnhancedLogger'
 
 const logger = createLogger('AISidebar')
 
