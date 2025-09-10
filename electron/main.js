@@ -1168,6 +1168,88 @@ class KAiroBrowserManager {
     return prompts.slice(0, 3)
   }
 
+  // NEW: Identify which agent was primarily used for a task
+  identifyPrimaryAgent(message, response) {
+    const taskAnalysis = this.analyzeAgentTask(message)
+    return taskAnalysis.primaryAgent || 'ai_assistant'
+  }
+
+  // NEW: Classify the type of task for learning purposes
+  classifyTaskType(message) {
+    const lowerMessage = message.toLowerCase()
+    
+    if (lowerMessage.includes('research') || lowerMessage.includes('find') || lowerMessage.includes('search')) return 'research'
+    if (lowerMessage.includes('navigate') || lowerMessage.includes('go to') || lowerMessage.includes('open')) return 'navigation'
+    if (lowerMessage.includes('buy') || lowerMessage.includes('price') || lowerMessage.includes('shop')) return 'shopping'
+    if (lowerMessage.includes('write') || lowerMessage.includes('compose') || lowerMessage.includes('email')) return 'communication'
+    if (lowerMessage.includes('automate') || lowerMessage.includes('schedule') || lowerMessage.includes('workflow')) return 'automation'
+    if (lowerMessage.includes('analyze') || lowerMessage.includes('summary') || lowerMessage.includes('review')) return 'analysis'
+    
+    return 'general'
+  }
+
+  // NEW: Estimate user satisfaction based on response characteristics
+  estimateUserSatisfaction(message, response) {
+    let satisfaction = 0.7 // Base satisfaction
+    
+    // Increase satisfaction for comprehensive responses
+    if (response.length > 500) satisfaction += 0.1
+    if (response.includes('##') || response.includes('**')) satisfaction += 0.1 // Structured response
+    if (response.includes('✅') || response.includes('🎯')) satisfaction += 0.05 // Action-oriented
+    
+    // Increase satisfaction for personalized responses
+    if (response.includes('I can') || response.includes('Let me')) satisfaction += 0.1
+    
+    // Decrease satisfaction for very short responses to complex questions
+    if (message.length > 100 && response.length < 200) satisfaction -= 0.2
+    
+    return Math.max(0.1, Math.min(1.0, satisfaction))
+  }
+
+  // NEW: Calculate importance of context for memory storage
+  calculateContextImportance(message, response) {
+    let importance = 3 // Base importance (medium)
+    
+    // Increase importance for complex queries
+    if (message.length > 200) importance += 1
+    if (response.length > 1000) importance += 1
+    
+    // Increase importance for specific task types
+    if (message.toLowerCase().includes('important') || message.toLowerCase().includes('urgent')) importance += 1
+    if (message.toLowerCase().includes('remember') || message.toLowerCase().includes('save')) importance += 2
+    
+    // Increase importance for structured responses
+    if (response.includes('##') && response.includes('**')) importance += 1
+    
+    return Math.max(1, Math.min(5, importance))
+  }
+
+  // NEW: Extract context tags for better memory organization
+  extractContextTags(message, response) {
+    const tags = []
+    const lowerMessage = message.toLowerCase()
+    const lowerResponse = response.toLowerCase()
+    
+    // Task type tags
+    const taskType = this.classifyTaskType(message)
+    tags.push(taskType)
+    
+    // Complexity tags
+    if (message.length > 200 || response.length > 1000) tags.push('complex')
+    if (message.length < 50 && response.length < 200) tags.push('simple')
+    
+    // Content type tags
+    if (lowerResponse.includes('step') || lowerResponse.includes('guide')) tags.push('instructional')
+    if (lowerResponse.includes('compare') || lowerResponse.includes('vs')) tags.push('comparative')
+    if (lowerResponse.includes('recommend') || lowerResponse.includes('suggest')) tags.push('recommendation')
+    
+    // Quality indicators
+    if (response.includes('##') && response.includes('**')) tags.push('well_structured')
+    if (response.includes('🎯') || response.includes('✅')) tags.push('actionable')
+    
+    return tags
+  }
+
   extractActionsFromResponse(response, originalMessage) {
     const actions = []
     // Simple action extraction - could be enhanced
