@@ -1,0 +1,171 @@
+{
+  "timestamp": "2025-09-10T08:24:52.580Z",
+  "summary": {
+    "total": 31,
+    "passed": 5,
+    "failed": 26,
+    "skipped": 0,
+    "details": [
+      {
+        "name": "Agent Memory Service - Store Memory",
+        "status": "failed",
+        "error": "Memory ID not returned or invalid"
+      },
+      {
+        "name": "Agent Memory Service - Retrieve Memories",
+        "status": "failed",
+        "error": "this.services.memory.getMemories is not a function"
+      },
+      {
+        "name": "Agent Memory Service - Store Knowledge",
+        "status": "failed",
+        "error": "this.services.memory.storeKnowledge is not a function"
+      },
+      {
+        "name": "Agent Memory Service - Get Agent Insights",
+        "status": "failed",
+        "error": "this.services.memory.getAgentInsights is not a function"
+      },
+      {
+        "name": "Autonomous Planning - Create Goal",
+        "status": "failed",
+        "error": "Goal not created or missing ID"
+      },
+      {
+        "name": "Autonomous Planning - Get Active Goals",
+        "status": "failed",
+        "error": "this.services.planning.getActiveGoals is not a function"
+      },
+      {
+        "name": "Autonomous Planning - Get Strategic Insights",
+        "status": "failed",
+        "error": "this.services.planning.getStrategicInsights is not a function"
+      },
+      {
+        "name": "Deep Search - Get Search Sources",
+        "status": "failed",
+        "error": "this.services.search.getSearchSources is not a function"
+      },
+      {
+        "name": "Deep Search - Create Search Query",
+        "status": "failed",
+        "error": "this.services.search.createSearchQuery is not a function"
+      },
+      {
+        "name": "Deep Search - Execute Search",
+        "status": "failed",
+        "error": "this.services.search.createSearchQuery is not a function"
+      },
+      {
+        "name": "Shadow Workspace - Create Task",
+        "status": "failed",
+        "error": "this.services.shadow.createShadowTask is not a function"
+      },
+      {
+        "name": "Shadow Workspace - Get Active Tasks",
+        "status": "failed",
+        "error": "this.services.shadow.getActiveTasks is not a function"
+      },
+      {
+        "name": "Shadow Workspace - Get Queued Tasks",
+        "status": "failed",
+        "error": "this.services.shadow.getQueuedTasks is not a function"
+      },
+      {
+        "name": "Cross-Platform - Get Installed Apps",
+        "status": "failed",
+        "error": "this.services.crossPlatform.getInstalledApps is not a function"
+      },
+      {
+        "name": "Cross-Platform - Get Available Services",
+        "status": "failed",
+        "error": "this.services.crossPlatform.getAvailableServices is not a function"
+      },
+      {
+        "name": "Cross-Platform - Execute File Operation",
+        "status": "failed",
+        "error": "this.services.crossPlatform.executeFileOperation is not a function"
+      },
+      {
+        "name": "Advanced Security - Encrypt Data",
+        "status": "failed",
+        "error": "this.services.security.encrypt is not a function"
+      },
+      {
+        "name": "Advanced Security - Decrypt Data",
+        "status": "failed",
+        "error": "this.services.security.encrypt is not a function"
+      },
+      {
+        "name": "Advanced Security - Store Credential",
+        "status": "failed",
+        "error": "this.services.security.storeCredential is not a function"
+      },
+      {
+        "name": "Advanced Security - Get Security Status",
+        "status": "failed",
+        "error": "Security status missing encryption field"
+      },
+      {
+        "name": "Enhanced Coordinator - Get Capability Matrix",
+        "status": "failed",
+        "error": "this.services.coordinator.getCapabilityMatrix is not a function"
+      },
+      {
+        "name": "Enhanced Coordinator - Create Enhanced Task",
+        "status": "failed",
+        "error": "this.services.coordinator.createEnhancedTask is not a function"
+      },
+      {
+        "name": "Enhanced Coordinator - Get System Status",
+        "status": "failed",
+        "error": "this.services.coordinator.getSystemStatus is not a function"
+      },
+      {
+        "name": "Orchestrator - Get System Health",
+        "status": "passed",
+        "duration": 1
+      },
+      {
+        "name": "Orchestrator - Get System Metrics",
+        "status": "passed",
+        "duration": 0
+      },
+      {
+        "name": "Orchestrator - Get Active Operations",
+        "status": "failed",
+        "error": "this.services.orchestrator.getActiveOperations is not a function"
+      },
+      {
+        "name": "Orchestrator - Get Service List",
+        "status": "failed",
+        "error": "this.services.orchestrator.getServiceList is not a function"
+      },
+      {
+        "name": "Integration - Search with Security",
+        "status": "failed",
+        "error": "this.services.search.createSearchQuery is not a function"
+      },
+      {
+        "name": "Integration - Autonomous Goal with Memory",
+        "status": "passed",
+        "duration": 1
+      },
+      {
+        "name": "Performance - Concurrent Memory Operations",
+        "status": "passed",
+        "duration": 2
+      },
+      {
+        "name": "Reliability - Service Health Recovery",
+        "status": "passed",
+        "duration": 0
+      }
+    ]
+  },
+  "config": {
+    "verbose": true,
+    "skipLongRunningTests": false,
+    "testDataPath": "./test_data"
+  }
+}
