@@ -2038,95 +2038,350 @@ Keep it concise and helpful.`
       }
     })
 
-    // Bookmarks & History handlers - FIXED: Added missing handlers
+    // Bookmarks & History handlers - ENHANCED: Full database integration
     ipcMain.handle('add-bookmark', async (event, bookmark) => {
       try {
-        // Placeholder for bookmark functionality
-        console.log('🔖 Add bookmark requested (placeholder)')
-        return { 
-          success: false, 
-          error: 'Bookmark management not implemented yet' 
+        console.log('🔖 Adding bookmark:', bookmark?.title || bookmark?.url || 'unknown')
+        
+        if (!bookmark || (!bookmark.url && !bookmark.title)) {
+          return { success: false, error: 'Bookmark must have at least a URL or title' }
         }
+
+        // Get current page info if not provided
+        let bookmarkData = { ...bookmark }
+        if (!bookmarkData.url || !bookmarkData.title) {
+          try {
+            const currentUrl = await this.getCurrentUrl()
+            const currentTitle = await this.getPageTitle()
+            
+            bookmarkData.url = bookmarkData.url || currentUrl.data || 'about:blank'
+            bookmarkData.title = bookmarkData.title || currentTitle.data || 'Untitled'
+          } catch (pageInfoError) {
+            console.warn('⚠️ Could not get current page info:', pageInfoError)
+          }
+        }
+
+        // Create bookmark object
+        const bookmarkItem = {
+          id: `bookmark_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          title: bookmarkData.title || 'Untitled Bookmark',
+          url: bookmarkData.url || 'about:blank',
+          description: bookmarkData.description || '',
+          tags: bookmarkData.tags || [],
+          category: bookmarkData.category || 'general',
+          favicon: bookmarkData.favicon || '',
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          visitCount: 0,
+          lastVisited: null
+        }
+
+        // Save to database if available
+        if (this.databaseService) {
+          try {
+            await this.databaseService.saveBookmark(bookmarkItem)
+            console.log('✅ Bookmark saved to database:', bookmarkItem.title)
+            
+            return { 
+              success: true,
+              bookmark: bookmarkItem,
+              message: `Bookmark "${bookmarkItem.title}" added successfully`,
+              timestamp: Date.now()
+            }
+          } catch (dbError) {
+            console.error('❌ Failed to save bookmark to database:', dbError)
+            return { success: false, error: `Failed to save bookmark: ${dbError.message}` }
+          }
+        } else {
+          console.warn('⚠️ Database not available, bookmark not persisted')
+          return { 
+            success: true,
+            bookmark: bookmarkItem,
+            message: `Bookmark "${bookmarkItem.title}" created (not persisted - database unavailable)`,
+            warning: 'Database not available',
+            timestamp: Date.now()
+          }
+        }
+
       } catch (error) {
-        return { success: false, error: error.message }
+        console.error('❌ Add bookmark failed:', error)
+        return { success: false, error: `Add bookmark failed: ${error.message}` }
       }
     })
 
     ipcMain.handle('remove-bookmark', async (event, bookmarkId) => {
       try {
-        // Placeholder for bookmark removal functionality
-        console.log('🗑️ Remove bookmark requested (placeholder)')
-        return { 
-          success: false, 
-          error: 'Bookmark management not implemented yet' 
+        console.log('🗑️ Removing bookmark:', bookmarkId)
+        
+        if (!bookmarkId) {
+          return { success: false, error: 'Bookmark ID is required' }
         }
+
+        if (this.databaseService && this.databaseService.db) {
+          try {
+            const stmt = this.databaseService.db.prepare('DELETE FROM bookmarks WHERE id = ?')
+            const result = stmt.run(bookmarkId)
+            
+            if (result.changes > 0) {
+              console.log('✅ Bookmark removed from database')
+              return { 
+                success: true,
+                bookmarkId: bookmarkId,
+                message: 'Bookmark removed successfully',
+                timestamp: Date.now()
+              }
+            } else {
+              return { success: false, error: 'Bookmark not found' }
+            }
+          } catch (dbError) {
+            console.error('❌ Failed to remove bookmark from database:', dbError)
+            return { success: false, error: `Failed to remove bookmark: ${dbError.message}` }
+          }
+        } else {
+          return { success: false, error: 'Database not available' }
+        }
+
       } catch (error) {
-        return { success: false, error: error.message }
+        console.error('❌ Remove bookmark failed:', error)
+        return { success: false, error: `Remove bookmark failed: ${error.message}` }
       }
     })
 
-    ipcMain.handle('get-bookmarks', async () => {
+    ipcMain.handle('get-bookmarks', async (event, options = {}) => {
       try {
-        // Placeholder for get bookmarks functionality
-        console.log('📚 Get bookmarks requested (placeholder)')
-        return { 
-          success: true, 
-          bookmarks: [] 
+        console.log('📚 Getting bookmarks...')
+        
+        const limit = options.limit || 100
+        const category = options.category || null
+
+        if (this.databaseService) {
+          try {
+            let bookmarks
+            if (category) {
+              const stmt = this.databaseService.db.prepare('SELECT * FROM bookmarks WHERE category = ? ORDER BY updated_at DESC LIMIT ?')
+              bookmarks = stmt.all(category, limit).map(row => ({
+                id: row.id,
+                title: row.title,
+                url: row.url,
+                description: row.description,
+                tags: JSON.parse(row.tags || '[]'),
+                category: row.category,
+                favicon: row.favicon,
+                createdAt: row.created_at,
+                updatedAt: row.updated_at,
+                visitCount: row.visit_count,
+                lastVisited: row.last_visited
+              }))
+            } else {
+              bookmarks = await this.databaseService.getBookmarks(limit)
+            }
+            
+            console.log(`✅ Retrieved ${bookmarks.length} bookmarks from database`)
+            return { 
+              success: true, 
+              bookmarks: bookmarks,
+              count: bookmarks.length,
+              options: options,
+              timestamp: Date.now()
+            }
+          } catch (dbError) {
+            console.error('❌ Failed to get bookmarks from database:', dbError)
+            return { success: false, error: `Failed to get bookmarks: ${dbError.message}` }
+          }
+        } else {
+          console.warn('⚠️ Database not available')
+          return { 
+            success: true, 
+            bookmarks: [],
+            count: 0,
+            warning: 'Database not available',
+            timestamp: Date.now()
+          }
         }
+
       } catch (error) {
-        return { success: false, error: error.message }
+        console.error('❌ Get bookmarks failed:', error)
+        return { success: false, error: `Get bookmarks failed: ${error.message}` }
       }
     })
 
-    ipcMain.handle('search-bookmarks', async (event, options) => {
+    ipcMain.handle('search-bookmarks', async (event, options = {}) => {
       try {
-        // Placeholder for bookmark search functionality
-        console.log('🔍 Search bookmarks requested (placeholder)')
-        return { 
-          success: true, 
-          results: [] 
+        console.log('🔍 Searching bookmarks:', options.query || 'all')
+        
+        const query = options.query || ''
+        const limit = options.limit || 50
+        const category = options.category || null
+
+        if (this.databaseService) {
+          try {
+            const results = await this.databaseService.searchBookmarks(query, { limit, category })
+            
+            console.log(`✅ Found ${results.length} bookmark results`)
+            return { 
+              success: true, 
+              results: results,
+              count: results.length,
+              searchQuery: query,
+              options: options,
+              timestamp: Date.now()
+            }
+          } catch (dbError) {
+            console.error('❌ Failed to search bookmarks:', dbError)
+            return { success: false, error: `Bookmark search failed: ${dbError.message}` }
+          }
+        } else {
+          return { 
+            success: true, 
+            results: [],
+            count: 0,
+            warning: 'Database not available',
+            timestamp: Date.now()
+          }
         }
+
       } catch (error) {
-        return { success: false, error: error.message }
+        console.error('❌ Search bookmarks failed:', error)
+        return { success: false, error: `Search bookmarks failed: ${error.message}` }
       }
     })
 
-    ipcMain.handle('get-history', async (event, options) => {
+    ipcMain.handle('get-history', async (event, options = {}) => {
       try {
-        // Placeholder for browsing history functionality
-        console.log('📜 Get history requested (placeholder)')
-        return { 
-          success: true, 
-          history: [] 
+        console.log('📜 Getting browsing history...')
+        
+        const limit = options.limit || 100
+        const days = options.days || 30
+
+        if (this.databaseService) {
+          try {
+            let history
+            if (days > 0) {
+              const cutoffTime = Date.now() - (days * 24 * 60 * 60 * 1000)
+              const stmt = this.databaseService.db.prepare('SELECT * FROM history WHERE visited_at > ? ORDER BY visited_at DESC LIMIT ?')
+              history = stmt.all(cutoffTime, limit).map(row => ({
+                id: row.id,
+                url: row.url,
+                title: row.title,
+                visitedAt: row.visited_at,
+                duration: row.duration,
+                pageType: row.page_type,
+                exitType: row.exit_type,
+                referrer: row.referrer,
+                searchQuery: row.search_query
+              }))
+            } else {
+              history = await this.databaseService.getHistory(limit)
+            }
+            
+            console.log(`✅ Retrieved ${history.length} history entries`)
+            return { 
+              success: true, 
+              history: history,
+              count: history.length,
+              options: options,
+              timestamp: Date.now()
+            }
+          } catch (dbError) {
+            console.error('❌ Failed to get history from database:', dbError)
+            return { success: false, error: `Failed to get history: ${dbError.message}` }
+          }
+        } else {
+          return { 
+            success: true, 
+            history: [],
+            count: 0,
+            warning: 'Database not available',
+            timestamp: Date.now()
+          }
         }
+
       } catch (error) {
-        return { success: false, error: error.message }
+        console.error('❌ Get history failed:', error)
+        return { success: false, error: `Get history failed: ${error.message}` }
       }
     })
 
     ipcMain.handle('delete-history-item', async (event, historyId) => {
       try {
-        // Placeholder for history item deletion functionality
-        console.log('🗑️ Delete history item requested (placeholder)')
-        return { 
-          success: false, 
-          error: 'History management not implemented yet' 
+        console.log('🗑️ Deleting history item:', historyId)
+        
+        if (!historyId) {
+          return { success: false, error: 'History ID is required' }
         }
+
+        if (this.databaseService && this.databaseService.db) {
+          try {
+            const stmt = this.databaseService.db.prepare('DELETE FROM history WHERE id = ?')
+            const result = stmt.run(historyId)
+            
+            if (result.changes > 0) {
+              console.log('✅ History item deleted from database')
+              return { 
+                success: true,
+                historyId: historyId,
+                message: 'History item deleted successfully',
+                timestamp: Date.now()
+              }
+            } else {
+              return { success: false, error: 'History item not found' }
+            }
+          } catch (dbError) {
+            console.error('❌ Failed to delete history item:', dbError)
+            return { success: false, error: `Failed to delete history item: ${dbError.message}` }
+          }
+        } else {
+          return { success: false, error: 'Database not available' }
+        }
+
       } catch (error) {
-        return { success: false, error: error.message }
+        console.error('❌ Delete history item failed:', error)
+        return { success: false, error: `Delete history item failed: ${error.message}` }
       }
     })
 
-    ipcMain.handle('clear-history', async (event, options) => {
+    ipcMain.handle('clear-history', async (event, options = {}) => {
       try {
-        // Placeholder for clear history functionality
-        console.log('🧹 Clear history requested (placeholder)')
-        return { 
-          success: false, 
-          error: 'History management not implemented yet' 
+        console.log('🧹 Clearing browsing history...')
+        
+        const days = options.days || 0 // 0 means all history
+        const confirmAction = options.confirm || false
+
+        if (!confirmAction) {
+          return { success: false, error: 'History clearing requires confirmation (set confirm: true)' }
         }
+
+        if (this.databaseService && this.databaseService.db) {
+          try {
+            let result
+            if (days > 0) {
+              const cutoffTime = Date.now() - (days * 24 * 60 * 60 * 1000)
+              const stmt = this.databaseService.db.prepare('DELETE FROM history WHERE visited_at < ?')
+              result = stmt.run(cutoffTime)
+            } else {
+              const stmt = this.databaseService.db.prepare('DELETE FROM history')
+              result = stmt.run()
+            }
+            
+            console.log(`✅ Cleared ${result.changes} history entries`)
+            return { 
+              success: true,
+              deletedCount: result.changes,
+              message: `Cleared ${result.changes} history entries`,
+              options: options,
+              timestamp: Date.now()
+            }
+          } catch (dbError) {
+            console.error('❌ Failed to clear history:', dbError)
+            return { success: false, error: `Failed to clear history: ${dbError.message}` }
+          }
+        } else {
+          return { success: false, error: 'Database not available' }
+        }
+
       } catch (error) {
-        return { success: false, error: error.message }
+        console.error('❌ Clear history failed:', error)
+        return { success: false, error: `Clear history failed: ${error.message}` }
       }
     })
 
