@@ -369,6 +369,15 @@ class KAiroBrowserManager {
         console.warn('⚠️ Enhanced Backend Coordinator initialization failed:', error.message)
       }
 
+      // ENHANCED: Initialize Bug Detection and Fix System
+      try {
+        this.bugDetectionSystem = new BugDetectionAndFixSystem(this)
+        await this.bugDetectionSystem.initialize()
+        console.log('✅ Bug Detection and Fix System initialized')
+      } catch (error) {
+        console.warn('⚠️ Bug Detection and Fix System initialization failed:', error.message)
+      }
+
       console.log('🎯 MAXIMUM POTENTIAL Enhanced Services initialized successfully!')
       
       // Log service health status
