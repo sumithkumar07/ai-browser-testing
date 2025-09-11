@@ -11,7 +11,8 @@ export const AdvancedSecurity = require('./AdvancedSecurity.js')
 export const EnhancedAgentCoordinator = require('./EnhancedAgentCoordinator.js')
 
 // Additional Services (keeping the ones that work with require)
-export const UnifiedServiceOrchestrator = require('./UnifiedServiceOrchestrator.js')
+// Enhanced AI orchestration handled by electron main process
+// export const UnifiedServiceOrchestrator = require('./UnifiedServiceOrchestrator.js')
 export const ShadowWorkspace = require('./ShadowWorkspace.js')
 export const CrossPlatformIntegration = require('./CrossPlatformIntegration.js')
 
