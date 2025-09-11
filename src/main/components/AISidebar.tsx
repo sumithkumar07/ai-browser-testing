@@ -331,19 +331,7 @@ Welcome! I'm your intelligent browsing companion with advanced capabilities:
         </button>
       </div>
 
-      {/* Connection Status */}
-      <div className={`ai-connection-status ${connectionStatus}`}>
-        <div 
-          className="ai-connection-indicator"
-          style={{ backgroundColor: getConnectionStatusColor }}
-        ></div>
-        <span>{getConnectionStatusText}</span>
-        {agentStatus && (
-          <div className={`agent-status-indicator ${agentStatus.status}`}>
-            {agentStatus.status}
-          </div>
-        )}
-      </div>
+      {/* Connection Status - REMOVED as requested by user */}
 
       {/* Messages */}
       <div className="ai-sidebar-content">
