@@ -94,9 +94,9 @@ class BrowserManager {
     try {
       console.log('🚀 Initializing enhanced backend services...')
       
-      // Initialize backend coordinator
-      this.backendCoordinator = new EnhancedBackendCoordinator(this)
-      await this.backendCoordinator.initialize()
+      // Initialize backend coordinator - replaced by enhanced AI orchestrator
+      // this.backendCoordinator = new EnhancedBackendCoordinator(this)
+      // await this.backendCoordinator.initialize()
       
       // Initialize performance monitoring
       this.performanceMonitor = new AgentPerformanceMonitor({
