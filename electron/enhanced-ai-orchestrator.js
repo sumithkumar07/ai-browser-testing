@@ -33,7 +33,7 @@ class EnhancedAIOrchestrator {
   async connectToServices() {
     this.services.memory = this.manager.agentMemoryService;
     this.services.planning = this.manager.autonomousPlanningEngine;
-    this.services.search = this.manager.deepSearchEngine;
+    this.services.search = this.manager.ultraIntelligentSearchEngine;
     this.services.security = this.manager.advancedSecurity;
     this.services.performance = this.manager.performanceMonitor;
     this.services.tasks = this.manager.taskScheduler;
