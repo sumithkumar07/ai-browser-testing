@@ -91,7 +91,7 @@ class AdvancedSystemIntegrator {
       },
       {
         name: 'search',
-        class: IntelligentSearchEngine,
+        class: UltraIntelligentSearchEngine,
         description: 'Intelligent Search - replacing basic search'
       },
       {
