@@ -73,7 +73,8 @@ export async function getEnhancedBackendStatus(): Promise<{
   health: number
   metrics: any
 }> {
-  const orchestrator = UnifiedServiceOrchestrator.getInstance()
+  // Enhanced AI orchestration handled by electron main process
+  // const orchestrator = UnifiedServiceOrchestrator.getInstance()
   
   if (!orchestrator) {
     return {
