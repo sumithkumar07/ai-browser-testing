@@ -10,7 +10,7 @@ console.log('🤖 Enhanced backend services loaded successfully')
 const { DatabaseService } = require('../src/backend/DatabaseService.js')
 const { AgentPerformanceMonitor } = require('../src/backend/AgentPerformanceMonitor.js')
 const { BackgroundTaskScheduler } = require('../src/backend/BackgroundTaskScheduler.js')
-const { EnhancedBackendCoordinator } = require('../src/backend/EnhancedBackendCoordinator.js')
+// const { EnhancedBackendCoordinator } = require('../src/backend/EnhancedBackendCoordinator.js') // Removed - replaced by enhanced AI system
 const { EnhancedAgentController } = require('../src/core/agents/EnhancedAgentController.js')
 
 class BrowserManager {
