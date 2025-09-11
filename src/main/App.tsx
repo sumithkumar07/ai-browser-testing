@@ -306,9 +306,14 @@ const App: React.FC = () => {
   // FIXED: Enhanced navigation with validation
   const navigateTo = useCallback(async (url: string) => {
     try {
-      // Basic URL validation
+      // Advanced URL validation with security checks
       if (!url || url.trim().length === 0) {
         throw new Error('URL cannot be empty')
+      }
+      
+      // Enhanced security validation
+      if (!/^https?:\/\/.+/.test(url.trim()) && !url.startsWith('about:') && !url.startsWith('file:')) {
+        url = url.startsWith('www.') ? `https://${url}` : `https://www.google.com/search?q=${encodeURIComponent(url)}`
       }
 
       const result = await window.electronAPI.navigateTo(url)
