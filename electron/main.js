@@ -521,12 +521,12 @@ class KAiroBrowserManager {
         })
       }
 
-      // Register deep search engine
-      if (this.deepSearchEngine) {
-        await this.unifiedServiceOrchestrator.registerService('DeepSearchEngine', this.deepSearchEngine, {
-          priority: 'medium',
+      // Register ultra intelligent search engine
+      if (this.ultraIntelligentSearchEngine) {
+        await this.unifiedServiceOrchestrator.registerService('UltraIntelligentSearchEngine', this.ultraIntelligentSearchEngine, {
+          priority: 'high',
           dependencies: [],
-          capabilities: ['multi_source_search', 'content_analysis', 'ai_insights']
+          capabilities: ['multi_source_search', 'semantic_search', 'auto_completion', 'content_analysis', 'ai_insights', 'predictive_caching']
         })
       }
 
