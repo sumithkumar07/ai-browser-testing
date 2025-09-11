@@ -2913,7 +2913,7 @@ ${predictions.proactive.map(rec => `• ${rec}`).join('\n')}
         
         const response = await this.aiService.chat.completions.create({
           messages: [{ role: 'user', content: 'test' }],
-          model: 'llama-3.3-70b-versatile',
+          model: 'llama-3.1-8b-instant',
           max_tokens: 1
         })
         
