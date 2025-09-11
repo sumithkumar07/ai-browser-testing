@@ -96,5 +96,5 @@ export function createLogger(component: string): EnhancedLogger {
   return new EnhancedLogger(component)
 }
 
-export { EnhancedLogger }
+export { EnhancedLogger, LogLevel }
 export default EnhancedLogger
