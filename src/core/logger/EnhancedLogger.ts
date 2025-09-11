@@ -23,7 +23,7 @@ class EnhancedLogger {
     this.component = component
   }
 
-  private log(level: LogEntry['level'], message: string, data?: any, context?: Record<string, any>) {
+  private log(level: LogLevel, message: string, data?: any, context?: Record<string, any>) {
     const entry: LogEntry = {
       timestamp: Date.now(),
       level,
