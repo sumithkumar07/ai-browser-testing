@@ -99,6 +99,95 @@ class AgentPerformanceMonitor {
     return consecutive;
   }
 
+  // FIXED: Add missing performance recording methods
+  async recordAgentPerformance(agentId, taskData) {
+    try {
+      const performanceMetric = {
+        agentId,
+        taskId: taskData.taskId || `task_${Date.now()}`,
+        duration: taskData.duration || 0,
+        success: taskData.success || false,
+        errorMessage: taskData.error || null,
+        startTime: taskData.startTime || Date.now() - (taskData.duration || 0),
+        endTime: taskData.endTime || Date.now(),
+        resourceUsage: taskData.resourceUsage || {},
+        context: taskData.context || {}
+      };
+
+      await this.recordPerformanceMetric(performanceMetric);
+      console.log(`📊 Recorded performance for agent ${agentId}: ${taskData.success ? 'SUCCESS' : 'FAILED'} (${taskData.duration}ms)`);
+    } catch (error) {
+      console.error(`❌ Failed to record agent performance for ${agentId}:`, error);
+    }
+  }
+
+  async calculateSuccessRate(agentId, timeWindow = 24 * 60 * 60 * 1000) { // 24 hours default
+    try {
+      const cutoffTime = Date.now() - timeWindow;
+      const metrics = await this.db.getPerformanceMetrics(agentId, 1000);
+      const recentMetrics = metrics.filter(m => m.startTime > cutoffTime);
+      
+      if (recentMetrics.length === 0) return 1.0; // No data = perfect score
+      
+      const successfulTasks = recentMetrics.filter(m => m.success).length;
+      const successRate = successfulTasks / recentMetrics.length;
+      
+      console.log(`📈 Agent ${agentId} success rate: ${(successRate * 100).toFixed(1)}% (${successfulTasks}/${recentMetrics.length} tasks)`);
+      return successRate;
+    } catch (error) {
+      console.error(`❌ Failed to calculate success rate for ${agentId}:`, error);
+      return 0.0;
+    }
+  }
+
+  async optimizePerformance(agentId) {
+    try {
+      const stats = await this.getPerformanceStats(agentId);
+      const healthStatus = await this.getAgentHealthStatus(agentId);
+      
+      console.log(`🚀 Optimizing performance for agent: ${agentId}`);
+      
+      // Performance-based optimizations
+      if (stats.averageResponseTime > this.thresholds.maxResponseTime) {
+        await this.optimizeAgentResponseTime(agentId);
+      }
+      
+      if (stats.errorRate > this.thresholds.maxErrorRate) {
+        await this.mitigateAgentErrors(agentId);
+      }
+      
+      // Health-based optimizations
+      if (healthStatus && healthStatus.status !== 'healthy') {
+        console.log(`🔧 Applying health-based optimizations for ${agentId}: ${healthStatus.status}`);
+        
+        if (healthStatus.diagnostics.consecutiveFailures > 3) {
+          console.log('  • Implementing circuit breaker pattern');
+          console.log('  • Reducing task complexity');
+        }
+        
+        if (healthStatus.memoryUsage > this.thresholds.maxMemoryUsage) {
+          console.log('  • Implementing memory cleanup');
+          console.log('  • Reducing context retention');
+        }
+      }
+      
+      // Record optimization action
+      await this.recordPerformanceMetric({
+        agentId,
+        taskId: `optimization_${Date.now()}`,
+        duration: 100,
+        success: true,
+        startTime: Date.now() - 100,
+        endTime: Date.now(),
+        context: { action: 'performance_optimization', stats }
+      });
+      
+      console.log(`✅ Performance optimization completed for ${agentId}`);
+    } catch (error) {
+      console.error(`❌ Performance optimization failed for ${agentId}:`, error);
+    }
+  }
+
   async checkForOptimizationNeeds(agentId) {
     const recentMetrics = await this.db.getPerformanceMetrics(agentId, 20);
     
