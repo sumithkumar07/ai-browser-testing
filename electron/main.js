@@ -24,6 +24,9 @@ const EnhancedAgentCoordinator = require('../src/core/services/EnhancedAgentCoor
 // ZERO UI IMPACT: Enhanced AI System
 const { EnhancedAISystem } = require('./enhanced-ai-system.js')
 
+// 🚀 BROWSER AUTOMATION ENGINE - FULL CONTROL
+const { EnhancedAgentController } = require('../src/core/agents/EnhancedAgentController.js')
+
 // Enhanced Maximum Potential Services - NEW 
 const AgentMemoryService = require('../src/core/services/AgentMemoryService.js')
 const AutonomousPlanningEngine = require('../src/core/services/AutonomousPlanningEngine.js')
