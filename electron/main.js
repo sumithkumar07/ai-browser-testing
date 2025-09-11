@@ -449,6 +449,28 @@ class KAiroBrowserManager {
         console.warn('⚠️ AI Data Handlers initialization failed:', error.message)
       }
 
+      // 🚀 INITIALIZE ENHANCED AGENT CONTROLLER - FULL BROWSER CONTROL
+      try {
+        const { EnhancedAgentController } = require('../src/core/agents/EnhancedAgentController.js')
+        this.enhancedAgentController = new EnhancedAgentController(this)
+        const agentResult = await this.enhancedAgentController.initialize()
+        
+        if (agentResult.success) {
+          console.log('🤖 ✅ ENHANCED AGENT CONTROLLER READY - ALL 6 AGENTS HAVE FULL BROWSER CONTROL!')
+          console.log('🎯 Agents can now:')
+          console.log('   📊 Actually extract data from websites')
+          console.log('   🖱️ Click buttons and fill forms')
+          console.log('   🌐 Open tabs and navigate automatically')
+          console.log('   📄 Create result tabs with compiled data')
+          console.log('   ⚡ Execute complete automation workflows')
+        } else {
+          throw new Error(`Agent controller initialization failed: ${agentResult.error}`)
+        }
+      } catch (error) {
+        console.warn('⚠️ Enhanced Agent Controller initialization failed:', error.message)
+        console.warn('🔄 Falling back to basic AI responses without browser control')
+      }
+
       console.log('🎯 MAXIMUM POTENTIAL Enhanced Services initialized successfully!')
       
       // Log service health status
