@@ -2,7 +2,8 @@
 // Provides debugging tools, performance monitoring, and configuration management
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { createLogger, EnhancedLogger, LogLevel } from '../../core/logger/EnhancedLogger'
+import { createLogger, EnhancedLogger } from '../../core/logger/EnhancedLogger'
+import type { LogLevel } from '../../core/logger/EnhancedLogger'
 import { config, AppConfig } from '../../core/config/ConfigManager'
 
 const logger = createLogger('DebugPanel')
