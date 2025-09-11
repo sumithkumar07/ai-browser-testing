@@ -629,7 +629,9 @@ class BugDetectionAndFixSystem {
   async restartService(bug) {
     try {
       // Attempt to restart service through orchestrator
-      if (this.mainInstance.unifiedServiceOrchestrator) {
+      // Enhanced AI orchestrator handles service coordination
+      // if (this.mainInstance.unifiedServiceOrchestrator) {
+      if (false) { // Service orchestration now handled by enhanced AI system
         const result = await this.mainInstance.unifiedServiceOrchestrator.executeOrchestrationTask('restart_service', { 
           serviceName: bug.component 
         })
