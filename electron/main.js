@@ -14,8 +14,8 @@ const { BackgroundTaskScheduler } = require('../src/backend/BackgroundTaskSchedu
 const { ApiValidator } = require('../src/core/services/ApiValidator')
 const { DatabaseHealthManager } = require('../src/core/services/DatabaseHealthManager')
 
-// Import enhanced capabilities - NEW MAXIMUM POTENTIAL SERVICES
-const DeepSearchEngine = require('../src/core/services/DeepSearchEngine.js')
+// Import enhanced capabilities - OPTIMIZED MAXIMUM POTENTIAL SERVICES
+const UltraIntelligentSearchEngine = require('../src/core/services/UltraIntelligentSearchEngine.js')
 const ShadowWorkspace = require('../src/core/services/ShadowWorkspace.js')
 const CrossPlatformIntegration = require('../src/core/services/CrossPlatformIntegration.js')
 const AdvancedSecurity = require('../src/core/services/AdvancedSecurity.js')
