@@ -134,21 +134,23 @@ class PageContentAnalyzer {
     };
 
     try {
-      // Extract product information
-      const productElements = this.extractElements(content.html, rules.selectors);
-      
-      for (const product of productElements) {
-        const productData = {
-          title: this.extractText(product, rules.selectors.title),
-          price: this.extractPrice(this.extractText(product, rules.selectors.price)),
-          rating: this.extractRating(this.extractText(product, rules.selectors.rating)),
-          reviews: this.extractNumber(this.extractText(product, rules.selectors.reviews)),
-          availability: this.extractText(product, rules.selectors.availability),
-          description: this.extractText(product, rules.selectors.description)
-        };
+      // Extract product information from HTML
+      if (content.html) {
+        const productElements = this.extractElements(content.html, rules.selectors);
+        
+        for (const product of productElements) {
+          const productData = {
+            title: this.extractText(product, rules.selectors.title),
+            price: this.extractPrice(this.extractText(product, rules.selectors.price)),
+            rating: this.extractRating(this.extractText(product, rules.selectors.rating)),
+            reviews: this.extractNumber(this.extractText(product, rules.selectors.reviews)),
+            availability: this.extractText(product, rules.selectors.availability),
+            description: this.extractText(product, rules.selectors.description)
+          };
 
-        if (productData.title || productData.price) {
-          analysis.products.push(productData);
+          if (productData.title || productData.price) {
+            analysis.products.push(productData);
+          }
         }
       }
 
@@ -186,28 +188,30 @@ class PageContentAnalyzer {
     };
 
     try {
-      // Extract article information
-      const headline = this.extractText(content.html, rules.selectors.headline);
-      const author = this.extractText(content.html, rules.selectors.author);
-      const date = this.extractText(content.html, rules.selectors.date);
-      const articleContent = this.extractText(content.html, rules.selectors.content);
-      const tags = this.extractMultipleTexts(content.html, rules.selectors.tags);
+      if (content.html) {
+        // Extract article information
+        const headline = this.extractText(content.html, rules.selectors.headline);
+        const author = this.extractText(content.html, rules.selectors.author);
+        const date = this.extractText(content.html, rules.selectors.date);
+        const articleContent = this.extractText(content.html, rules.selectors.content);
+        const tags = this.extractMultipleTexts(content.html, rules.selectors.tags);
 
-      if (headline || articleContent) {
-        const article = {
-          headline,
-          author,
-          date: this.extractDate(date),
-          content: articleContent,
-          tags,
-          readingTime: this.estimateReadingTime(articleContent),
-          wordCount: articleContent ? articleContent.split(' ').length : 0,
-          sentiment: await this.analyzeSentiment({ text: articleContent })
-        };
+        if (headline || articleContent) {
+          const article = {
+            headline,
+            author,
+            date: this.extractDate(date),
+            content: articleContent,
+            tags,
+            readingTime: this.estimateReadingTime(articleContent),
+            wordCount: articleContent ? articleContent.split(' ').length : 0,
+            sentiment: await this.analyzeSentiment({ text: articleContent })
+          };
 
-        analysis.articles.push(article);
-        analysis.topics = [...new Set(tags)];
-        analysis.sentimentOverall = article.sentiment;
+          analysis.articles.push(article);
+          analysis.topics = [...new Set(tags)];
+          analysis.sentimentOverall = article.sentiment;
+        }
       }
 
       return { success: true, analysis };
@@ -227,20 +231,22 @@ class PageContentAnalyzer {
     };
 
     try {
-      const resultElements = this.extractElements(content.html, { results: rules.selectors.results });
-      
-      for (const resultElement of resultElements.results || []) {
-        const result = {
-          title: this.extractText(resultElement, rules.selectors.title),
-          snippet: this.extractText(resultElement, rules.selectors.snippet),
-          url: this.extractAttribute(resultElement, rules.selectors.url, 'href'),
-          meta: this.extractText(resultElement, rules.selectors.meta)
-        };
+      if (content.html) {
+        const resultElements = this.extractElements(content.html, { results: rules.selectors.results });
+        
+        for (const resultElement of resultElements.results || []) {
+          const result = {
+            title: this.extractText(resultElement, rules.selectors.title),
+            snippet: this.extractText(resultElement, rules.selectors.snippet),
+            url: this.extractAttribute(resultElement, rules.selectors.url, 'href'),
+            meta: this.extractText(resultElement, rules.selectors.meta)
+          };
 
-        if (result.title) {
-          result.relevanceScore = this.calculateRelevance(result.title, result.snippet, options.query);
-          analysis.results.push(result);
-          analysis.relevanceScores.push(result.relevanceScore);
+          if (result.title) {
+            result.relevanceScore = this.calculateRelevance(result.title, result.snippet, options.query);
+            analysis.results.push(result);
+            analysis.relevanceScores.push(result.relevanceScore);
+          }
         }
       }
 
@@ -363,40 +369,216 @@ class PageContentAnalyzer {
     }
   }
 
-  // 🛠️ UTILITY METHODS
+  // 🛠️ UTILITY METHODS - REAL IMPLEMENTATIONS
 
   extractElements(html, selectors) {
-    // Mock implementation - in real scenario, use DOM parser
+    // REAL IMPLEMENTATION: Parse HTML and extract elements
     const elements = {};
-    for (const [key, selectorList] of Object.entries(selectors)) {
-      elements[key] = []; // Would contain actual DOM elements
+    
+    try {
+      // Use regex to extract elements (simple HTML parsing)
+      for (const [key, selectorList] of Object.entries(selectors)) {
+        elements[key] = [];
+        
+        for (const selector of selectorList) {
+          // Convert CSS selector to regex pattern
+          const pattern = this.selectorToRegex(selector);
+          const matches = html.match(pattern);
+          
+          if (matches) {
+            elements[key].push(...matches.map(match => ({ outerHTML: match })));
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('Element extraction failed:', error);
     }
+    
     return elements;
   }
 
   extractText(element, selectors) {
-    // Mock implementation - would extract text content from DOM element
-    return '';
+    // REAL IMPLEMENTATION: Extract text from element
+    if (!element || !element.outerHTML) return '';
+    
+    try {
+      // Remove HTML tags and extract text
+      const text = element.outerHTML.replace(/<[^>]*>/g, '').trim();
+      return text;
+    } catch (error) {
+      return '';
+    }
   }
 
   extractMultipleTexts(html, selectors) {
-    // Mock implementation - would extract multiple text contents
-    return [];
+    // REAL IMPLEMENTATION: Extract multiple text contents
+    const texts = [];
+    
+    try {
+      for (const selector of selectors) {
+        const pattern = this.selectorToRegex(selector);
+        const matches = html.match(pattern);
+        
+        if (matches) {
+          matches.forEach(match => {
+            const text = match.replace(/<[^>]*>/g, '').trim();
+            if (text) texts.push(text);
+          });
+        }
+      }
+    } catch (error) {
+      console.warn('Multiple text extraction failed:', error);
+    }
+    
+    return [...new Set(texts)]; // Remove duplicates
   }
 
   extractAttribute(element, selectors, attribute) {
-    // Mock implementation - would extract attribute value
-    return '';
+    // REAL IMPLEMENTATION: Extract attribute value
+    if (!element || !element.outerHTML) return '';
+    
+    try {
+      const regex = new RegExp(`${attribute}=["']([^"']*)["']`, 'i');
+      const match = element.outerHTML.match(regex);
+      return match ? match[1] : '';
+    } catch (error) {
+      return '';
+    }
+  }
+
+  extractHeadings(html) {
+    // REAL IMPLEMENTATION: Extract all headings
+    const headings = [];
+    
+    try {
+      const headingPattern = /<h([1-6])[^>]*>([^<]*)<\/h[1-6]>/gi;
+      let match;
+      
+      while ((match = headingPattern.exec(html)) !== null) {
+        headings.push({
+          level: parseInt(match[1]),
+          text: match[2].trim()
+        });
+      }
+    } catch (error) {
+      console.warn('Heading extraction failed:', error);
+    }
+    
+    return headings;
+  }
+
+  extractLinks(html) {
+    // REAL IMPLEMENTATION: Extract all links
+    const links = [];
+    
+    try {
+      const linkPattern = /<a[^>]*href=["']([^"']*)["'][^>]*>([^<]*)<\/a>/gi;
+      let match;
+      
+      while ((match = linkPattern.exec(html)) !== null) {
+        links.push({
+          url: match[1],
+          text: match[2].trim()
+        });
+      }
+    } catch (error) {
+      console.warn('Link extraction failed:', error);
+    }
+    
+    return links;
+  }
+
+  extractImages(html) {
+    // REAL IMPLEMENTATION: Extract all images
+    const images = [];
+    
+    try {
+      const imagePattern = /<img[^>]*src=["']([^"']*)["'][^>]*(?:alt=["']([^"']*)["'])?[^>]*>/gi;
+      let match;
+      
+      while ((match = imagePattern.exec(html)) !== null) {
+        images.push({
+          src: match[1],
+          alt: match[2] || ''
+        });
+      }
+    } catch (error) {
+      console.warn('Image extraction failed:', error);
+    }
+    
+    return images;
+  }
+
+  extractForms(html) {
+    // REAL IMPLEMENTATION: Extract all forms
+    const forms = [];
+    
+    try {
+      const formPattern = /<form[^>]*>(.*?)<\/form>/gis;
+      let match;
+      
+      while ((match = formPattern.exec(html)) !== null) {
+        const formHtml = match[1];
+        const inputs = [];
+        
+        // Extract form inputs
+        const inputPattern = /<input[^>]*name=["']([^"']*)["'][^>]*type=["']([^"']*)["'][^>]*>/gi;
+        let inputMatch;
+        
+        while ((inputMatch = inputPattern.exec(formHtml)) !== null) {
+          inputs.push({
+            name: inputMatch[1],
+            type: inputMatch[2]
+          });
+        }
+        
+        forms.push({ inputs });
+      }
+    } catch (error) {
+      console.warn('Form extraction failed:', error);
+    }
+    
+    return forms;
+  }
+
+  selectorToRegex(selector) {
+    // Convert simple CSS selector to regex pattern
+    try {
+      if (selector.startsWith('.')) {
+        const className = selector.substring(1);
+        return new RegExp(`<[^>]*class=["'][^"']*${className}[^"']*["'][^>]*>.*?</[^>]*>`, 'gis');
+      } else if (selector.startsWith('#')) {
+        const id = selector.substring(1);
+        return new RegExp(`<[^>]*id=["']${id}["'][^>]*>.*?</[^>]*>`, 'gis');
+      } else if (selector.includes('[')) {
+        const attrMatch = selector.match(/\[([^=\]]+)(?:=["']?([^"'\]]+)["']?)?\]/);
+        if (attrMatch) {
+          const attr = attrMatch[1];
+          const value = attrMatch[2];
+          if (value) {
+            return new RegExp(`<[^>]*${attr}=["'][^"']*${value}[^"']*["'][^>]*>.*?</[^>]*>`, 'gis');
+          } else {
+            return new RegExp(`<[^>]*${attr}=["'][^"']*["'][^>]*>.*?</[^>]*>`, 'gis');
+          }
+        }
+      } else {
+        // Tag selector
+        return new RegExp(`<${selector}[^>]*>.*?</${selector}>`, 'gis');
+      }
+    } catch (error) {
+      // Fallback to simple tag match
+      return new RegExp(`<${selector}[^>]*>.*?</${selector}>`, 'gis');
+    }
   }
 
   extractPrice(text) {
-    if (!text) return null;
+    if (!text || typeof text !== 'string') return null;
     const priceMatch = text.match(/\$?(\d+(?:\.\d{2})?)/);
     return priceMatch ? parseFloat(priceMatch[1]) : null;
   }
 
   extractRating(text) {
-    if (!text) return null;
+    if (!text || typeof text !== 'string') return null;
     const ratingMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:out of|\/)\s*(\d+)/);
     if (ratingMatch) {
       return parseFloat(ratingMatch[1]);
@@ -406,7 +588,7 @@ class PageContentAnalyzer {
   }
 
   extractNumber(text) {
-    if (!text) return null;
+    if (!text || typeof text !== 'string') return null;
     const numberMatch = text.match(/(\d+(?:,\d{3})*)/);
     return numberMatch ? parseInt(numberMatch[1].replace(/,/g, '')) : null;
   }
@@ -481,26 +663,6 @@ class PageContentAnalyzer {
     }
     
     return importance;
-  }
-
-  extractHeadings(html) {
-    // Mock implementation - would extract all headings
-    return [];
-  }
-
-  extractLinks(html) {
-    // Mock implementation - would extract all links
-    return [];
-  }
-
-  extractImages(html) {
-    // Mock implementation - would extract all images
-    return [];
-  }
-
-  extractForms(html) {
-    // Mock implementation - would extract all forms
-    return [];
   }
 }
 
