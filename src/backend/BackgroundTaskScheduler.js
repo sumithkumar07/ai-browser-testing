@@ -372,15 +372,85 @@ class BackgroundTaskScheduler {
     };
   }
 
-  async shutdown() {
-    this.isRunning = false;
-    
-    if (this.schedulerInterval) {
-      clearInterval(this.schedulerInterval);
-      this.schedulerInterval = null;
+  // FIXED: Add missing optimization scheduling method
+  async optimizeScheduling() {
+    try {
+      console.log('⚡ Optimizing task scheduling algorithm...');
+      
+      const stats = await this.getTaskStats();
+      const allTasks = await this.db.getBackgroundTasks(undefined, 1000);
+      
+      // Analyze task performance patterns
+      const taskTypePerformance = new Map();
+      
+      for (const task of allTasks) {
+        if (!taskTypePerformance.has(task.type)) {
+          taskTypePerformance.set(task.type, {
+            total: 0,
+            successful: 0,
+            avgDuration: 0,
+            totalDuration: 0
+          });
+        }
+        
+        const perf = taskTypePerformance.get(task.type);
+        perf.total++;
+        
+        if (task.status === 'completed') {
+          perf.successful++;
+          if (task.completedAt && task.startedAt) {
+            const duration = task.completedAt - task.startedAt;
+            perf.totalDuration += duration;
+          }
+        }
+      }
+      
+      // Update task type priorities based on performance
+      for (const [type, perf] of taskTypePerformance.entries()) {
+        const successRate = perf.total > 0 ? perf.successful / perf.total : 1;
+        perf.avgDuration = perf.successful > 0 ? perf.totalDuration / perf.successful : 30000;
+        
+        const taskType = this.taskTypes.get(type);
+        if (taskType) {
+          // Adjust default priority based on success rate and duration
+          const basePriority = 5;
+          const successBonus = Math.round((successRate - 0.8) * 10); // +2 for 100% success, -6 for 20% success
+          const speedBonus = taskType.estimatedDuration > perf.avgDuration ? 1 : 0;
+          
+          taskType.optimizedPriority = Math.max(1, Math.min(10, basePriority + successBonus + speedBonus));
+          
+          console.log(`📊 Task type ${type}: Success rate ${(successRate * 100).toFixed(1)}%, Avg duration ${perf.avgDuration.toFixed(0)}ms, Priority ${taskType.optimizedPriority}`);
+        }
+      }
+      
+      // Optimize concurrent task limits based on system performance
+      const failureRate = stats.totalTasks > 0 ? stats.failed / stats.totalTasks : 0;
+      
+      if (failureRate > 0.2) {
+        this.maxConcurrentTasks = Math.max(1, this.maxConcurrentTasks - 1);
+        console.log(`⬇️ Reduced concurrent task limit to ${this.maxConcurrentTasks} due to high failure rate`);
+      } else if (failureRate < 0.05 && stats.pending > this.maxConcurrentTasks) {
+        this.maxConcurrentTasks = Math.min(5, this.maxConcurrentTasks + 1);
+        console.log(`⬆️ Increased concurrent task limit to ${this.maxConcurrentTasks} due to low failure rate and high demand`);
+      }
+      
+      console.log('✅ Task scheduling optimization completed');
+    } catch (error) {
+      console.error('❌ Task scheduling optimization failed:', error);
     }
+  }
+
+  // Enhanced task scheduling with optimization
+  async scheduleOptimizedTask(type, payload, options = {}) {
+    const taskType = this.taskTypes.get(type);
+    if (!taskType) {
+      throw new Error(`Unknown task type: ${type}`);
+    }
+
+    // Use optimized priority if available
+    const priority = options.priority || taskType.optimizedPriority || 5;
     
-    console.log('✅ Background Task Scheduler shut down');
+    return await this.scheduleTask(type, payload, { ...options, priority });
   }
 }
 
