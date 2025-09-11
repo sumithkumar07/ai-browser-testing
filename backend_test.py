@@ -872,7 +872,7 @@ class KAiroBrowserTester:
             self.log_test(test_name, "FAIL", f"Error checking file: {str(e)}", duration)
             return False
 
-    def check_service_file_content(self, file_path, expected_patterns, description=""):
+    def check_service_file_content(self, file_path, expected_patterns, description="", category="general"):
         """Check if service file contains expected patterns"""
         test_name = f"Service Content: {description or file_path}"
         start_time = time.time()
@@ -882,7 +882,7 @@ class KAiroBrowserTester:
             
             if not os.path.exists(full_path):
                 duration = time.time() - start_time
-                self.log_test(test_name, "FAIL", "File not found", duration)
+                self.log_test(test_name, "FAIL", "File not found", duration, category)
                 return False
                 
             with open(full_path, 'r', encoding='utf-8') as f:
@@ -900,16 +900,16 @@ class KAiroBrowserTester:
             duration = time.time() - start_time
             
             if len(found_patterns) == len(expected_patterns):
-                self.log_test(test_name, "PASS", f"All {len(expected_patterns)} patterns found", duration)
+                self.log_test(test_name, "PASS", f"All {len(expected_patterns)} patterns found", duration, category)
                 return True
             else:
                 details = f"Found {len(found_patterns)}/{len(expected_patterns)} patterns. Missing: {missing_patterns[:3]}"
-                self.log_test(test_name, "FAIL", details, duration)
+                self.log_test(test_name, "FAIL", details, duration, category)
                 return False
                 
         except Exception as e:
             duration = time.time() - start_time
-            self.log_test(test_name, "FAIL", f"Error reading file: {str(e)}", duration)
+            self.log_test(test_name, "FAIL", f"Error reading file: {str(e)}", duration, category)
             return False
 
     def test_service_integration(self):
