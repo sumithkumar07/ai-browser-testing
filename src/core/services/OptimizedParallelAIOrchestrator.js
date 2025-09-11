@@ -957,6 +957,107 @@ class OptimizedParallelAIOrchestrator {
     console.log(`📊 Learning from execution pattern: ${pattern.duration}ms, ${pattern.parallelTasks} parallel tasks`);
   }
 
+  async processOptimizedRequestQueue() {
+    // Process queued requests with optimization
+    if (this.requestQueue.length === 0) return;
+    
+    const availableSlots = this.maxConcurrentRequests - this.activeRequests.size;
+    if (availableSlots <= 0) return;
+    
+    const requestsToProcess = this.requestQueue.splice(0, availableSlots);
+    
+    for (const queuedRequest of requestsToProcess) {
+      try {
+        // Process request asynchronously
+        this.executeOptimizedParallelRequest(queuedRequest.config)
+          .then(result => {
+            if (queuedRequest.callback) {
+              queuedRequest.callback(null, result);
+            }
+          })
+          .catch(error => {
+            if (queuedRequest.callback) {
+              queuedRequest.callback(error, null);
+            }
+          });
+      } catch (error) {
+        console.error('❌ Error processing queued request:', error);
+      }
+    }
+  }
+
+  async predictOptimalExecutionStrategy(task, request) {
+    // Predict optimal execution strategy based on task and context
+    const strategy = {
+      cacheEnabled: true,
+      predictiveEnabled: false,
+      efficiencyTarget: 0.8,
+      optimizations: [],
+      timeoutMultiplier: 1.0
+    };
+    
+    // Analyze task type for strategy optimization
+    switch (task.type) {
+      case 'ultra_search':
+        strategy.cacheEnabled = true;
+        strategy.predictiveEnabled = true;
+        strategy.optimizations.push('search_optimization');
+        break;
+        
+      case 'intelligent_service':
+        strategy.efficiencyTarget = 0.9;
+        strategy.optimizations.push('service_optimization');
+        break;
+        
+      case 'optimized_processing':
+        strategy.timeoutMultiplier = 1.5;
+        strategy.optimizations.push('processing_optimization');
+        break;
+        
+      default:
+        strategy.optimizations.push('generic_optimization');
+    }
+    
+    // Consider request priority
+    if (request.optimization.priorityLevel === 'high') {
+      strategy.efficiencyTarget = 0.95;
+      strategy.timeoutMultiplier = 0.8;
+    }
+    
+    return strategy;
+  }
+
+  async analyzeTaskPerformance(task, result, duration, strategy) {
+    // Analyze task performance for optimization insights
+    const analysis = {
+      efficiencyScore: 0.8,
+      optimizations: [],
+      recommendations: []
+    };
+    
+    // Calculate efficiency based on duration and strategy
+    const targetDuration = strategy.efficiencyTarget * 5000; // 5 second baseline
+    analysis.efficiencyScore = Math.max(0.1, Math.min(1.0, targetDuration / duration));
+    
+    // Analyze optimization opportunities
+    if (duration > targetDuration) {
+      analysis.optimizations.push('duration_optimization');
+      analysis.recommendations.push('Consider caching or parallel execution');
+    }
+    
+    if (result && result.cached) {
+      analysis.optimizations.push('cache_hit');
+      analysis.efficiencyScore = Math.min(1.0, analysis.efficiencyScore + 0.2);
+    }
+    
+    // Strategy-specific analysis
+    if (strategy.optimizations.length > 0) {
+      analysis.optimizations.push(...strategy.optimizations);
+    }
+    
+    return analysis;
+  }
+
   async shutdown() {
     console.log('⚡ Shutting down Optimized Parallel AI Orchestrator...');
     
