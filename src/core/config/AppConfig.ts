@@ -116,8 +116,8 @@ class ConfigManager {
           baseUrl: process.env.GROQ_API_URL || 'https://api.groq.com/openai/v1',
           timeout: 30000,
           maxRetries: 3,
-          defaultModel: 'llama-3.3-70b-versatile',
-          fallbackModel: 'llama3-8b-8192'
+          defaultModel: 'llama-3.1-8b-instant',
+          fallbackModel: 'llama-3.1-8b-instant'
         },
         endpoints: {
           search: '/api/search',
