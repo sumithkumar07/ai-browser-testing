@@ -3008,7 +3008,7 @@ ${predictions.proactive.map(rec => `• ${rec}`).join('\n')}
               content: `Please summarize this page:\n\nURL: ${context.url}\nTitle: ${context.title}\nContent: ${context.extractedText || 'No content available'}` 
             }
           ],
-          model: 'llama-3.3-70b-versatile',
+          model: 'llama-3.1-8b-instant',
           temperature: 0.3,
           max_tokens: 500
         })
@@ -3040,7 +3040,7 @@ ${predictions.proactive.map(rec => `• ${rec}`).join('\n')}
               content: `Please analyze this page content:\n\nURL: ${context.url}\nTitle: ${context.title}\nContent: ${context.extractedText || 'No content available'}` 
             }
           ],
-          model: 'llama-3.3-70b-versatile',
+          model: 'llama-3.1-8b-instant',
           temperature: 0.5,
           max_tokens: 800
         })
@@ -3217,7 +3217,7 @@ ${predictions.proactive.map(rec => `• ${rec}`).join('\n')}
                 content: message
               }
             ],
-            model: 'llama-3.3-70b-versatile',
+            model: 'llama-3.1-8b-instant',
             temperature: 0.7,
             max_tokens: 2048
           })
@@ -4707,7 +4707,7 @@ You are not just answering questions - you are demonstrating a world-class AI pl
 Image data: ${base64Data.substring(0, 100)}...` 
             }
           ],
-          model: 'llama-3.3-70b-versatile',
+          model: 'llama-3.1-8b-instant',
           temperature: 0.3,
           max_tokens: 1000
         })
@@ -4777,7 +4777,7 @@ Then extract actual text content and analyze with AI.`
 Content: ${mockExtractedText}` 
                 }
               ],
-              model: 'llama-3.3-70b-versatile',
+              model: 'llama-3.1-8b-instant',
               temperature: 0.3,
               max_tokens: 1000
             })
@@ -4884,7 +4884,7 @@ Then extract actual content with formatting and analyze with AI.`
 Content: ${mockExtractedText}` 
                 }
               ],
-              model: 'llama-3.3-70b-versatile',
+              model: 'llama-3.1-8b-instant',
               temperature: 0.3,
               max_tokens: 1000
             })
@@ -4970,7 +4970,7 @@ Document: ${fileName}
 Content: ${content.substring(0, 2000)}${content.length > 2000 ? '...' : ''}` 
                 }
               ],
-              model: 'llama-3.3-70b-versatile',
+              model: 'llama-3.1-8b-instant',
               temperature: 0.3,
               max_tokens: 1200
             })
@@ -5073,7 +5073,7 @@ Additional context:
 - Sort preference: ${sortBy}` 
                 }
               ],
-              model: 'llama-3.3-70b-versatile',
+              model: 'llama-3.1-8b-instant',
               temperature: 0.7,
               max_tokens: 1500
             })
@@ -5185,7 +5185,7 @@ Products to compare:
 ${productList}` 
                 }
               ],
-              model: 'llama-3.3-70b-versatile',
+              model: 'llama-3.1-8b-instant',
               temperature: 0.3,
               max_tokens: 2000
             })
@@ -5293,7 +5293,7 @@ Please provide:
 Keep it concise and helpful.` 
                     }
                   ],
-                  model: 'llama-3.3-70b-versatile',
+                  model: 'llama-3.1-8b-instant',
                   temperature: 0.7,
                   max_tokens: 600
                 })
