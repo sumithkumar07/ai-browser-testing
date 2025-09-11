@@ -350,6 +350,15 @@ class KAiroBrowserManager {
         console.warn('⚠️ Ultra Intelligent Search Engine initialization failed:', error.message)
       }
 
+      // Initialize Optimized Parallel AI Orchestrator - ENHANCED (Performance Optimized)
+      try {
+        this.optimizedParallelAIOrchestrator = OptimizedParallelAIOrchestrator.getInstance()
+        await this.optimizedParallelAIOrchestrator.initialize()
+        console.log('✅ Optimized Parallel AI Orchestrator initialized with enhanced performance')
+      } catch (error) {
+        console.warn('⚠️ Optimized Parallel AI Orchestrator initialization failed:', error.message)
+      }
+
       // Initialize Shadow Workspace
       try {
         this.shadowWorkspace = ShadowWorkspace.getInstance()
