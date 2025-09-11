@@ -265,7 +265,8 @@ class OptimizedParallelAIOrchestrator {
     const errors = [];
     const optimizations = [];
 
-    results.forEach((result, index) => {
+    for (let index = 0; index < results.length; index++) {
+      const result = results[index];
       const task = scheduledTasks[index];
       
       if (result.status === 'fulfilled') {
@@ -288,7 +289,7 @@ class OptimizedParallelAIOrchestrator {
           successfulResults.set(task.name, recovery.result);
         }
       }
-    });
+    }
 
     // Update request with optimizations
     request.performance.optimizations.push(...optimizations);
