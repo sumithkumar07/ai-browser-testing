@@ -38,7 +38,8 @@ export async function initializeEnhancedBackend(): Promise<{
 
   try {
     // Initialize orchestrator first
-    const orchestrator = UnifiedServiceOrchestrator.getInstance()
+    // Enhanced AI orchestration handled by electron main process
+    // const orchestrator = UnifiedServiceOrchestrator.getInstance()
     await orchestrator.initialize()
 
     // Get all initialized services
