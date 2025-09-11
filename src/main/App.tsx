@@ -1,13 +1,11 @@
-// KAiro Browser Main Application Component - NLP-First Design Philosophy
-// Design Principle: ALL features accessible through AI conversation interface
-// Last Updated: NLP-First Approach Officialized - Clean UI, Conversational Features
+// KAiro Browser Main Application Component - Optimized & Robust
+// Clean Architecture focused on core functionality
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import TabBar from './components/TabBar'
 import EnhancedNavigationBar from './components/EnhancedNavigationBar'
 import BrowserWindow from './components/BrowserWindow'
 import AISidebar from './components/AISidebar'
 import EnhancedErrorBoundary from './components/EnhancedErrorBoundary'
-import DebugPanel from './components/DebugPanel'
 import { Tab, BrowserEvent } from './types/electron'
 import { createLogger } from '../core/logger/EnhancedLogger'
 import './styles/App.css'
@@ -22,40 +20,30 @@ const App: React.FC = () => {
   const [isAISidebarOpen, setIsAISidebarOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(false)
 
-  // FIXED: Enhanced performance with useMemo for heavy computations
+  // Performance optimized computed values
   const activeTab = useMemo(() => 
     tabs.find(tab => tab.id === activeTabId) || null,
     [tabs, activeTabId]
   )
 
-  // FIXED: Enhanced error handling with better user feedback
+  // Enhanced error handling with user feedback
   const handleError = useCallback((error: Error, context?: string) => {
     const errorMessage = `${context ? context + ': ' : ''}${error.message}`
     logger.error('Application error', error, { context })
     setError(errorMessage)
     
-    // Auto-clear error after 8 seconds (increased from 5)
+    // Auto-clear error after 8 seconds
     setTimeout(() => {
       setError(null)
     }, 8000)
   }, [])
 
-  // FIXED: Enhanced initialization with proper error handling
+  // Robust initialization with comprehensive error handling
   useEffect(() => {
     const initializeApp = async () => {
       try {
         setIsLoading(true)
-        
-        // Initialize configuration system
-        try {
-          const { config } = await import('../core/config/ConfigManager')
-          await config.initialize()
-          logger.info('Configuration system initialized successfully')
-        } catch (configError) {
-          logger.warn('Configuration system initialization failed, using defaults', { error: configError })
-        }
         
         // Check if Electron API is available
         if (!window.electronAPI) {
@@ -80,7 +68,7 @@ const App: React.FC = () => {
           throw new Error(result?.error || 'Failed to create initial tab')
         }
 
-        // Test AI connection
+        // Test AI connection with robust error handling
         try {
           const aiTest = await window.electronAPI.testConnection()
           if (!aiTest?.success) {
@@ -92,34 +80,21 @@ const App: React.FC = () => {
           logger.warn('AI service test failed:', { error: aiError })
         }
 
-        // Initialize Intelligent Services (Advanced Upgrade)
+        // Initialize core services with fallback handling
         try {
           const { initializeIntelligentServices } = await import('./services/index')
           const intelligentResult = await initializeIntelligentServices()
           if (intelligentResult.success) {
             logger.info('🧠 Intelligent Services Suite initialized successfully:', {
-              browserManager: 'Advanced AI-powered browser intelligence',
-              dataManager: 'ML-based smart caching and data optimization',
-              performanceOptimizer: 'Predictive performance monitoring with auto-fixes'
+              browserManager: 'AI-powered browser intelligence',
+              dataManager: 'Smart caching and data optimization',
+              performanceOptimizer: 'Predictive performance monitoring'
             })
           } else {
-            throw new Error(`Intelligent services errors: ${intelligentResult.errors?.join(', ')}`)
+            logger.warn('Intelligent services initialization had issues:', intelligentResult.errors)
           }
         } catch (intelligentError) {
-          logger.warn('Intelligent Services initialization failed, falling back to enhanced backend:', { error: intelligentError })
-          
-          // Fallback to Enhanced Backend Services
-          try {
-            const { initializeEnhancedBackend } = await import('../core/services/index')
-            const backendResult = await initializeEnhancedBackend()
-            logger.info('🚀 Enhanced Backend Services initialized as fallback:', {
-              services: Object.keys(backendResult.services).length,
-              health: `${(backendResult.health.overall * 100).toFixed(1)}%`,
-              healthyServices: backendResult.health.services.filter((s: any) => s.status === 'healthy').length
-            })
-          } catch (backendError) {
-            logger.warn('Enhanced Backend Services also failed, continuing with basic functionality:', { error: backendError })
-          }
+          logger.warn('Intelligent Services initialization failed, continuing with core functionality:', { error: intelligentError })
         }
 
         setIsLoading(false)
@@ -135,7 +110,7 @@ const App: React.FC = () => {
     initializeApp()
   }, [handleError])
 
-  // FIXED: Enhanced browser event listener with cleanup and performance optimization
+  // Enhanced browser event listener with cleanup and performance optimization
   useEffect(() => {
     if (!window.electronAPI?.onBrowserEvent) {
       return
@@ -196,7 +171,7 @@ const App: React.FC = () => {
       eventListenerRef = handleBrowserEvent
       window.electronAPI.onBrowserEvent(handleBrowserEvent)
 
-      // FIXED: Enhanced cleanup with null checks
+      // Enhanced cleanup with null checks
       return () => {
         try {
           if (eventListenerRef && window.electronAPI?.removeBrowserEventListener) {
@@ -212,11 +187,10 @@ const App: React.FC = () => {
     }
   }, [])
 
-  // FIXED: Enhanced tab creation with error handling
+  // Enhanced tab creation with error handling
   const createTab = useCallback(async (url?: string, type?: 'browser' | 'ai') => {
     try {
       if (type === 'ai') {
-        // Create AI tab
         const result = await window.electronAPI.createAITab('AI Chat', '')
         if (result && result.success) {
           const newTab: Tab = {
@@ -235,7 +209,6 @@ const App: React.FC = () => {
           throw new Error(result?.error || 'Failed to create AI tab')
         }
       } else {
-        // Create browser tab
         const result = await window.electronAPI.createTab(url)
         if (result && result.success) {
           const newTab: Tab = {
@@ -258,7 +231,7 @@ const App: React.FC = () => {
     }
   }, [handleError])
 
-  // FIXED: Enhanced tab closing with cleanup
+  // Enhanced tab closing with cleanup and intelligent tab switching
   const closeTab = useCallback(async (tabId: string) => {
     try {
       const result = await window.electronAPI.closeTab(tabId)
@@ -266,9 +239,12 @@ const App: React.FC = () => {
         setTabs(prevTabs => {
           const updatedTabs = prevTabs.filter(tab => tab.id !== tabId)
           
-          // If we closed the active tab, switch to another tab
+          // Smart tab switching logic
           if (activeTabId === tabId && updatedTabs.length > 0) {
-            setActiveTabId(updatedTabs[0].id)
+            // Find the next logical tab to switch to
+            const currentIndex = prevTabs.findIndex(tab => tab.id === tabId)
+            const nextTab = updatedTabs[Math.min(currentIndex, updatedTabs.length - 1)]
+            setActiveTabId(nextTab.id)
           } else if (updatedTabs.length === 0) {
             // Create a new tab if no tabs remain
             createTab()
@@ -284,9 +260,15 @@ const App: React.FC = () => {
     }
   }, [activeTabId, createTab, handleError])
 
-  // FIXED: Enhanced tab switching
+  // Enhanced tab switching with validation
   const switchTab = useCallback(async (tabId: string) => {
     try {
+      // Validate tab exists
+      const targetTab = tabs.find(tab => tab.id === tabId)
+      if (!targetTab) {
+        throw new Error(`Tab ${tabId} not found`)
+      }
+
       const result = await window.electronAPI.switchTab(tabId)
       if (result && result.success) {
         setActiveTabId(tabId)
@@ -302,29 +284,44 @@ const App: React.FC = () => {
     } catch (error) {
       handleError(error as Error, 'Tab Switching')
     }
-  }, [handleError])
+  }, [tabs, handleError])
 
-  // FIXED: Enhanced navigation with validation
+  // Enhanced navigation with comprehensive URL validation and security
   const navigateTo = useCallback(async (url: string) => {
     try {
-      // Advanced URL validation with security checks
+      // Enhanced URL validation with security checks
       if (!url || url.trim().length === 0) {
         throw new Error('URL cannot be empty')
       }
       
-      // Enhanced security validation
-      if (!/^https?:\/\/.+/.test(url.trim()) && !url.startsWith('about:') && !url.startsWith('file:')) {
-        url = url.startsWith('www.') ? `https://${url}` : `https://www.google.com/search?q=${encodeURIComponent(url)}`
+      const trimmedUrl = url.trim()
+      
+      // Security validation - block dangerous protocols
+      const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:']
+      if (dangerousProtocols.some(protocol => trimmedUrl.toLowerCase().startsWith(protocol))) {
+        throw new Error('Blocked dangerous URL protocol')
       }
 
-      const result = await window.electronAPI.navigateTo(url)
+      // Enhanced URL processing
+      let processedUrl = trimmedUrl
+      if (!/^https?:\/\/.+/.test(trimmedUrl) && !trimmedUrl.startsWith('about:')) {
+        if (trimmedUrl.includes('.') && !trimmedUrl.includes(' ')) {
+          // Looks like a domain
+          processedUrl = trimmedUrl.startsWith('www.') ? `https://${trimmedUrl}` : `https://www.${trimmedUrl}`
+        } else {
+          // Treat as search query
+          processedUrl = `https://www.google.com/search?q=${encodeURIComponent(trimmedUrl)}`
+        }
+      }
+
+      const result = await window.electronAPI.navigateTo(processedUrl)
       if (result && result.success) {
         // Update active tab URL immediately for better UX
         if (activeTabId) {
           setTabs(prevTabs =>
             prevTabs.map(tab =>
               tab.id === activeTabId
-                ? { ...tab, url, isLoading: true }
+                ? { ...tab, url: processedUrl, isLoading: true }
                 : tab
             )
           )
@@ -337,20 +334,29 @@ const App: React.FC = () => {
     }
   }, [activeTabId, handleError])
 
-  // FIXED: Enhanced content update handler
+  // Enhanced content update handler with validation
   const handleTabContentChange = useCallback(async (tabId: string, content: string) => {
     try {
-      if (!tabId || !content) {
+      if (!tabId || content === undefined) {
         return
       }
 
       const tab = tabs.find(t => t.id === tabId)
       if (tab && tab.type === 'ai') {
-        const result = await window.electronAPI.saveAITabContent(tabId, content)
+        // Validate content size
+        const maxContentSize = 1024 * 1024 // 1MB limit
+        let processedContent = content
+        
+        if (content.length > maxContentSize) {
+          logger.warn('Content too large, truncating...')
+          processedContent = content.substring(0, maxContentSize) + '\n\n[Content truncated due to size limit]'
+        }
+
+        const result = await window.electronAPI.saveAITabContent(tabId, processedContent)
         if (result && result.success) {
           setTabs(prevTabs =>
             prevTabs.map(t =>
-              t.id === tabId ? { ...t, content } : t
+              t.id === tabId ? { ...t, content: processedContent } : t
             )
           )
         } else {
@@ -362,12 +368,12 @@ const App: React.FC = () => {
     }
   }, [tabs])
 
-  // Use the handler in BrowserWindow
+  // AI tab creation handler
   const createAITabHandler = useCallback((title: string, _content: string) => {
     createTab(`ai://tab/${title}`, 'ai')
   }, [createTab])
 
-  // FIXED: Enhanced AI sidebar toggle
+  // Enhanced AI sidebar toggle
   const toggleAISidebar = useCallback(() => {
     setIsAISidebarOpen(prev => {
       logger.debug(`AI Sidebar ${!prev ? 'opened' : 'closed'}`)
@@ -375,42 +381,36 @@ const App: React.FC = () => {
     })
   }, [])
 
-  // FIXED: Enhanced error clearing
+  // Error clearing
   const clearError = useCallback(() => {
     setError(null)
   }, [])
 
-  // Debug panel keyboard shortcut (Ctrl+Shift+D or Cmd+Shift+D)
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'D') {
-        event.preventDefault()
-        setIsDebugPanelOpen(prev => !prev)
-        logger.info('Debug panel toggled', { isOpen: !isDebugPanelOpen })
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isDebugPanelOpen])
-
-  // FIXED: Loading screen component
+  // Loading screen with better UX
   if (isLoading) {
     return (
-      <div className="loading-spinner">
-        <div>🚀 Loading KAiro Browser...</div>
+      <div className="loading-container">
+        <div className="loading-content">
+          <div className="loading-spinner"></div>
+          <h2>🚀 Loading KAiro Browser...</h2>
+          <p>Initializing AI-powered browsing experience</p>
+        </div>
       </div>
     )
   }
 
-  // FIXED: Error screen component
+  // Enhanced error screen
   if (error) {
     return (
       <div className="error-container">
-        <h2>⚠️ Application Error</h2>
-        <p>{error}</p>
-        <button onClick={clearError}>Try Again</button>
-        <button onClick={() => window.location.reload()}>Reload App</button>
+        <div className="error-content">
+          <h2>⚠️ Application Error</h2>
+          <p>{error}</p>
+          <div className="error-actions">
+            <button onClick={clearError} className="btn btn-primary">Try Again</button>
+            <button onClick={() => window.location.reload()} className="btn btn-secondary">Reload App</button>
+          </div>
+        </div>
       </div>
     )
   }
@@ -447,14 +447,6 @@ const App: React.FC = () => {
             <AISidebar onClose={() => setIsAISidebarOpen(false)} />
           )}
         </div>
-        
-        {/* Debug Panel - Only in development */}
-        {process.env.NODE_ENV === 'development' && (
-          <DebugPanel 
-            isOpen={isDebugPanelOpen} 
-            onClose={() => setIsDebugPanelOpen(false)} 
-          />
-        )}
       </div>
     </EnhancedErrorBoundary>
   )
