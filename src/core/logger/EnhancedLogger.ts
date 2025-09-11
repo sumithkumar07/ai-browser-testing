@@ -76,7 +76,7 @@ class EnhancedLogger {
     this.log('error', message, error, context)
   }
 
-  getLogs(level?: LogEntry['level'], limit: number = 100): LogEntry[] {
+  getLogs(level?: LogLevel, limit: number = 100): LogEntry[] {
     let filteredLogs = this.logs
     
     if (level) {
