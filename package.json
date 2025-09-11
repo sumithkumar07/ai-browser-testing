@@ -41,6 +41,8 @@
     "electron-store": "^8.1.0",
     "electron-updater": "^6.1.0",
     "groq-sdk": "^0.7.0",
+    "playwright-core": "^1.55.0",
+    "puppeteer": "^24.20.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "typescript": "^5.0.0",
