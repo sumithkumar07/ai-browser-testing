@@ -1,5 +1,6 @@
-// KAiro Browser Main Application Component
-// Last Updated: Bug Fix Session - Enhanced Error Handling & Performance
+// KAiro Browser Main Application Component - NLP-First Design Philosophy
+// Design Principle: ALL features accessible through AI conversation interface
+// Last Updated: NLP-First Approach Officialized - Clean UI, Conversational Features
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import TabBar from './components/TabBar'
 import EnhancedNavigationBar from './components/EnhancedNavigationBar'
