@@ -881,6 +881,82 @@ class OptimizedParallelAIOrchestrator {
     }
   }
 
+  calculateEfficiencyScore(request) {
+    const responseTimeScore = Math.max(0, 1 - (request.duration / 10000));
+    const parallelismScore = request.results.size > 1 ? 1 : 0.5;
+    const optimizationScore = request.performance.optimizations.length > 0 ? 1 : 0.7;
+    
+    return (responseTimeScore * 0.4 + parallelismScore * 0.3 + optimizationScore * 0.3);
+  }
+
+  async getFallbackResults(requestConfig) {
+    // Provide fallback results when main execution fails
+    return {
+      fallback: true,
+      message: 'Fallback response generated',
+      originalRequest: requestConfig.message,
+      timestamp: Date.now(),
+      services: ['fallback_service']
+    };
+  }
+
+  async updatePerformanceMetricsAndLearn(request) {
+    this.performanceTracker.totalRequests++;
+    
+    if (request.results.size > 1) {
+      this.performanceTracker.parallelExecutions++;
+      this.performanceTracker.optimizedExecutions++;
+    }
+
+    // Update rolling average with weighted recent performance
+    const currentAvg = this.performanceTracker.averageResponseTime;
+    const weight = 0.1; // Give recent performance 10% influence
+    const newAvg = (currentAvg * (1 - weight)) + (request.duration * weight);
+    this.performanceTracker.averageResponseTime = newAvg;
+
+    // Track optimization metrics
+    this.performanceTracker.concurrencyMetrics.push({
+      timestamp: Date.now(),
+      parallelTasks: request.results.size,
+      duration: request.duration,
+      optimizations: request.performance.optimizations.length,
+      success: request.status === 'completed',
+      efficiencyScore: this.calculateEfficiencyScore(request)
+    });
+
+    // Maintain metrics history (keep last 100 entries)
+    if (this.performanceTracker.concurrencyMetrics.length > 100) {
+      this.performanceTracker.concurrencyMetrics = this.performanceTracker.concurrencyMetrics.slice(-50);
+    }
+
+    // Learn from execution patterns
+    await this.learnFromExecutionPattern(request);
+  }
+
+  async learnFromExecutionPattern(request) {
+    // Analyze execution patterns for future optimization
+    const pattern = {
+      duration: request.duration,
+      parallelTasks: request.results.size,
+      optimizations: request.performance.optimizations.length,
+      success: request.status === 'completed'
+    };
+    
+    // Store pattern for machine learning
+    if (!this.performanceTracker.executionPatterns) {
+      this.performanceTracker.executionPatterns = [];
+    }
+    
+    this.performanceTracker.executionPatterns.push(pattern);
+    
+    // Keep only recent patterns
+    if (this.performanceTracker.executionPatterns.length > 50) {
+      this.performanceTracker.executionPatterns = this.performanceTracker.executionPatterns.slice(-25);
+    }
+    
+    console.log(`📊 Learning from execution pattern: ${pattern.duration}ms, ${pattern.parallelTasks} parallel tasks`);
+  }
+
   async shutdown() {
     console.log('⚡ Shutting down Optimized Parallel AI Orchestrator...');
     
