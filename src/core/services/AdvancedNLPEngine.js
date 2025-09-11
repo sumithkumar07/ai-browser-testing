@@ -394,7 +394,7 @@ class AdvancedNLPEngine {
       case 'performance_analytics':
         plan.primaryAction = 'collect_system_metrics';
         plan.parallelActions = ['analyze_agent_performance', 'check_system_health'];
-        plan.requiredServices = ['PerformanceMonitor', 'UnifiedServiceOrchestrator'];
+        plan.requiredServices = ['PerformanceMonitor']; // Enhanced AI orchestrator handles coordination
         break;
 
       case 'deep_research':
