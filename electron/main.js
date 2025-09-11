@@ -70,6 +70,9 @@ class KAiroBrowserManager {
     this.isAgenticMode = true // Enable enhanced agentic features
     this.isEnhancedBackendEnabled = true // Enable all maximum potential features
     
+    // 🚀 BROWSER AUTOMATION - FULL AGENT CONTROL
+    this.enhancedAgentController = null
+    
     // UPGRADE: Enable all advanced systems (previously unused)
     this.enableDeepSearch = true // ACTIVATED: Multi-source search capabilities
     this.enableAdvancedSecurity = true // ACTIVATED: Enterprise-level security
