@@ -89,32 +89,33 @@ const BrowserWindow: React.FC<BrowserWindowProps> = ({
         <div className="new-tab-container">
           <div className="new-tab-content">
             <h1>🌐 KAiro Browser</h1>
-            <p>Welcome to your intelligent browsing experience</p>
+            <p className="nlp-first-tagline">Your AI-Powered Browser with <strong>NLP-First Design</strong></p>
+            <div className="nlp-intro">
+              <h3>💬 Everything Through Conversation</h3>
+              <p>No complex menus or hidden features - just talk to your AI assistant!</p>
+            </div>
             <div className="quick-actions">
               <button 
                 onClick={() => handleNavigation('https://www.google.com')}
                 className="quick-action-btn"
               >
-                🔍 Search Google
+                🔍 Start Browsing
               </button>
               <button 
-                onClick={() => handleNavigation('https://github.com')}
-                className="quick-action-btn"
-              >
-                💻 GitHub
-              </button>
-              <button 
-                onClick={() => handleNavigation('https://stackoverflow.com')}
-                className="quick-action-btn"
-              >
-                📚 Stack Overflow
-              </button>
-              <button 
-                onClick={() => onCreateAITab('Research Notes', '# Research Notes\n\nStart your research here...')}
+                onClick={() => onCreateAITab('AI Workspace', '# AI Workspace\n\nYour conversational command center...')}
                 className="quick-action-btn ai-tab-btn"
               >
-                🤖 Create AI Tab
+                🤖 Open AI Assistant
               </button>
+            </div>
+            <div className="nlp-philosophy">
+              <h4>🎯 NLP-First Philosophy</h4>
+              <ul>
+                <li>✅ <strong>All features accessible through conversation</strong></li>
+                <li>✅ <strong>Clean UI focused on content, not controls</strong></li>
+                <li>✅ <strong>Natural language replaces complex interfaces</strong></li>
+                <li>✅ <strong>AI handles complexity behind the scenes</strong></li>
+              </ul>
             </div>
           </div>
         </div>
