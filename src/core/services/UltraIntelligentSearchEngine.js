@@ -184,16 +184,255 @@ class UltraIntelligentSearchEngine {
     console.log('🔮 Predictive search capabilities initialized');
   }
 
-  startIntelligentMonitoring() {
-    // Enhanced monitoring with optimization
-    setInterval(async () => {
-      await this.optimizeSearchPerformance();
-      await this.updatePredictiveModels();
-      await this.analyzeMacroTrends();
-      await this.cleanupCache();
-    }, 60000); // Every minute
+  async optimizeSearchPerformance() {
+    // Advanced search performance optimization
+    const currentMetrics = {
+      cacheHitRate: this.metrics.cacheHits / Math.max(this.metrics.totalSearches, 1),
+      avgResponseTime: this.metrics.averageResponseTime,
+      searchSuccessRate: this.metrics.searchSuccessRate
+    };
 
-    console.log('🔄 Ultra intelligent monitoring started');
+    // Resource optimization based on current performance
+    if (currentMetrics.avgResponseTime > 8000) {
+      // High response time - optimize for speed
+      this.maxConcurrentSearches = Math.min(12, this.maxConcurrentSearches + 1);
+      this.searchTimeout = Math.min(60000, this.searchTimeout + 5000);
+      console.log('⚡ Search optimization: Increased capacity for better performance');
+    } else if (currentMetrics.avgResponseTime < 3000 && this.maxConcurrentSearches > 6) {
+      // Good performance - optimize for efficiency
+      this.maxConcurrentSearches = Math.max(6, this.maxConcurrentSearches - 1);
+      console.log('⚡ Search optimization: Reduced capacity for better efficiency');
+    }
+
+    // Adaptive execution optimization
+    if (currentMetrics.cacheHitRate < 0.3) {
+      // Low cache hit rate - optimize caching strategy
+      await this.optimizeCachingStrategy();
+    }
+
+    return currentMetrics;
+  }
+
+  async updatePredictiveModels() {
+    // Update predictive models based on search patterns
+    const recentSearches = this.searchHistory.slice(-50);
+    
+    if (recentSearches.length < 10) return;
+
+    // Analyze search patterns for predictive optimization
+    const patterns = this.analyzeSearchPatterns(recentSearches);
+    
+    // Update predictive cache with learned patterns
+    await this.updatePredictiveCacheStrategy(patterns);
+    
+    console.log('🧠 Predictive models updated based on', recentSearches.length, 'recent searches');
+  }
+
+  async analyzeMacroTrends() {
+    // Analyze macro trends in search behavior
+    const recentSearches = this.searchHistory.slice(-100);
+    
+    if (recentSearches.length < 20) return;
+
+    const trends = {
+      avgQueryLength: recentSearches.reduce((sum, s) => sum + s.query.length, 0) / recentSearches.length,
+      avgDuration: recentSearches.reduce((sum, s) => sum + s.duration, 0) / recentSearches.length,
+      successRate: recentSearches.filter(s => s.resultCount > 0).length / recentSearches.length,
+      complexityTrend: this.analyzeQueryComplexityTrend(recentSearches)
+    };
+
+    // Adaptive optimization based on trends
+    if (trends.complexityTrend === 'increasing') {
+      this.searchTimeout = Math.min(60000, this.searchTimeout + 5000);
+      console.log('📈 Macro trend analysis: Increasing query complexity detected');
+    }
+
+    return trends;
+  }
+
+  async cleanupCache() {
+    // Intelligent cache cleanup with efficiency optimization
+    const now = Date.now();
+    let cleanedCount = 0;
+
+    // Clean predictive cache
+    for (const [key, entry] of this.predictiveCache.entries()) {
+      if (now - entry.timestamp > this.cacheStrategy.ttl) {
+        this.predictiveCache.delete(key);
+        cleanedCount++;
+      }
+    }
+
+    // Clean auto-complete cache
+    if (this.autoComplete.cache.size > 1000) {
+      const entries = Array.from(this.autoComplete.cache.entries());
+      entries.sort(([,a], [,b]) => b.timestamp - a.timestamp);
+      
+      // Keep only the most recent 500 entries
+      this.autoComplete.cache.clear();
+      entries.slice(0, 500).forEach(([key, value]) => {
+        this.autoComplete.cache.set(key, value);
+      });
+    }
+
+    if (cleanedCount > 0) {
+      console.log(`🧹 Cache cleanup completed: ${cleanedCount} entries removed`);
+    }
+  }
+
+  analyzeSearchPatterns(searches) {
+    const patterns = {
+      commonKeywords: this.extractCommonKeywords(searches),
+      queryTypes: this.analyzeQueryTypes(searches),
+      timePatterns: this.analyzeTimePatterns(searches),
+      successPatterns: this.analyzeSuccessPatterns(searches)
+    };
+
+    return patterns;
+  }
+
+  extractCommonKeywords(searches) {
+    const keywordCounts = new Map();
+    
+    searches.forEach(search => {
+      const keywords = search.query.toLowerCase().split(/\s+/)
+        .filter(word => word.length > 2);
+      
+      keywords.forEach(keyword => {
+        keywordCounts.set(keyword, (keywordCounts.get(keyword) || 0) + 1);
+      });
+    });
+
+    return Array.from(keywordCounts.entries())
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 10)
+      .map(([keyword, count]) => ({ keyword, count }));
+  }
+
+  analyzeQueryTypes(searches) {
+    const types = {};
+    
+    searches.forEach(search => {
+      const intent = this.detectSearchIntent(search.query);
+      types[intent] = (types[intent] || 0) + 1;
+    });
+
+    return types;
+  }
+
+  analyzeTimePatterns(searches) {
+    const hours = searches.map(s => new Date(s.timestamp || Date.now()).getHours());
+    const hourCounts = {};
+    
+    hours.forEach(hour => {
+      hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+    });
+
+    return hourCounts;
+  }
+
+  analyzeSuccessPatterns(searches) {
+    const successful = searches.filter(s => s.resultCount > 0);
+    const failed = searches.filter(s => s.resultCount === 0);
+
+    return {
+      successRate: successful.length / searches.length,
+      avgSuccessfulDuration: successful.length > 0 ? 
+        successful.reduce((sum, s) => sum + s.duration, 0) / successful.length : 0,
+      avgFailedDuration: failed.length > 0 ?
+        failed.reduce((sum, s) => sum + s.duration, 0) / failed.length : 0
+    };
+  }
+
+  analyzeQueryComplexityTrend(searches) {
+    if (searches.length < 10) return 'stable';
+    
+    const recent = searches.slice(-10);
+    const earlier = searches.slice(-20, -10);
+    
+    const recentComplexity = recent.reduce((sum, s) => sum + s.query.split(/\s+/).length, 0) / recent.length;
+    const earlierComplexity = earlier.reduce((sum, s) => sum + s.query.split(/\s+/).length, 0) / earlier.length;
+    
+    const threshold = 0.5;
+    
+    if (recentComplexity > earlierComplexity + threshold) return 'increasing';
+    if (recentComplexity < earlierComplexity - threshold) return 'decreasing';
+    return 'stable';
+  }
+
+  async optimizeCachingStrategy() {
+    // Adaptive caching optimization
+    const currentHitRate = this.metrics.cacheHits / Math.max(this.metrics.totalSearches, 1);
+    
+    if (currentHitRate < 0.2) {
+      // Very low hit rate - increase cache size and TTL
+      this.cacheStrategy.maxSize = Math.min(20000, this.cacheStrategy.maxSize * 1.5);
+      this.cacheStrategy.ttl = Math.min(7200000, this.cacheStrategy.ttl * 1.2); // Max 2 hours
+      console.log('🔧 Cache strategy optimized: Increased size and TTL');
+    } else if (currentHitRate > 0.8) {
+      // Very high hit rate - optimize for memory efficiency
+      this.cacheStrategy.maxSize = Math.max(5000, this.cacheStrategy.maxSize * 0.9);
+      console.log('🔧 Cache strategy optimized: Reduced size for efficiency');
+    }
+  }
+
+  async updatePredictiveCacheStrategy(patterns) {
+    // Use patterns to improve predictive caching
+    const commonKeywords = patterns.commonKeywords.map(k => k.keyword);
+    
+    // Pre-cache searches for common keywords
+    for (const keyword of commonKeywords.slice(0, 5)) {
+      if (!this.predictiveCache.has(keyword)) {
+        // Pre-populate cache with likely searches
+        const cacheKey = `predictive_${keyword}`;
+        this.predictiveCache.set(cacheKey, {
+          data: { preloaded: true, keyword: keyword },
+          timestamp: Date.now(),
+          hits: 0
+        });
+      }
+    }
+  }
+
+  async getPerformanceOptimizations() {
+    return {
+      cacheOptimizations: {
+        hitRate: this.metrics.cacheHits / Math.max(this.metrics.totalSearches, 1),
+        size: this.predictiveCache.size,
+        strategy: this.cacheStrategy
+      },
+      searchOptimizations: {
+        avgResponseTime: this.metrics.averageResponseTime,
+        maxConcurrency: this.maxConcurrentSearches,
+        timeout: this.searchTimeout
+      },
+      resourceOptimization: {
+        activeSearches: this.activeSearches.size,
+        historySize: this.searchHistory.length,
+        efficiencyScore: this.calculateEfficiencyScore()
+      },
+      adaptiveExecution: {
+        enabled: true,
+        optimizationCount: this.getOptimizationCount(),
+        lastOptimization: this.getLastOptimizationTime()
+      }
+    };
+  }
+
+  calculateEfficiencyScore() {
+    const responseTimeScore = Math.max(0, 1 - (this.metrics.averageResponseTime / 10000));
+    const successRateScore = this.metrics.searchSuccessRate;
+    const cacheEfficiencyScore = this.metrics.cacheHits / Math.max(this.metrics.totalSearches, 1);
+    
+    return (responseTimeScore * 0.4 + successRateScore * 0.4 + cacheEfficiencyScore * 0.2);
+  }
+
+  getOptimizationCount() {
+    return this.metrics.optimizationCount || 0;
+  }
+
+  getLastOptimizationTime() {
+    return this.metrics.lastOptimization || Date.now();
   }
 
   // 🚀 MAIN ULTRA SEARCH METHOD - Combines all capabilities
