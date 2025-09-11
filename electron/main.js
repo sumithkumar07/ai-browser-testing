@@ -512,16 +512,19 @@ If the user's request matches agent capabilities, explain how you would execute 
 
       aiResponse = completion.choices[0].message.content
 
-      // Phase 4: Enhance response with agent capabilities info
+      // Phase 4: Enhance response with NLP-first capabilities info
       if (taskAnalysis.confidence >= 50) {
-        aiResponse += `\n\n## 🚀 **Available Browser Automation:**
-I can execute this task using my **${taskAnalysis.primaryAgent} Agent** with real browser control:
-- Open multiple browser tabs automatically
-- Extract real data from live websites  
-- Perform actual clicks and navigation
-- Create comprehensive analysis reports
+        aiResponse += `\n\n## 💬 **NLP-First Design Philosophy:**
+**Everything is accessible through our conversation** - no complex UI needed!
 
-*Would you like me to execute this with real browser automation?*`
+### 🚀 Available Through Natural Language:
+- **Multi-Agent Workflows**: *"research X, find products, analyze security"*
+- **Background Automation**: *"monitor this daily and create reports"*  
+- **Smart Memory**: *"remember my preferences and optimize future tasks"*
+- **Advanced Security**: *"scan this site and configure protection"*
+- **System Management**: *"optimize performance and check health status"*
+
+*Just tell me what you'd like to accomplish - I handle the complexity behind the scenes!*`
       }
 
       return {
