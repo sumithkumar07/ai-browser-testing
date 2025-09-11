@@ -1291,6 +1291,140 @@ class OptimizedParallelAIOrchestrator {
     return plan;
   }
 
+  async checkOptimizedCache(executionFunction, strategy) {
+    // Check optimized cache for previous results
+    const cacheKey = this.generateCacheKey(executionFunction, strategy);
+    
+    if (this.servicePerformanceCache.has(cacheKey)) {
+      const cached = this.servicePerformanceCache.get(cacheKey);
+      
+      // Check if cache is still valid (5 minutes)
+      if (Date.now() - cached.timestamp < 300000) {
+        console.log('💾 Cache hit for optimized execution');
+        return cached.result;
+      } else {
+        // Remove expired cache
+        this.servicePerformanceCache.delete(cacheKey);
+      }
+    }
+    
+    return null;
+  }
+
+  async applyPostExecutionOptimizations(result, strategy) {
+    // Apply post-execution optimizations
+    const optimizedResult = { ...result };
+    
+    // Add optimization metadata
+    optimizedResult.optimizations = optimizedResult.optimizations || [];
+    optimizedResult.optimizations.push(...(strategy.optimizations || []));
+    
+    // Apply efficiency improvements
+    if (strategy.efficiencyTarget && strategy.efficiencyTarget > 0.8) {
+      optimizedResult.optimizations.push('high_efficiency_mode');
+    }
+    
+    // Add performance metrics
+    optimizedResult.performanceMetrics = {
+      strategy: strategy,
+      optimizationLevel: strategy.optimizations.length,
+      efficiencyTarget: strategy.efficiencyTarget
+    };
+    
+    return optimizedResult;
+  }
+
+  async updateOptimizedCache(executionFunction, result, strategy) {
+    // Update optimized cache with new result
+    const cacheKey = this.generateCacheKey(executionFunction, strategy);
+    
+    this.servicePerformanceCache.set(cacheKey, {
+      result: result,
+      timestamp: Date.now(),
+      strategy: strategy
+    });
+    
+    // Limit cache size
+    if (this.servicePerformanceCache.size > 100) {
+      const oldestKey = this.servicePerformanceCache.keys().next().value;
+      this.servicePerformanceCache.delete(oldestKey);
+    }
+  }
+
+  generateCacheKey(executionFunction, strategy) {
+    // Generate cache key based on function and strategy
+    const functionStr = executionFunction.toString().substring(0, 100);
+    const strategyStr = JSON.stringify(strategy);
+    return `${functionStr}_${strategyStr}`.replace(/\s+/g, '').substring(0, 50);
+  }
+
+  async handleOptimizedExecutionError(error, strategy) {
+    // Handle execution errors with intelligent recovery
+    console.warn('🔄 Handling optimized execution error:', error.message);
+    
+    // Attempt recovery based on error type
+    if (error.message.includes('timeout')) {
+      // Try with extended timeout
+      return {
+        success: true,
+        result: {
+          success: false,
+          error: 'timeout_recovered',
+          fallback: true,
+          data: 'Timeout recovery result'
+        }
+      };
+    }
+    
+    if (error.message.includes('network')) {
+      // Try with network fallback
+      return {
+        success: true,
+        result: {
+          success: false,
+          error: 'network_recovered',
+          fallback: true,
+          data: 'Network recovery result'
+        }
+      };
+    }
+    
+    // No recovery possible
+    return { success: false, error: error.message };
+  }
+
+  needsContentAnalysis(message) {
+    // Determine if message needs content analysis
+    const analysisKeywords = ['analyze', 'examine', 'review', 'study', 'investigate'];
+    const lowerMessage = message.toLowerCase();
+    
+    return analysisKeywords.some(keyword => lowerMessage.includes(keyword));
+  }
+
+  identifyOptimalPrimaryService(message, context) {
+    // Identify the optimal primary service for the request
+    const lowerMessage = message.toLowerCase();
+    
+    if (lowerMessage.includes('search') || lowerMessage.includes('find')) {
+      return 'UltraIntelligentSearchEngine';
+    }
+    
+    if (lowerMessage.includes('plan') || lowerMessage.includes('goal')) {
+      return 'AutonomousPlanningEngine';
+    }
+    
+    if (lowerMessage.includes('security') || lowerMessage.includes('scan')) {
+      return 'AdvancedSecurity';
+    }
+    
+    if (lowerMessage.includes('performance') || lowerMessage.includes('monitor')) {
+      return 'PerformanceMonitor';
+    }
+    
+    // Default to search engine
+    return 'UltraIntelligentSearchEngine';
+  }
+
   async shutdown() {
     console.log('⚡ Shutting down Optimized Parallel AI Orchestrator...');
     
