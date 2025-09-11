@@ -452,6 +452,17 @@ class BackgroundTaskScheduler {
     
     return await this.scheduleTask(type, payload, { ...options, priority });
   }
+
+  async shutdown() {
+    this.isRunning = false;
+    
+    if (this.schedulerInterval) {
+      clearInterval(this.schedulerInterval);
+      this.schedulerInterval = null;
+    }
+    
+    console.log('✅ Background Task Scheduler shut down');
+  }
 }
 
 module.exports = { BackgroundTaskScheduler };
