@@ -546,14 +546,15 @@ If the user's request matches agent capabilities, explain how you would execute 
     }
   }
 
-  // Task analysis for agent routing (enhanced)
+  // COMPREHENSIVE Task analysis for ALL features (enhanced for 100% utilization)
   analyzeAgentTask(message) {
     const lowerMessage = message.toLowerCase()
     
-    // Enhanced pattern matching with higher confidence scores
+    // COMPLETE pattern matching for ALL available features
     const patterns = {
+      // === BASIC 6 AGENTS ===
       research: {
-        keywords: ['research', 'find', 'search', 'investigate', 'study', 'analyze', 'explore', 'discover'],
+        keywords: ['research', 'find', 'search', 'investigate', 'study', 'explore', 'discover', 'lookup'],
         confidence: 90
       },
       navigation: {
@@ -561,7 +562,7 @@ If the user's request matches agent capabilities, explain how you would execute 
         confidence: 95
       },
       shopping: {
-        keywords: ['buy', 'purchase', 'shop', 'price', 'deal', 'product', 'compare', 'cost'],
+        keywords: ['buy', 'purchase', 'shop', 'price', 'deal', 'product', 'compare', 'cost', 'retail'],
         confidence: 90
       },
       communication: {
@@ -575,11 +576,45 @@ If the user's request matches agent capabilities, explain how you would execute 
       analysis: {
         keywords: ['analyze', 'review', 'examine', 'evaluate', 'assess', 'inspect', 'check'],
         confidence: 90
+      },
+      
+      // === ADVANCED SERVICES ===
+      memory: {
+        keywords: ['remember', 'memory', 'learn', 'pattern', 'preference', 'history', 'recall', 'insight'],
+        confidence: 95
+      },
+      planning: {
+        keywords: ['goal', 'plan', 'autonomous', 'objective', 'target', 'strategy', 'roadmap'],
+        confidence: 95
+      },
+      security: {
+        keywords: ['security', 'scan', 'threat', 'protect', 'secure', 'vulnerability', 'safety'],
+        confidence: 95
+      },
+      performance: {
+        keywords: ['performance', 'optimize', 'speed', 'health', 'status', 'system', 'monitor'],
+        confidence: 95
+      },
+      background: {
+        keywords: ['background', 'monitor', 'watch', 'track', 'continuous', 'ongoing', 'daily'],
+        confidence: 95
+      },
+      deep_search: {
+        keywords: ['deep search', 'multi-source', 'comprehensive', 'thorough', 'detailed search'],
+        confidence: 95
+      },
+      
+      // === MULTI-AGENT COORDINATION ===
+      multi_agent: {
+        keywords: ['and', 'then', 'also', 'plus', 'combine', 'coordinate', 'together'],
+        confidence: 85
       }
     }
 
-    let bestMatch = { agent: 'research', confidence: 0 }
+    let bestMatch = { agent: 'research', confidence: 0, type: 'basic' }
+    let allMatches = []
 
+    // Analyze for ALL patterns
     for (const [agent, pattern] of Object.entries(patterns)) {
       let score = 0
       let keywordMatches = 0
@@ -592,26 +627,63 @@ If the user's request matches agent capabilities, explain how you would execute 
       }
 
       if (keywordMatches > 0) {
-        // Calculate final confidence based on keyword matches
         const finalConfidence = Math.min(95, (score / pattern.keywords.length) * keywordMatches)
+        
+        allMatches.push({
+          agent,
+          confidence: Math.round(finalConfidence),
+          keywordMatches,
+          type: this.getFeatureType(agent)
+        })
         
         if (finalConfidence > bestMatch.confidence) {
           bestMatch = {
             agent,
             confidence: Math.round(finalConfidence),
-            keywordMatches
+            keywordMatches,
+            type: this.getFeatureType(agent)
           }
         }
       }
     }
+
+    // Detect multi-agent workflows
+    const isMultiAgent = allMatches.length > 1 && 
+                        allMatches.some(m => patterns.multi_agent.keywords.some(k => lowerMessage.includes(k)))
 
     return {
       primaryAgent: bestMatch.agent,
       confidence: bestMatch.confidence,
       keywordMatches: bestMatch.keywordMatches,
       canExecute: bestMatch.confidence >= 70,
+      featureType: bestMatch.type,
+      isMultiAgent: isMultiAgent,
+      allMatches: allMatches,
       message: message
     }
+  }
+
+  getFeatureType(agent) {
+    const featureTypes = {
+      // Basic agents
+      research: 'basic_agent',
+      navigation: 'basic_agent', 
+      shopping: 'basic_agent',
+      communication: 'basic_agent',
+      automation: 'basic_agent',
+      analysis: 'basic_agent',
+      
+      // Advanced services
+      memory: 'advanced_service',
+      planning: 'advanced_service',
+      security: 'advanced_service', 
+      performance: 'advanced_service',
+      background: 'advanced_service',
+      deep_search: 'advanced_service',
+      multi_agent: 'coordination'
+    }
+    
+    return featureTypes[agent] || 'basic_agent'
   }
 
   async getEnhancedPageContext() {
