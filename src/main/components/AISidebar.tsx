@@ -79,23 +79,28 @@ const AISidebar: React.FC<AISidebarProps> = ({ onClose }) => {
         // Add welcome message
         const welcomeMessage: AIMessage = {
           id: `msg_${Date.now()}_welcome`,
-          content: `# 🤖 KAiro AI Assistant
+          content: `# 🤖 KAiro AI Assistant - NLP-First Design
 
-Welcome! I'm your intelligent browsing companion with advanced capabilities:
+Welcome! I'm your **complete feature interface** - everything you need is accessible through our conversation:
 
-## ✨ **What I Can Do:**
-- 🔍 **Research & Analysis**: Deep web research and content analysis
-- 🌐 **Smart Navigation**: Intelligent website recommendations  
-- 📊 **Data Extraction**: Extract and organize information from pages
-- 💡 **Proactive Suggestions**: Context-aware recommendations
-- 🎯 **Goal Execution**: Multi-step autonomous task completion
+## 🎯 **NLP-First Philosophy:**
+**No complex menus, no cluttered UI - just natural conversation with unlimited capabilities**
 
-## 🚀 **Enhanced Features:**
-- **Memory**: I remember our conversations and learn from them
-- **Coordination**: I work with specialized agents for complex tasks  
-- **Context Awareness**: I understand your current page and browsing context
+## ✨ **ALL Features Available Via Chat:**
+- 🔍 **Multi-Agent Research**: *"research AI trends, find products, analyze security"*
+- 🤖 **Background Automation**: *"monitor this topic daily and notify me"*  
+- 🧠 **Smart Memory**: *"remember my preferences and learn my patterns"*
+- 🛡️ **Advanced Security**: *"scan this site and configure protection"*
+- 📊 **System Management**: *"optimize performance and check health"*
+- 🎯 **Goal Planning**: *"create autonomous goals for this project"*
 
-*How can I help you today?*`,
+## 🚀 **Why Conversational?**
+- **Infinite Flexibility**: Combine any features in natural language
+- **Zero Learning Curve**: No manuals, just speak naturally
+- **Clean Interface**: Focus on content, not controls
+- **Context Aware**: I understand what you need when you need it
+
+*Tell me what you'd like to accomplish - I have access to ALL advanced features!*`,
           isUser: false,
           timestamp: Date.now()
         }
