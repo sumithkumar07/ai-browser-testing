@@ -58,6 +58,7 @@ class KAiroBrowserManager {
     this.autonomousPlanningEngine = null
     this.enhancedAgentFramework = null
     this.ultraIntelligentSearchEngine = null  // OPTIMIZED: Consolidated search engine
+    this.optimizedParallelAIOrchestrator = null  // OPTIMIZED: Enhanced parallel processing
     this.shadowWorkspace = null
     this.crossPlatformIntegration = null
     this.advancedSecurity = null
