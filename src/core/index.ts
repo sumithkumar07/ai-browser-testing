@@ -11,7 +11,7 @@ export { default as AdvancedAnalyticsDashboard } from './analytics/AdvancedAnaly
 export { default as SmartTabOrganizer } from './intelligence/SmartTabOrganizer.js'
 export { default as PredictiveNavigationEngine } from './navigation/PredictiveNavigationEngine.js'
 export { default as NLPContentIntelligence } from './intelligence/NLPContentIntelligence.js'
-export { default as IntelligentSearchEngine } from './search/IntelligentSearchEngine.js'
+export { default as UltraIntelligentSearchEngine } from './services/UltraIntelligentSearchEngine.js'
 export { default as SmartBookmarkManager } from './bookmarks/SmartBookmarkManager.js'
 export { default as DynamicContextSuggestions } from './suggestions/DynamicContextSuggestions.js'
 export { default as AdaptiveConfigurationManager } from './config/AdaptiveConfigurationManager.js'
