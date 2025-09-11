@@ -4,27 +4,25 @@ const Groq = require('groq-sdk')
 require('dotenv').config()
 
 console.log('🔑 Environment variables loaded:', !!process.env.GROQ_API_KEY)
-console.log('🤖 Enhanced backend services loaded successfully')
+console.log('🚀 KAiro Browser starting with optimized backend...')
 
-// Import existing services
+// Import core services only - simplified architecture
 const { DatabaseService } = require('../src/backend/DatabaseService.js')
 const { AgentPerformanceMonitor } = require('../src/backend/AgentPerformanceMonitor.js')
 const { BackgroundTaskScheduler } = require('../src/backend/BackgroundTaskScheduler.js')
-// const { EnhancedBackendCoordinator } = require('../src/backend/EnhancedBackendCoordinator.js') // Removed - replaced by enhanced AI system
 const { EnhancedAgentController } = require('../src/core/agents/EnhancedAgentController.js')
 
-class BrowserManager {
+class OptimizedBrowserManager {
   constructor() {
     this.mainWindow = null
     this.browserViews = new Map()
     this.activeTabId = null
     this.aiService = null
     
-    // Enhanced backend services
+    // Core backend services - simplified
     this.databaseService = null
     this.performanceMonitor = null
     this.taskScheduler = null
-    this.backendCoordinator = null // Replaced by enhanced AI orchestrator
     this.enhancedAgentController = null
     
     // Connection states
@@ -34,33 +32,53 @@ class BrowserManager {
       agents: 'disconnected'
     }
     
-    console.log('🚀 BrowserManager initialized with enhanced backend services')
+    console.log('🚀 Optimized Browser Manager initialized')
   }
 
   async initialize() {
     try {
-      console.log('🎯 Initializing KAiro Browser with full AI automation...')
+      console.log('🎯 Initializing KAiro Browser with optimized services...')
       
-      // Initialize AI service first
+      // Initialize AI service first - most critical
       await this.initializeAIService()
       
       // Initialize database service
       await this.initializeDatabaseService()
       
-      // Initialize enhanced backend services
-      await this.initializeEnhancedServices()
+      // Initialize essential backend services
+      await this.initializeEssentialServices()
       
       // Initialize agent system
       await this.initializeAgentSystem()
-      
-      // Start system health monitoring
-      this.startSystemHealthMonitoring()
       
       console.log('✅ KAiro Browser initialization completed successfully')
       
     } catch (error) {
       console.error('❌ KAiro Browser initialization failed:', error)
-      // Continue with partial functionality
+      // Continue with limited functionality
+    }
+  }
+
+  async initializeAIService() {
+    try {
+      console.log('🤖 Initializing AI Service...')
+      
+      if (!process.env.GROQ_API_KEY) {
+        throw new Error('GROQ_API_KEY not found in environment variables')
+      }
+
+      this.connectionState.api = 'connected'
+      
+      // Initialize Groq client
+      this.aiService = new Groq({
+        apiKey: process.env.GROQ_API_KEY
+      })
+
+      console.log('✅ AI Service initialized successfully')
+      
+    } catch (error) {
+      console.error('❌ Failed to initialize AI service:', error.message)
+      this.connectionState.api = 'failed'
     }
   }
 
@@ -90,39 +108,45 @@ class BrowserManager {
     }
   }
 
-  async initializeEnhancedServices() {
+  async initializeEssentialServices() {
     try {
-      console.log('🚀 Initializing enhanced backend services...')
+      console.log('⚡ Initializing essential backend services...')
       
-      // Initialize backend coordinator - replaced by enhanced AI orchestrator
-      // this.backendCoordinator = new EnhancedBackendCoordinator(this)
-      // await this.backendCoordinator.initialize()
+      // Initialize performance monitoring - essential for stability
+      try {
+        this.performanceMonitor = new AgentPerformanceMonitor({
+          updateInterval: 30000, // Reduced frequency for better performance
+          retentionDays: 7 // Reduced retention for better performance
+        })
+        await this.performanceMonitor.initialize()
+        console.log('✅ Performance monitoring initialized')
+      } catch (error) {
+        console.warn('⚠️ Performance monitoring failed to initialize:', error.message)
+      }
       
-      // Initialize performance monitoring
-      this.performanceMonitor = new AgentPerformanceMonitor({
-        updateInterval: 5000,
-        retentionDays: 30
-      })
-      await this.performanceMonitor.initialize()
+      // Initialize task scheduler - essential for background tasks
+      try {
+        this.taskScheduler = new BackgroundTaskScheduler({
+          maxConcurrentTasks: 3, // Reduced for better performance
+          defaultRetryAttempts: 2 // Reduced retries
+        })
+        await this.taskScheduler.initialize()
+        console.log('✅ Task scheduler initialized')
+      } catch (error) {
+        console.warn('⚠️ Task scheduler failed to initialize:', error.message)
+      }
       
-      // Initialize task scheduler
-      this.taskScheduler = new BackgroundTaskScheduler({
-        maxConcurrentTasks: 5,
-        defaultRetryAttempts: 3
-      })
-      await this.taskScheduler.initialize()
-      
-      console.log('✅ Enhanced backend services initialized successfully')
+      console.log('✅ Essential backend services initialized')
       
     } catch (error) {
-      console.error('❌ Enhanced backend services initialization failed:', error)
+      console.error('❌ Essential backend services initialization failed:', error)
       // Continue with limited functionality
     }
   }
 
   async initializeAgentSystem() {
     try {
-      console.log('🤖 Initializing enhanced agent system...')
+      console.log('🤖 Initializing agent system...')
       
       this.connectionState.agents = 'connected'
       
@@ -132,12 +156,12 @@ class BrowserManager {
         const agentResult = await this.enhancedAgentController.initialize()
         
         if (agentResult.success) {
-          console.log('✅ Enhanced agent system initialized - ALL 6 agents ready with browser automation!')
+          console.log('✅ Agent system initialized - ALL 6 agents ready!')
         } else {
           throw new Error(`Agent system initialization failed: ${agentResult.error}`)
         }
       } catch (agentError) {
-        console.error('❌ Enhanced agent system failed:', agentError)
+        console.error('❌ Agent system failed:', agentError)
         this.connectionState.agents = 'failed'
       }
       
@@ -147,7 +171,7 @@ class BrowserManager {
     }
   }
 
-  // Headless mode compatibility for container environments
+  // Optimized window creation with better error handling
   async createWindow() {
     try {
       console.log('🖥️ Creating browser window...')
@@ -156,23 +180,19 @@ class BrowserManager {
       const isHeadless = !process.env.DISPLAY || process.env.NODE_ENV === 'test' || process.env.BROWSER_HEADLESS === 'true'
       
       if (isHeadless) {
-        console.log('🤖 Running in headless mode - creating mock window for testing')
+        console.log('🤖 Running in headless mode')
         this.mainWindow = {
           webContents: {
             send: (channel, data) => {
-              console.log(`📡 IPC Send: ${channel}`, JSON.stringify(data).substring(0, 100))
+              console.log(`📡 IPC Send: ${channel}`)
             },
             executeJavaScript: async (code) => {
-              console.log(`📜 Execute JS: ${code.substring(0, 100)}...`)
+              console.log(`📜 Execute JS: ${code.substring(0, 50)}...`)
               return Promise.resolve({})
             }
           },
-          setBrowserView: (view) => {
-            console.log('🪟 Set browser view (headless)')
-          },
-          removeBrowserView: (view) => {
-            console.log('🗑️ Remove browser view (headless)')
-          }
+          setBrowserView: () => console.log('🪟 Set browser view (headless)'),
+          removeBrowserView: () => console.log('🗑️ Remove browser view (headless)')
         }
         return
       }
@@ -191,7 +211,13 @@ class BrowserManager {
         show: false
       })
 
-      this.mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'))
+      // Load the built React app
+      const isDev = process.env.NODE_ENV === 'development'
+      if (isDev) {
+        this.mainWindow.loadURL('http://localhost:3000')
+      } else {
+        this.mainWindow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'))
+      }
 
       this.mainWindow.once('ready-to-show', () => {
         this.mainWindow.show()
@@ -205,18 +231,18 @@ class BrowserManager {
     } catch (error) {
       console.error('❌ Window creation failed:', error)
       // Continue in headless mode
-      await this.createWindow() // Retry in headless mode
+      await this.createWindow()
     }
   }
 
-  // Real browser automation methods (not mock!)
+  // Real browser automation methods - core functionality preserved
   async createTab(url = 'https://www.google.com') {
     try {
-      console.log(`🌐 Creating real browser tab: ${url}`)
+      console.log(`🌐 Creating browser tab: ${url}`)
 
       const tabId = `tab_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-      // Create actual BrowserView (real browser control!)
+      // Create BrowserView for real browser control
       const browserView = new BrowserView({
         webPreferences: {
           nodeIntegration: false,
@@ -226,30 +252,34 @@ class BrowserManager {
         }
       })
 
-      // Store the browser view
       this.browserViews.set(tabId, browserView)
 
-      // Load the URL (REAL navigation!)
-      await browserView.webContents.loadURL(url)
+      // Load URL with timeout
+      try {
+        await browserView.webContents.loadURL(url)
+        
+        // Wait for page load with timeout
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            reject(new Error('Page load timeout'))
+          }, 15000) // Increased timeout for better reliability
 
-      // Wait for page to load
-      await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new Error('Page load timeout'))
-        }, 10000)
+          browserView.webContents.once('dom-ready', () => {
+            clearTimeout(timeout)
+            resolve(null)
+          })
 
-        browserView.webContents.once('dom-ready', () => {
-          clearTimeout(timeout)
-          resolve()
+          browserView.webContents.once('did-fail-load', (event, errorCode, errorDescription) => {
+            clearTimeout(timeout)
+            reject(new Error(`Page load failed: ${errorDescription}`))
+          })
         })
+      } catch (loadError) {
+        console.warn(`Failed to load ${url}, using fallback:`, loadError.message)
+        // Continue with tab creation even if load fails
+      }
 
-        browserView.webContents.once('did-fail-load', (event, errorCode, errorDescription) => {
-          clearTimeout(timeout)
-          reject(new Error(`Page load failed: ${errorDescription}`))
-        })
-      })
-
-      // Attach to main window if possible
+      // Attach to main window if available
       if (this.mainWindow && this.mainWindow.setBrowserView) {
         this.mainWindow.setBrowserView(browserView)
         this.activeTabId = tabId
@@ -257,7 +287,7 @@ class BrowserManager {
 
       const title = browserView.webContents.getTitle() || 'Loading...'
 
-      console.log(`✅ Real browser tab created: ${tabId} → ${url}`)
+      console.log(`✅ Browser tab created: ${tabId}`)
 
       return {
         success: true,
@@ -267,7 +297,7 @@ class BrowserManager {
       }
 
     } catch (error) {
-      console.error('❌ Real tab creation failed:', error)
+      console.error('❌ Tab creation failed:', error)
       return {
         success: false,
         error: error.message
@@ -275,194 +305,53 @@ class BrowserManager {
     }
   }
 
-  // Real browser navigation (not mock!)
-  async navigateTo(url) {
-    try {
-      console.log(`🧭 Real navigation to: ${url}`)
-
-      if (!this.activeTabId) {
-        // Create new tab if none exists
-        return await this.createTab(url)
-      }
-
-      const browserView = this.browserViews.get(this.activeTabId)
-      if (!browserView) {
-        return await this.createTab(url)
-      }
-
-      // Real navigation!
-      await browserView.webContents.loadURL(url)
-
-      // Wait for navigation to complete
-      await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new Error('Navigation timeout'))
-        }, 10000)
-
-        browserView.webContents.once('dom-ready', () => {
-          clearTimeout(timeout)
-          resolve()
-        })
-
-        browserView.webContents.once('did-fail-load', (event, errorCode, errorDescription) => {
-          clearTimeout(timeout)
-          reject(new Error(`Navigation failed: ${errorDescription}`))
-        })
-      })
-
-      console.log(`✅ Real navigation completed: ${url}`)
-
-      return {
-        success: true,
-        tabId: this.activeTabId,
-        url,
-        title: browserView.webContents.getTitle()
-      }
-
-    } catch (error) {
-      console.error('❌ Real navigation failed:', error)
-      return {
-        success: false,
-        error: error.message
-      }
-    }
-  }
-
-  // Real content extraction (not mock!)
-  async extractPageContent(tabId) {
-    try {
-      console.log(`📊 Extracting real content from tab: ${tabId}`)
-
-      const browserView = this.browserViews.get(tabId || this.activeTabId)
-      if (!browserView) {
-        throw new Error('Tab not found')
-      }
-
-      // REAL content extraction using JavaScript execution!
-      const content = await browserView.webContents.executeJavaScript(`
-        ({
-          title: document.title,
-          url: window.location.href,
-          html: document.documentElement.outerHTML,
-          text: document.body.innerText,
-          links: Array.from(document.querySelectorAll('a')).map(a => ({
-            text: a.textContent?.trim() || '',
-            href: a.href
-          })).filter(link => link.text && link.href).slice(0, 20),
-          headings: Array.from(document.querySelectorAll('h1,h2,h3')).map(h => ({
-            level: h.tagName,
-            text: h.textContent?.trim() || ''
-          })).filter(h => h.text).slice(0, 10),
-          images: Array.from(document.querySelectorAll('img')).map(img => ({
-            src: img.src,
-            alt: img.alt || ''
-          })).filter(img => img.src).slice(0, 10)
-        })
-      `)
-
-      console.log(`✅ Real content extracted: ${content.title} (${content.text?.length || 0} chars)`)
-
-      return {
-        success: true,
-        content,
-        extractedAt: Date.now()
-      }
-
-    } catch (error) {
-      console.error('❌ Real content extraction failed:', error)
-      return {
-        success: false,
-        error: error.message
-      }
-    }
-  }
-
-  // Real element interaction (not mock!)
-  async clickElement(tabId, selector) {
-    try {
-      console.log(`🖱️ Real click on element: ${selector}`)
-
-      const browserView = this.browserViews.get(tabId || this.activeTabId)
-      if (!browserView) {
-        throw new Error('Tab not found')
-      }
-
-      // REAL element clicking using JavaScript execution!
-      const result = await browserView.webContents.executeJavaScript(`
-        (function() {
-          const element = document.querySelector('${selector}')
-          if (!element) return { success: false, error: 'Element not found' }
-          
-          element.click()
-          return { 
-            success: true, 
-            elementText: element.textContent?.trim() || '',
-            elementType: element.tagName.toLowerCase()
-          }
-        })()
-      `)
-
-      console.log(`✅ Real click completed: ${selector}`)
-      return result
-
-    } catch (error) {
-      console.error('❌ Real click failed:', error)
-      return {
-        success: false,
-        error: error.message
-      }
-    }
-  }
-
-  // AI Message processing with REAL browser automation
+  // Enhanced AI message processing with better error handling
   async processAIMessage(message) {
     try {
-      console.log(`🤖 Processing AI message: "${message}"`)
+      console.log(`🤖 Processing AI message: "${message.substring(0, 50)}..."`)
 
       if (!this.aiService) {
         throw new Error('AI service not available')
       }
 
-      // Phase 1: Analyze task for agent routing
+      // Analyze task for agent routing
       const taskAnalysis = this.analyzeAgentTask(message)
-      console.log('📊 Task Analysis:', taskAnalysis)
+      console.log('📊 Task Analysis:', { 
+        agent: taskAnalysis.primaryAgent, 
+        confidence: taskAnalysis.confidence 
+      })
 
       let aiResponse = ''
       let browserAutomationResult = null
 
-      // Phase 2: Execute with browser automation if appropriate agent task
+      // Execute with browser automation if high confidence
       if (taskAnalysis.confidence >= 70 && this.enhancedAgentController) {
         try {
-          console.log(`🚀 Executing ${taskAnalysis.primaryAgent} agent with REAL browser automation...`)
+          console.log(`🚀 Executing ${taskAnalysis.primaryAgent} agent...`)
           
           browserAutomationResult = await this.enhancedAgentController.executeAgentTask(
             taskAnalysis.primaryAgent,
             message,
             {
-              pageContext: await this.getEnhancedPageContext(),
+              pageContext: await this.getPageContext(),
               taskAnalysis,
               timestamp: Date.now()
             }
           )
 
           if (browserAutomationResult.success) {
-            aiResponse = `# 🤖 ${taskAnalysis.primaryAgent.toUpperCase()} Agent - REAL Browser Automation Executed!
+            aiResponse = `# 🤖 ${taskAnalysis.primaryAgent.toUpperCase()} Agent Executed
 
 **Task**: ${message}
 **Confidence**: ${taskAnalysis.confidence}%
-**Execution Time**: ${browserAutomationResult.executionTime}ms
+**Status**: ✅ Successfully executed with browser automation
 
-## 🎯 Real Browser Actions Performed:
+## Actions Performed:
 ${browserAutomationResult.result?.success ? 
-  '✅ Successfully executed real browser automation with multiple tabs and data extraction' : 
-  '⚠️ Partial execution - some automation steps completed'}
+  '✅ Browser automation completed successfully' : 
+  '⚠️ Partial execution completed'}
 
-## 📊 Automation Results:
-- **Real Tabs Created**: Multiple browser tabs opened and controlled
-- **Real Data Extracted**: Live website content analyzed and compiled
-- **Real Browser Control**: Actual clicking, navigation, and content extraction performed
-
-*This response was generated through REAL browser automation, not simulation!*`
+*This response was generated through real browser automation*`
 
             return {
               success: true,
@@ -470,8 +359,7 @@ ${browserAutomationResult.result?.success ?
               agentStatus: {
                 agent: taskAnalysis.primaryAgent,
                 executed: true,
-                browserAutomation: true,
-                realExecution: true
+                browserAutomation: true
               }
             }
           }
@@ -481,51 +369,41 @@ ${browserAutomationResult.result?.success ?
         }
       }
 
-      // Phase 3: Standard AI response (if automation not applicable or failed)
-      const completion = await this.aiService.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: `You are KAiro AI, an advanced browser assistant with REAL browser automation capabilities. 
+      // Standard AI response with timeout
+      const completion = await Promise.race([
+        this.aiService.chat.completions.create({
+          messages: [
+            {
+              role: 'system',
+              content: `You are KAiro AI, an advanced browser assistant with real browser automation capabilities.
 
-IMPORTANT: You have 6 specialized agents with ACTUAL browser control:
-- 🔍 Research Agent: Opens real tabs, extracts real data from websites
-- 🌐 Navigation Agent: Actually navigates to websites and controls browser
-- 🛒 Shopping Agent: Real price comparison across multiple retailer websites  
-- 📧 Communication Agent: Generates real email templates and form filling
-- 🤖 Automation Agent: Creates real automated workflows and tasks
-- 📊 Analysis Agent: Real content analysis from live websites
+You have 6 specialized agents:
+- 🔍 Research Agent: Multi-source research and analysis
+- 🌐 Navigation Agent: Smart web navigation
+- 🛒 Shopping Agent: Product research and comparison  
+- 📧 Communication Agent: Email and message composition
+- 🤖 Automation Agent: Task automation and workflows
+- 📊 Analysis Agent: Content analysis and insights
 
-Current context: ${await this.getContextualInformation()}
+Current context: ${await this.getContextInfo()}
 
-If the user's request matches agent capabilities, explain how you would execute it with REAL browser automation.`
-          },
-          {
-            role: 'user',
-            content: message
-          }
-        ],
-        model: 'llama-3.3-70b-versatile',
-        temperature: 0.7,
-        max_tokens: 1000
-      })
+Respond helpfully about browser automation capabilities.`
+            },
+            {
+              role: 'user',
+              content: message
+            }
+          ],
+          model: 'llama-3.3-70b-versatile',
+          temperature: 0.7,
+          max_tokens: 1000
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('AI response timeout')), 30000)
+        )
+      ])
 
       aiResponse = completion.choices[0].message.content
-
-      // Phase 4: Enhance response with NLP-first capabilities info
-      if (taskAnalysis.confidence >= 50) {
-        aiResponse += `\n\n## 💬 **NLP-First Design Philosophy:**
-**Everything is accessible through our conversation** - no complex UI needed!
-
-### 🚀 Available Through Natural Language:
-- **Multi-Agent Workflows**: *"research X, find products, analyze security"*
-- **Background Automation**: *"monitor this daily and create reports"*  
-- **Smart Memory**: *"remember my preferences and optimize future tasks"*
-- **Advanced Security**: *"scan this site and configure protection"*
-- **System Management**: *"optimize performance and check health status"*
-
-*Just tell me what you'd like to accomplish - I handle the complexity behind the scenes!*`
-      }
 
       return {
         success: true,
@@ -546,75 +424,39 @@ If the user's request matches agent capabilities, explain how you would execute 
     }
   }
 
-  // COMPREHENSIVE Task analysis for ALL features (enhanced for 100% utilization)
+  // Optimized task analysis
   analyzeAgentTask(message) {
     const lowerMessage = message.toLowerCase()
     
-    // COMPLETE pattern matching for ALL available features
     const patterns = {
-      // === BASIC 6 AGENTS ===
       research: {
-        keywords: ['research', 'find', 'search', 'investigate', 'study', 'explore', 'discover', 'lookup'],
+        keywords: ['research', 'find', 'search', 'investigate', 'study', 'explore'],
         confidence: 90
       },
       navigation: {
-        keywords: ['navigate', 'go to', 'visit', 'open', 'browse', 'website', 'url', 'link'],
+        keywords: ['navigate', 'go to', 'visit', 'open', 'browse', 'website'],
         confidence: 95
       },
       shopping: {
-        keywords: ['buy', 'purchase', 'shop', 'price', 'deal', 'product', 'compare', 'cost', 'retail'],
+        keywords: ['buy', 'purchase', 'shop', 'price', 'deal', 'product'],
         confidence: 90
       },
       communication: {
-        keywords: ['email', 'write', 'compose', 'message', 'letter', 'communicate', 'send'],
+        keywords: ['email', 'write', 'compose', 'message', 'letter'],
         confidence: 90
       },
       automation: {
-        keywords: ['automate', 'schedule', 'workflow', 'task', 'repeat', 'routine', 'automatic'],
+        keywords: ['automate', 'schedule', 'workflow', 'task', 'repeat'],
         confidence: 90
       },
       analysis: {
-        keywords: ['analyze', 'review', 'examine', 'evaluate', 'assess', 'inspect', 'check'],
+        keywords: ['analyze', 'review', 'examine', 'evaluate', 'assess'],
         confidence: 90
-      },
-      
-      // === ADVANCED SERVICES ===
-      memory: {
-        keywords: ['remember', 'memory', 'learn', 'pattern', 'preference', 'history', 'recall', 'insight'],
-        confidence: 95
-      },
-      planning: {
-        keywords: ['goal', 'plan', 'autonomous', 'objective', 'target', 'strategy', 'roadmap'],
-        confidence: 95
-      },
-      security: {
-        keywords: ['security', 'scan', 'threat', 'protect', 'secure', 'vulnerability', 'safety'],
-        confidence: 95
-      },
-      performance: {
-        keywords: ['performance', 'optimize', 'speed', 'health', 'status', 'system', 'monitor'],
-        confidence: 95
-      },
-      background: {
-        keywords: ['background', 'monitor', 'watch', 'track', 'continuous', 'ongoing', 'daily'],
-        confidence: 95
-      },
-      deep_search: {
-        keywords: ['deep search', 'multi-source', 'comprehensive', 'thorough', 'detailed search'],
-        confidence: 95
-      },
-      
-      // === MULTI-AGENT COORDINATION ===
-      multi_agent: {
-        keywords: ['and', 'then', 'also', 'plus', 'combine', 'coordinate', 'together'],
-        confidence: 85
       }
     }
 
-    let bestMatch = { agent: 'research', confidence: 0, type: 'basic' }
-    let allMatches = []
+    let bestMatch = { agent: 'research', confidence: 0 }
 
-    // Analyze for ALL patterns
     for (const [agent, pattern] of Object.entries(patterns)) {
       let score = 0
       let keywordMatches = 0
@@ -629,96 +471,42 @@ If the user's request matches agent capabilities, explain how you would execute 
       if (keywordMatches > 0) {
         const finalConfidence = Math.min(95, (score / pattern.keywords.length) * keywordMatches)
         
-        allMatches.push({
-          agent,
-          confidence: Math.round(finalConfidence),
-          keywordMatches,
-          type: this.getFeatureType(agent)
-        })
-        
         if (finalConfidence > bestMatch.confidence) {
           bestMatch = {
             agent,
             confidence: Math.round(finalConfidence),
-            keywordMatches,
-            type: this.getFeatureType(agent)
+            keywordMatches
           }
         }
       }
     }
-
-    // Detect multi-agent workflows
-    const isMultiAgent = allMatches.length > 1 && 
-                        allMatches.some(m => patterns.multi_agent.keywords.some(k => lowerMessage.includes(k)))
 
     return {
       primaryAgent: bestMatch.agent,
       confidence: bestMatch.confidence,
-      keywordMatches: bestMatch.keywordMatches,
       canExecute: bestMatch.confidence >= 70,
-      featureType: bestMatch.type,
-      isMultiAgent: isMultiAgent,
-      allMatches: allMatches,
       message: message
     }
   }
 
-  getFeatureType(agent) {
-    const featureTypes = {
-      // Basic agents
-      research: 'basic_agent',
-      navigation: 'basic_agent', 
-      shopping: 'basic_agent',
-      communication: 'basic_agent',
-      automation: 'basic_agent',
-      analysis: 'basic_agent',
-      
-      // Advanced services
-      memory: 'advanced_service',
-      planning: 'advanced_service',
-      security: 'advanced_service', 
-      performance: 'advanced_service',
-      background: 'advanced_service',
-      deep_search: 'advanced_service',
-      multi_agent: 'coordination'
-    }
-    
-    return featureTypes[agent] || 'basic_agent'
-  }
-
-  async getEnhancedPageContext() {
+  async getPageContext() {
     try {
       if (this.activeTabId) {
-        const contentResult = await this.extractPageContent(this.activeTabId)
-        if (contentResult.success) {
-          return {
-            url: contentResult.content.url,
-            title: contentResult.content.title,
-            contentSummary: contentResult.content.text?.substring(0, 500) || '',
-            hasContent: true
-          }
+        const browserView = this.browserViews.get(this.activeTabId)
+        if (browserView) {
+          const title = browserView.webContents.getTitle()
+          const url = browserView.webContents.getURL()
+          return { url, title, hasContent: true }
         }
       }
-      
-      return {
-        url: 'about:blank',
-        title: 'New Tab',
-        contentSummary: 'No active page',
-        hasContent: false
-      }
+      return { url: 'about:blank', title: 'New Tab', hasContent: false }
     } catch (error) {
-      console.error('❌ Failed to get page context:', error)
-      return {
-        url: 'about:blank',
-        title: 'Error',
-        contentSummary: 'Context unavailable',
-        hasContent: false
-      }
+      return { url: 'about:blank', title: 'Error', hasContent: false }
     }
   }
 
-  async getContextualInformation() {
-    const context = await this.getEnhancedPageContext()
+  async getContextInfo() {
+    const context = await this.getPageContext()
     const systemStatus = {
       agents: this.connectionState.agents,
       database: this.connectionState.database,
@@ -726,64 +514,10 @@ If the user's request matches agent capabilities, explain how you would execute 
     }
 
     return `Current page: ${context.title} (${context.url})
-System status: AI ${systemStatus.api}, Agents ${systemStatus.agents}, Database ${systemStatus.database}
-Browser automation: ${this.enhancedAgentController ? 'Available' : 'Unavailable'}`
+System: AI ${systemStatus.api}, Agents ${systemStatus.agents}, DB ${systemStatus.database}`
   }
 
-  async initializeAIService() {
-    try {
-      console.log('🤖 Initializing AI Service...')
-      
-      if (!process.env.GROQ_API_KEY) {
-        throw new Error('GROQ_API_KEY not found in environment variables')
-      }
-
-      this.connectionState.api = 'connected'
-      
-      // Initialize Groq client
-      this.aiService = new Groq({
-        apiKey: process.env.GROQ_API_KEY
-      })
-
-      console.log('✅ AI Service initialized successfully')
-      
-    } catch (error) {
-      console.error('❌ Failed to initialize AI service:', error.message)
-      this.connectionState.api = 'failed'
-    }
-  }
-
-  // System health monitoring
-  startSystemHealthMonitoring() {
-    setInterval(async () => {
-      try {
-        const systemHealth = {
-          timestamp: Date.now(),
-          api: this.connectionState.api,
-          database: this.connectionState.database,
-          agents: this.connectionState.agents,
-          memory: process.memoryUsage(),
-          uptime: process.uptime()
-        }
-        
-        // Log health status periodically (every 5 minutes)
-        if (Date.now() % (5 * 60 * 1000) < 30000) {
-          console.log('🏥 System Health:', {
-            api: systemHealth.api,
-            database: systemHealth.database,
-            agents: systemHealth.agents,
-            memoryMB: Math.round(systemHealth.memory.heapUsed / 1024 / 1024),
-            uptimeMin: Math.round(systemHealth.uptime / 60)
-          })
-        }
-        
-      } catch (error) {
-        console.error('❌ System health monitoring failed:', error)
-      }
-    }, 30000) // Every 30 seconds
-  }
-
-  // IPC Handlers for frontend communication
+  // Setup IPC handlers for frontend communication
   setupIPCHandlers() {
     // Tab management
     ipcMain.handle('create-tab', async (event, url) => {
@@ -817,7 +551,21 @@ Browser automation: ${this.enhancedAgentController ? 'Available' : 'Unavailable'
     })
 
     ipcMain.handle('navigate-to', async (event, url) => {
-      return await this.navigateTo(url)
+      try {
+        if (!this.activeTabId) {
+          return await this.createTab(url)
+        }
+
+        const browserView = this.browserViews.get(this.activeTabId)
+        if (!browserView) {
+          return await this.createTab(url)
+        }
+
+        await browserView.webContents.loadURL(url)
+        return { success: true, tabId: this.activeTabId, url }
+      } catch (error) {
+        return { success: false, error: error.message }
+      }
     })
 
     // Browser controls
@@ -902,8 +650,8 @@ Browser automation: ${this.enhancedAgentController ? 'Available' : 'Unavailable'
   }
 }
 
-// App lifecycle management
-const browserManager = new BrowserManager()
+// App lifecycle management with optimized browser manager
+const browserManager = new OptimizedBrowserManager()
 
 // Skip app.whenReady() in test environment
 if (process.env.NODE_ENV !== 'test' && require.main === module) {
@@ -915,10 +663,10 @@ if (process.env.NODE_ENV !== 'test' && require.main === module) {
       // Setup IPC handlers
       browserManager.setupIPCHandlers()
       
-      // Create window (or run headless)
+      // Create window
       await browserManager.createWindow()
       
-      console.log('🎉 KAiro Browser is fully operational with REAL browser automation!')
+      console.log('🎉 KAiro Browser is fully operational!')
       
     } catch (error) {
       console.error('❌ App initialization failed:', error)
@@ -937,11 +685,10 @@ if (process.env.NODE_ENV !== 'test' && require.main === module) {
     }
   })
 
-  // Handle app termination
   app.on('before-quit', async () => {
     console.log('🛑 KAiro Browser shutting down...')
   })
 }
 
 // Export for testing
-module.exports = { BrowserManager }
+module.exports = { OptimizedBrowserManager }
