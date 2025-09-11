@@ -28,6 +28,7 @@ const { EnhancedAISystem } = require('./enhanced-ai-system.js')
 const AgentMemoryService = require('../src/core/services/AgentMemoryService.js')
 const AutonomousPlanningEngine = require('../src/core/services/AutonomousPlanningEngine.js')
 const UnifiedServiceOrchestrator = require('../src/core/services/UnifiedServiceOrchestrator.js')
+const OptimizedParallelAIOrchestrator = require('../src/core/services/OptimizedParallelAIOrchestrator.js')
 
 // ENHANCED: Import the new Backend Coordinator and Bug Detection System
 const { EnhancedBackendCoordinator } = require('../src/backend/EnhancedBackendCoordinator.js')
