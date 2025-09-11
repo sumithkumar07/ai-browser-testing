@@ -329,12 +329,15 @@ class EnhancedAIOrchestrator {
       const searchQuery = this.extractSearchQuery(message);
       if (!searchQuery) return { status: 'skipped', reason: 'No searchable query found' };
 
-      console.log(`🔍 Executing deep search for: "${searchQuery}"`);
+      console.log(`🔍 Executing Ultra Intelligent Search for: "${searchQuery}"`);
       
-      const searchResult = await this.services.search.performDeepSearch(searchQuery, {
-        sources: ['web_search', 'academic_papers', 'news_articles'],
+      const searchResult = await this.services.search.searchWithUltraIntelligence(searchQuery, {
+        sources: ['web_search', 'academic_papers', 'news_articles', 'knowledge_bases'],
         analysisDepth: 'comprehensive',
-        limit: 5
+        limit: 8,
+        enableSemanticSearch: true,
+        enableAutoCompletion: true,
+        enablePredictiveCache: true
       });
 
       if (searchResult.success) {
