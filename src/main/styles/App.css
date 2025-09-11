@@ -1117,6 +1117,56 @@
   min-width: auto;
 }
 
+/* NLP-First Design Elements */
+.nlp-examples-header {
+  text-align: center;
+  margin-bottom: 12px;
+  padding: 8px 0;
+}
+
+.nlp-examples-header h4 {
+  color: #495057;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.nlp-subtitle {
+  color: #6c757d;
+  font-size: 11px;
+  margin: 0;
+  font-style: italic;
+}
+
+.quick-action-btn.nlp-example {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+  transition: all 0.3s ease;
+}
+
+.quick-action-btn.nlp-example:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4c93 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.nlp-examples-footer {
+  text-align: center;
+  margin-top: 12px;
+  padding: 8px 0;
+  border-top: 1px solid rgba(225, 229, 233, 0.3);
+}
+
+.nlp-examples-footer p {
+  color: #495057;
+  font-size: 11px;
+  margin: 0;
+  line-height: 1.4;
+}
+
 .ai-input-container {
   padding: 20px;
   background: #ffffff;
