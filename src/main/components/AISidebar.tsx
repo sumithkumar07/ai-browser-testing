@@ -412,7 +412,7 @@ Welcome! I'm your **complete feature interface** - everything you need is access
             onKeyDown={handleKeyDown}
             placeholder={
               connectionStatus === 'connected' 
-                ? "Ask me anything... (Enter to send, Shift+Enter for new line)"
+                ? "Natural language interface - ALL features accessible through conversation..."
                 : "AI service not available"
             }
             disabled={isLoading || connectionStatus !== 'connected'}
