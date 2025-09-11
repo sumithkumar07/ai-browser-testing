@@ -51,12 +51,12 @@ class KAiroBrowserManager {
     this.taskScheduler = null
     this.memoryService = null
     
-    // Enhanced Agentic Capabilities - MAXIMUM POTENTIAL
+    // Enhanced Agentic Capabilities - OPTIMIZED MAXIMUM POTENTIAL
     this.agentMemoryService = null
     this.agentCoordinationService = null
     this.autonomousPlanningEngine = null
     this.enhancedAgentFramework = null
-    this.deepSearchEngine = null
+    this.ultraIntelligentSearchEngine = null  // OPTIMIZED: Consolidated search engine
     this.shadowWorkspace = null
     this.crossPlatformIntegration = null
     this.advancedSecurity = null
