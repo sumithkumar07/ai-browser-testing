@@ -1058,6 +1058,137 @@ class OptimizedParallelAIOrchestrator {
     return analysis;
   }
 
+  createIntelligentPreprocessingTasks(request) {
+    const tasks = [];
+    
+    // Create preprocessing tasks based on request requirements
+    if (request.config.needsContentAnalysis) {
+      tasks.push({
+        name: 'content_analysis',
+        type: 'optimized_processing',
+        processor: { type: 'content_analyzer' },
+        priority: 'high'
+      });
+    }
+    
+    if (request.config.needsContextExtraction) {
+      tasks.push({
+        name: 'context_extraction',
+        type: 'optimized_processing',
+        processor: { type: 'context_extractor' },
+        priority: 'medium'
+      });
+    }
+    
+    return tasks;
+  }
+
+  createOptimizedServiceTasks(request) {
+    const tasks = [];
+    
+    // Convert required services to optimized tasks
+    if (request.config.requiredServices) {
+      request.config.requiredServices.forEach(service => {
+        tasks.push({
+          name: service.name,
+          type: service.type || 'intelligent_service',
+          serviceCall: service,
+          priority: service.priority || 'normal'
+        });
+      });
+    }
+    
+    return tasks;
+  }
+
+  createIntelligentPostProcessingTasks(request, results) {
+    const tasks = [];
+    
+    // Create post-processing tasks based on results
+    if (results.optimizedServiceResults.size > 1) {
+      tasks.push({
+        name: 'result_aggregation',
+        type: 'optimized_processing',
+        processor: { type: 'result_aggregator', data: results },
+        priority: 'high'
+      });
+    }
+    
+    if (request.config.requiresPostProcessing) {
+      tasks.push({
+        name: 'response_formatting',
+        type: 'optimized_processing',
+        processor: { type: 'response_formatter', data: results },
+        priority: 'medium'
+      });
+    }
+    
+    return tasks;
+  }
+
+  async synthesizeOptimizedResults(serviceResults, request) {
+    // Synthesize multiple service results into a coherent response
+    const synthesis = {
+      combinedResults: [],
+      insights: [],
+      confidence: 0,
+      sources: []
+    };
+    
+    // Combine results from different services
+    serviceResults.forEach((result, serviceName) => {
+      if (result.success && result.data) {
+        synthesis.combinedResults.push({
+          service: serviceName,
+          data: result.data,
+          confidence: result.confidence || 0.8
+        });
+        
+        if (result.data.insights) {
+          synthesis.insights.push(...result.data.insights);
+        }
+        
+        if (result.data.sources) {
+          synthesis.sources.push(...result.data.sources);
+        }
+      }
+    });
+    
+    // Calculate overall confidence
+    if (synthesis.combinedResults.length > 0) {
+      synthesis.confidence = synthesis.combinedResults.reduce((sum, r) => sum + r.confidence, 0) / synthesis.combinedResults.length;
+    }
+    
+    // Generate synthesized response
+    synthesis.synthesizedResponse = `Synthesized response from ${synthesis.combinedResults.length} services with ${synthesis.confidence.toFixed(2)} confidence`;
+    
+    return synthesis;
+  }
+
+  async handleOptimizedFallback(results, error, request) {
+    console.warn('🔄 Handling optimized fallback due to error:', error.message);
+    
+    // Return partial results with fallback data
+    const fallbackResults = {
+      ...results,
+      fallback: true,
+      error: error.message,
+      partialResults: true,
+      fallbackData: {
+        message: 'Partial results due to execution error',
+        timestamp: Date.now(),
+        requestId: request.id
+      }
+    };
+    
+    // Add any successful results that were obtained
+    if (results.optimizedServiceResults && results.optimizedServiceResults.size > 0) {
+      fallbackResults.availableResults = Array.from(results.optimizedServiceResults.keys());
+    }
+    
+    return fallbackResults;
+  }
+
   async shutdown() {
     console.log('⚡ Shutting down Optimized Parallel AI Orchestrator...');
     
