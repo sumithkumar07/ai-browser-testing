@@ -327,7 +327,7 @@ class BugDetectionAndFixSystem {
         'databaseService',
         'performanceMonitor', 
         'taskScheduler',
-        'unifiedServiceOrchestrator',
+        // 'unifiedServiceOrchestrator', // Removed - replaced by enhanced AI orchestrator
         'agentMemoryService',
         'autonomousPlanningEngine',
         'deepSearchEngine',
