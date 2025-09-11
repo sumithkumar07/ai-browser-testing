@@ -4,7 +4,17 @@
 
 KAiro Browser is a revolutionary desktop browser that uses AI agents to understand user intent and execute complex tasks automatically, making web browsing intelligent and efficient.
 
-## ✨ Features
+## 🌟 Features - NLP-First Design Philosophy
+
+### 💬 **NLP-First Architecture**
+**ALL advanced features accessible through natural conversation - NO complex UI needed!**
+
+### 🤖 AI-Powered Browsing
+- **Natural Language Interface**: Talk to your browser like a human assistant
+- **6 Specialized Agents**: Research, Navigation, Shopping, Communication, Automation, Analysis
+- **Real Browser Automation**: Actual tab control, content extraction, and interaction
+- **Context Awareness**: AI understands your current page and browsing patterns
+- **Clean UI Philosophy**: Focus on content, not controls - complexity handled by AI
 
 ### 🧠 Core AI Capabilities
 - **Intelligent Intent Recognition**: Parse complex user commands
