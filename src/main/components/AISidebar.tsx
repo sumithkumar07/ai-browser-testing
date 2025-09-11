@@ -346,74 +346,51 @@ Welcome! I'm your **complete feature interface** - everything you need is access
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Quick Actions */}
+          {/* NLP-First Quick Examples */}
           {messages.length <= 1 && ( // Only show for new conversations
             <div className="quick-actions">
-              {/* Basic Actions */}
+              <div className="nlp-examples-header">
+                <h4>💬 Try These Natural Requests:</h4>
+                <p className="nlp-subtitle">Everything is accessible through conversation</p>
+              </div>
+              
+              {/* Natural Language Examples */}
               <button 
-                className="quick-action-btn"
-                onClick={() => handleQuickAction('Summarize this page')}
+                className="quick-action-btn nlp-example"
+                onClick={() => handleQuickAction('Research AI trends, find related products, and analyze security implications')}
                 disabled={isLoading}
+                title="Multi-Agent Coordination Example"
               >
-                📄 Summarize Page
+                🔄 Multi-Agent Workflow
               </button>
               <button 
-                className="quick-action-btn"
-                onClick={() => handleQuickAction('Research this topic in detail')}
+                className="quick-action-btn nlp-example"
+                onClick={() => handleQuickAction('Set up daily monitoring for AI news and create automated reports')}
                 disabled={isLoading}
+                title="Background Automation Example"
               >
-                🔍 Research Topic
+                🕐 Background Tasks
+              </button>
+              <button 
+                className="quick-action-btn nlp-example"
+                onClick={() => handleQuickAction('Remember my research preferences and optimize future searches')}
+                disabled={isLoading}
+                title="Memory & Learning Example"
+              >
+                🧠 Smart Memory
+              </button>
+              <button 
+                className="quick-action-btn nlp-example"
+                onClick={() => handleQuickAction('Analyze this page content and create a summary')}
+                disabled={isLoading}
+                title="Content Analysis Example"
+              >
+                📊 Page Analysis
               </button>
               
-              {/* Advanced Features */}
-              <button 
-                className="quick-action-btn advanced"
-                onClick={() => handleQuickAction('Show me my autonomous goals and their progress')}
-                disabled={isLoading}
-                title="Autonomous Planning Engine"
-              >
-                🎯 My Goals
-              </button>
-              <button 
-                className="quick-action-btn advanced"
-                onClick={() => handleQuickAction('Show my learning patterns and insights')}
-                disabled={isLoading}
-                title="Agent Memory Learning System"
-              >
-                🧠 Learning Insights
-              </button>
-              <button 
-                className="quick-action-btn advanced"
-                onClick={() => handleQuickAction('Perform deep search with multi-source analysis')}
-                disabled={isLoading}
-                title="Deep Search Engine"
-              >
-                🔍 Deep Search
-              </button>
-              <button 
-                className="quick-action-btn advanced"
-                onClick={() => handleQuickAction('Run security scan on current website')}
-                disabled={isLoading}
-                title="Advanced Security Scanning"
-              >
-                🛡️ Security Scan
-              </button>
-              <button 
-                className="quick-action-btn advanced"
-                onClick={() => handleQuickAction('Show system health and performance metrics')}
-                disabled={isLoading}
-                title="System Health Monitoring"
-              >
-                📊 System Health
-              </button>
-              <button 
-                className="quick-action-btn advanced"
-                onClick={() => handleQuickAction('Show background tasks and automation')}
-                disabled={isLoading}
-                title="Background Task Automation"
-              >
-                ⚡ Automation
-              </button>
+              <div className="nlp-examples-footer">
+                <p>✨ <strong>No UI limits</strong> - combine any features through natural conversation!</p>
+              </div>
             </div>
           )}
         </div>
