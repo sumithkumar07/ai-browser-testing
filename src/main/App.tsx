@@ -91,17 +91,34 @@ const App: React.FC = () => {
           logger.warn('AI service test failed:', { error: aiError })
         }
 
-        // Initialize Enhanced Backend Services
+        // Initialize Intelligent Services (Advanced Upgrade)
         try {
-          const { initializeEnhancedBackend } = await import('../core/services/index')
-          const backendResult = await initializeEnhancedBackend()
-          logger.info('🚀 Enhanced Backend Services initialized:', {
-            services: Object.keys(backendResult.services).length,
-            health: `${(backendResult.health.overall * 100).toFixed(1)}%`,
-            healthyServices: backendResult.health.services.filter((s: any) => s.status === 'healthy').length
-          })
-        } catch (backendError) {
-          logger.warn('Enhanced Backend Services initialization failed, continuing with basic functionality:', { error: backendError })
+          const { initializeIntelligentServices } = await import('./services/index')
+          const intelligentResult = await initializeIntelligentServices()
+          if (intelligentResult.success) {
+            logger.info('🧠 Intelligent Services Suite initialized successfully:', {
+              browserManager: 'Advanced AI-powered browser intelligence',
+              dataManager: 'ML-based smart caching and data optimization',
+              performanceOptimizer: 'Predictive performance monitoring with auto-fixes'
+            })
+          } else {
+            throw new Error(`Intelligent services errors: ${intelligentResult.errors?.join(', ')}`)
+          }
+        } catch (intelligentError) {
+          logger.warn('Intelligent Services initialization failed, falling back to enhanced backend:', { error: intelligentError })
+          
+          // Fallback to Enhanced Backend Services
+          try {
+            const { initializeEnhancedBackend } = await import('../core/services/index')
+            const backendResult = await initializeEnhancedBackend()
+            logger.info('🚀 Enhanced Backend Services initialized as fallback:', {
+              services: Object.keys(backendResult.services).length,
+              health: `${(backendResult.health.overall * 100).toFixed(1)}%`,
+              healthyServices: backendResult.health.services.filter((s: any) => s.status === 'healthy').length
+            })
+          } catch (backendError) {
+            logger.warn('Enhanced Backend Services also failed, continuing with basic functionality:', { error: backendError })
+          }
         }
 
         setIsLoading(false)
