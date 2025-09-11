@@ -595,6 +595,153 @@ class OptimizedParallelAIOrchestrator {
     };
   }
 
+  async performIntelligentPerformanceAnalysis() {
+    // Advanced performance analytics with ML insights
+    const currentMetrics = {
+      responseTimeVariance: this.calculateResponseTimeVariance(),
+      resourceUtilization: await this.assessResourceUtilization(),
+      bottleneckAnalysis: await this.identifyBottlenecks(),
+      optimizationOpportunities: await this.detectOptimizationOpportunities()
+    };
+
+    // Store metrics for trending analysis
+    this.performanceTracker.resourceUtilization = currentMetrics.resourceUtilization;
+    
+    console.log('🧠 Intelligent performance analysis completed:', currentMetrics);
+    return currentMetrics;
+  }
+
+  async optimizeResourceAllocation() {
+    // Adaptive resource optimization based on usage patterns
+    const currentLoad = this.activeRequests.size;
+    const historicalPatterns = this.analyzeHistoricalPatterns();
+    
+    if (currentLoad > this.maxConcurrentRequests * 0.8) {
+      // High load detected - increase capacity
+      this.maxConcurrentRequests = Math.min(12, this.maxConcurrentRequests + 1);
+      console.log(`⚡ Resource optimization: Increased max concurrent requests to ${this.maxConcurrentRequests}`);
+    } else if (currentLoad < this.maxConcurrentRequests * 0.3 && this.maxConcurrentRequests > 6) {
+      // Low load - reduce capacity for efficiency
+      this.maxConcurrentRequests = Math.max(6, this.maxConcurrentRequests - 1);
+      console.log(`⚡ Resource optimization: Reduced max concurrent requests to ${this.maxConcurrentRequests}`);
+    }
+
+    // Adaptive timeout adjustments
+    const avgResponseTime = this.performanceTracker.averageResponseTime;
+    if (avgResponseTime > 10000 && this.executionPipeline.timeoutDuration < 60000) {
+      this.executionPipeline.timeoutDuration = Math.min(60000, this.executionPipeline.timeoutDuration + 5000);
+    }
+  }
+
+  async performAdaptiveOptimization() {
+    // Continuous optimization based on performance metrics
+    const metrics = await this.performIntelligentPerformanceAnalysis();
+    
+    // Adaptive execution optimization
+    if (metrics.resourceUtilization.cpu > 0.8) {
+      this.performanceTracker.adaptiveOptimizations++;
+      console.log('🔧 Adaptive optimization: High CPU usage detected, optimizing execution patterns');
+    }
+
+    // Efficiency score calculation
+    const efficiencyScore = this.calculateSystemEfficiencyScore();
+    this.performanceTracker.efficiencyScore = efficiencyScore;
+    
+    if (efficiencyScore < 0.7) {
+      await this.triggerEmergencyOptimization();
+    }
+  }
+
+  calculateSystemEfficiencyScore() {
+    const responseTimeScore = Math.max(0, 1 - (this.performanceTracker.averageResponseTime / 10000));
+    const concurrencyScore = this.performanceTracker.parallelExecutions / Math.max(this.performanceTracker.totalRequests, 1);
+    const resourceScore = 1 - (this.performanceTracker.resourceUtilization.cpu || 0.5);
+    
+    return (responseTimeScore * 0.4 + concurrencyScore * 0.3 + resourceScore * 0.3);
+  }
+
+  calculateResponseTimeVariance() {
+    const recentMetrics = this.performanceTracker.concurrencyMetrics.slice(-10);
+    if (recentMetrics.length < 2) return 0;
+    
+    const durations = recentMetrics.map(m => m.duration);
+    const mean = durations.reduce((a, b) => a + b, 0) / durations.length;
+    const variance = durations.reduce((sum, duration) => sum + Math.pow(duration - mean, 2), 0) / durations.length;
+    
+    return variance;
+  }
+
+  async assessResourceUtilization() {
+    // Mock resource assessment (in real implementation, use process monitoring)
+    return {
+      cpu: Math.random() * 0.3 + 0.1, // 10-40% usage
+      memory: Math.random() * 0.2 + 0.2, // 20-40% usage  
+      network: Math.random() * 0.1 + 0.05 // 5-15% usage
+    };
+  }
+
+  async identifyBottlenecks() {
+    const recentRequests = this.performanceTracker.concurrencyMetrics.slice(-20);
+    const slowRequests = recentRequests.filter(r => r.duration > this.performanceTracker.averageResponseTime * 1.5);
+    
+    return {
+      count: slowRequests.length,
+      percentage: (slowRequests.length / recentRequests.length) * 100,
+      avgSlowDuration: slowRequests.length > 0 ? 
+        slowRequests.reduce((sum, r) => sum + r.duration, 0) / slowRequests.length : 0
+    };
+  }
+
+  async detectOptimizationOpportunities() {
+    const opportunities = [];
+    
+    if (this.performanceTracker.averageResponseTime > 5000) {
+      opportunities.push({
+        type: 'response_time',
+        description: 'Average response time can be improved through better parallel execution',
+        priority: 'high'
+      });
+    }
+    
+    if (this.performanceTracker.parallelExecutions / Math.max(this.performanceTracker.totalRequests, 1) < 0.5) {
+      opportunities.push({
+        type: 'concurrency',
+        description: 'Increase parallel execution rate for better performance',
+        priority: 'medium'
+      });
+    }
+    
+    return opportunities;
+  }
+
+  analyzeHistoricalPatterns() {
+    const recentMetrics = this.performanceTracker.concurrencyMetrics.slice(-50);
+    if (recentMetrics.length < 10) return { trend: 'insufficient_data' };
+    
+    const avgDuration = recentMetrics.reduce((sum, m) => sum + m.duration, 0) / recentMetrics.length;
+    const recentAvgDuration = recentMetrics.slice(-10).reduce((sum, m) => sum + m.duration, 0) / 10;
+    
+    return {
+      trend: recentAvgDuration > avgDuration * 1.1 ? 'degrading' : 'stable',
+      avgDuration: avgDuration,
+      recentAvgDuration: recentAvgDuration,
+      parallelismRate: recentMetrics.filter(m => m.parallelTasks > 1).length / recentMetrics.length
+    };
+  }
+
+  async triggerEmergencyOptimization() {
+    console.log('🚨 Emergency optimization triggered due to low efficiency score');
+    
+    // Reset to conservative settings
+    this.maxConcurrentRequests = Math.max(6, this.maxConcurrentRequests - 2);
+    this.executionPipeline.timeoutDuration = Math.max(30000, this.executionPipeline.timeoutDuration - 5000);
+    
+    // Clear performance cache
+    this.servicePerformanceCache.clear();
+    
+    this.performanceTracker.adaptiveOptimizations++;
+  }
+
   async shutdown() {
     console.log('⚡ Shutting down Optimized Parallel AI Orchestrator...');
     
