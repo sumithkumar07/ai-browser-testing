@@ -24,7 +24,7 @@ class BrowserManager {
     this.databaseService = null
     this.performanceMonitor = null
     this.taskScheduler = null
-    this.backendCoordinator = null
+    this.backendCoordinator = null // Replaced by enhanced AI orchestrator
     this.enhancedAgentController = null
     
     // Connection states
