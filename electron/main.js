@@ -336,16 +336,16 @@ class KAiroBrowserManager {
         console.warn('⚠️ Advanced Agent Memory Service initialization failed:', error.message)
       }
 
-      // Initialize Deep Search Engine - ENHANCED  
+      // Initialize Ultra Intelligent Search Engine - OPTIMIZED (Consolidated)
       try {
-        this.deepSearchEngine = DeepSearchEngine.getInstance()
-        await this.deepSearchEngine.initialize()
+        this.ultraIntelligentSearchEngine = UltraIntelligentSearchEngine.getInstance()
+        await this.ultraIntelligentSearchEngine.initialize()
         
-        // Enable advanced search capabilities
+        // Enable all advanced search capabilities
         this.enableDeepSearch = true
-        console.log('✅ Deep Search Engine initialized with multi-source capabilities')
+        console.log('✅ Ultra Intelligent Search Engine initialized with ALL capabilities')
       } catch (error) {
-        console.warn('⚠️ Deep Search Engine initialization failed:', error.message)
+        console.warn('⚠️ Ultra Intelligent Search Engine initialization failed:', error.message)
       }
 
       // Initialize Shadow Workspace
