@@ -3,9 +3,11 @@
  * Advanced logging system with structured output and categorization
  */
 
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+
 interface LogEntry {
   timestamp: number
-  level: 'debug' | 'info' | 'warn' | 'error'
+  level: LogLevel
   component: string
   message: string
   data?: any
