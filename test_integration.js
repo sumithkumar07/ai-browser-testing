@@ -234,7 +234,13 @@ class IntegrationTester {
         { success: true, duration: 1000, startTime: Date.now() - 10000 },
         { success: true, duration: 1200, startTime: Date.now() - 8000 },
         { success: false, duration: 2000, startTime: Date.now() - 5000 }
-      ])
+      ]),
+      saveBackgroundTask: async () => ({ success: true }),
+      getBackgroundTasks: async (status) => ([
+        { id: 'test_task_1', status: status || 'pending', type: 'test', priority: 5, payload: {}, createdAt: Date.now() }
+      ]),
+      cleanupExpiredMemories: async () => 0,
+      cleanupOldHistory: async () => 0
     };
     
     const perfMonitor = new AgentPerformanceMonitor({ updateInterval: 1000, retentionDays: 1 });
