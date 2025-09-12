@@ -176,9 +176,9 @@ class IntelligentDataExtractor {
     ]);
 
     this.dataPatterns.set('rating', [
-      /(\d+(?:\.\d+)?)\s*(?:out of|\/)\s*(\d+)(?:\s*stars?)?/gi,
-      /(\d+(?:\.\d+)?)\s*star/gi,
-      /Rating:\s*(\d+(?:\.\d+)?)/gi
+      /(\d+(?:\.\d+)?)\s*(?:out of|\/)\s*(\d+)(?:\s*stars?)?/i,
+      /(\d+(?:\.\d+)?)\s*star/i,
+      /Rating:\s*(\d+(?:\.\d+)?)/i
     ]);
 
     this.dataPatterns.set('email', [
