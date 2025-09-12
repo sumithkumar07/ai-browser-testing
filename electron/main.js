@@ -172,6 +172,45 @@ class OptimizedBrowserManager {
   }
 
   // Optimized window creation with better error handling
+  
+  // Enhanced service health monitoring
+  async serviceHealthCheck() {
+    const services = ['database', 'agents', 'automation', 'performance'];
+    const healthStatus = {};
+    
+    for (const service of services) {
+      try {
+        switch (service) {
+          case 'database':
+            healthStatus.database = this.browserManager?.database ? 'healthy' : 'unavailable';
+            break;
+          case 'agents':
+            healthStatus.agents = this.browserManager?.agentController ? 
+              `healthy (${this.browserManager.agentController.agents?.size || 0} agents)` : 'unavailable';
+            break;
+          case 'automation':
+            healthStatus.automation = this.browserManager?.automationEngine ? 'healthy' : 'unavailable';
+            break;
+          case 'performance':
+            healthStatus.performance = this.browserManager?.performanceMonitor ? 'healthy' : 'unavailable';
+            break;
+        }
+      } catch (error) {
+        healthStatus[service] = `error: ${error.message}`;
+      }
+    }
+    
+    console.log('🏥 Service Health Status:', healthStatus);
+    return healthStatus;
+  }
+
+  // Periodic health checks
+  startHealthMonitoring() {
+    setInterval(() => {
+      this.serviceHealthCheck().catch(console.error);
+    }, 300000); // 5 minutes
+  }
+
   async createWindow() {
     try {
       console.log('🖥️ Creating browser window...')

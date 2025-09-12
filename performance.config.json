@@ -1,0 +1,33 @@
+{
+  "browser": {
+    "maxTabs": 10,
+    "tabMemoryLimit": "100MB",
+    "cacheSize": "50MB",
+    "enableHardwareAcceleration": true,
+    "backgroundThrottling": true
+  },
+  "agents": {
+    "maxConcurrentTasks": 3,
+    "taskTimeout": 30000,
+    "retryAttempts": 2,
+    "memoryCleanupInterval": 600000
+  },
+  "database": {
+    "journalMode": "WAL",
+    "cacheSize": 10000,
+    "synchronous": "NORMAL",
+    "mmapSize": 268435456
+  },
+  "automation": {
+    "maxParallelActions": 2,
+    "actionTimeout": 15000,
+    "screenshotQuality": 20,
+    "enableOptimizations": true
+  },
+  "monitoring": {
+    "performanceMetricsInterval": 300000,
+    "healthCheckInterval": 300000,
+    "memoryCleanupInterval": 300000,
+    "logRetentionDays": 7
+  }
+}

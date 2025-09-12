@@ -32,7 +32,8 @@ class DatabaseService {
       await this.createTables();
       await this.createIndexes();
       
-      console.log('✅ Database Service initialized successfully');
+      this.optimizeQueries();
+    console.log('✅ Database Service initialized successfully');
     } catch (error) {
       console.error('❌ Failed to initialize Database Service:', error);
       throw error;

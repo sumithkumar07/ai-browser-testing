@@ -4,6 +4,29 @@
 const { BrowserAutomationEngine } = require('../automation/BrowserAutomationEngine');
 
 class EnhancedAgentController {
+  // Agent Performance Optimization
+  optimizeAgentPerformance() {
+    const performanceConfig = {
+      maxConcurrentTasks: 3,
+      taskTimeoutMs: 30000,
+      retryAttempts: 2,
+      memoryCleanupInterval: 600000 // 10 minutes
+    };
+
+    this.performanceConfig = performanceConfig;
+    
+    // Memory cleanup for agents
+    setInterval(() => {
+      this.agents.forEach((agent, type) => {
+        if (agent.clearCache) {
+          agent.clearCache();
+        }
+      });
+      console.log('🧹 Agent memory cleanup completed');
+    }, performanceConfig.memoryCleanupInterval);
+
+    console.log('⚡ Agent performance optimization applied');
+  }
   constructor(browserManager) {
     this.manager = browserManager;
     this.automationEngine = null;
@@ -27,7 +50,8 @@ class EnhancedAgentController {
       // Initialize all enhanced agents
       await this.initializeAllAgents();
       
-      console.log('✅ Enhanced Agent Controller ready - All 6 agents have FULL browser control!');
+      this.optimizeAgentPerformance();
+    console.log('✅ Enhanced Agent Controller ready - All 6 agents have FULL browser control!');
       return { success: true };
 
     } catch (error) {
