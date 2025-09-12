@@ -180,20 +180,25 @@ class OptimizedBrowserManager {
       const isHeadless = !process.env.DISPLAY || process.env.NODE_ENV === 'test' || process.env.BROWSER_HEADLESS === 'true'
       
       if (isHeadless) {
-        console.log('🤖 Running in headless mode')
+        console.log('🤖 Running in headless mode - Creating mock window for backend testing')
         this.mainWindow = {
           webContents: {
             send: (channel, data) => {
-              console.log(`📡 IPC Send: ${channel}`)
+              console.log(`📡 IPC Send: ${channel}`, data ? Object.keys(data).length + ' data points' : 'no data')
             },
             executeJavaScript: async (code) => {
               console.log(`📜 Execute JS: ${code.substring(0, 50)}...`)
-              return Promise.resolve({})
+              return Promise.resolve({ success: true, mockResult: true })
             }
           },
-          setBrowserView: () => console.log('🪟 Set browser view (headless)'),
-          removeBrowserView: () => console.log('🗑️ Remove browser view (headless)')
+          setBrowserView: (view) => {
+            console.log('🪟 Set browser view (headless)', view ? 'view set' : 'no view')
+          },
+          removeBrowserView: (view) => {
+            console.log('🗑️ Remove browser view (headless)', view ? 'view removed' : 'no view')
+          }
         }
+        console.log('✅ Headless window created successfully')
         return
       }
 
