@@ -578,8 +578,17 @@ class IntelligentDataExtractor {
     for (const pattern of patterns) {
       const match = text.match(pattern);
       if (match) {
-        const rating = parseFloat(match[1]);
-        return isNaN(rating) ? null : rating;
+        // Check if pattern captures both rating and maximum (e.g., "4.5 out of 5")
+        if (match[2]) {
+          const rating = parseFloat(match[1]);
+          const maxRating = parseFloat(match[2]);
+          // Normalize to 5-star scale
+          return maxRating === 5 ? rating : (rating / maxRating) * 5;
+        } else {
+          // Direct rating (e.g., "4.5 star")
+          const rating = parseFloat(match[1]);
+          return isNaN(rating) ? null : Math.min(5, Math.max(0, rating));
+        }
       }
     }
     return null;
