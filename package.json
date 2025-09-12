@@ -5,7 +5,7 @@
   "main": "electron/main.js",
   "homepage": "./",
   "scripts": {
-    "dev": "vite",
+    "dev": "npm run build:react && electron . --no-sandbox",
     "start": "electron . --no-sandbox",
     "build": "npm run build:react && npm run build:electron",
     "build:react": "vite build",
@@ -14,7 +14,9 @@
     "dist:win": "npm run build && electron-builder --win --publish=never",
     "dist:mac": "npm run build && electron-builder --mac --publish=never",
     "dist:linux": "npm run build && electron-builder --linux --publish=never",
+    "electron-dev": "NODE_ENV=development electron . --no-sandbox",
     "test": "jest",
+    "test:services": "NODE_ENV=test node electron/main.js",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "format": "prettier --write src/**/*.{ts,tsx,css}"
