@@ -2,6 +2,10 @@
 // Full browser control for all AI agents - Transform from advisor to executor!
 
 const { BrowserView } = require('electron');
+const { PageContentAnalyzer } = require('./PageContentAnalyzer');
+const { InteractionSimulator } = require('./InteractionSimulator');
+const { IntelligentDataExtractor } = require('./IntelligentDataExtractor');
+const { ResultCompiler } = require('./ResultCompiler');
 
 class BrowserAutomationEngine {
   constructor(browserManager) {
